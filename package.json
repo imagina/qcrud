@@ -1,0 +1,26 @@
+{
+  "name": "@imagina/qcrud",
+  "version": "0.0.1",
+  "description": "Quasar Framework, AsgardCMS, Crud Base Module to Create Simple UI for Entity Administration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imagina/qcrud.git"
+  },
+  "keywords": [
+    "quasar",
+    "quasar",
+    "framework",
+    "asgardcms",
+    "crud"
+  ],
+  "author": "https://www.imaginacolombia.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/imagina/qcrud/issues"
+  },
+  "homepage": "https://github.com/imagina/qcrud#readme"
+}
