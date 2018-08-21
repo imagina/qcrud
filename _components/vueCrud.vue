@@ -507,7 +507,7 @@
 		<!--======================== PAGE STICKY BUTTONS ======================-->
 
 		<!-- EXPORT BUTTON -->
-		<q-page-sticky position="bottom-right absolute" :offset="[18, 65]">
+		<q-page-sticky position="bottom-right" :offset="[18, 65]">
 
 			<q-btn
 				fab-mini
@@ -530,7 +530,7 @@
 		<!-- ADD BUTTON -->
 		<q-page-sticky
 			v-if="auth.hasAccess(crudActions.permission+'.create') && (crudActions.actionsData.add.permission ? auth.hasAccess(crudActions.actionsData.add.permission) : true)"
-			position="bottom-right absolute"
+			position="bottom-right"
 			:offset="[18, 18]">
 
 			<q-btn
