@@ -238,7 +238,8 @@
           filterData: this.filterData,
           parentId: this.parentId
         })
-
+        this.paginated.max = this.pagination.page.lastPage
+        this.paginated.page = this.pagination.page.currentPage
 				this.loading = false
       },
       async submitFilter() {
@@ -392,7 +393,7 @@
 				v-if="paginated.max > 1"
 				v-model="paginated.page"
 				color="primary"
-				@input="getData()"
+				@input="getRecordsHelper()"
 				:max="paginated.max"
 				:max-pages="6"
 				boundary-links
