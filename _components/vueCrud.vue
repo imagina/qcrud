@@ -2,7 +2,7 @@
   import _cloneDeep from 'lodash.clonedeep'
   import {alert} from '@imagina/qhelper/_plugins/alert'
 	import crud from '../_store/index'
-
+  import {helper} from '@imagina/qhelper/_plugins/helper'
 
   export default {
     props: {
@@ -54,12 +54,16 @@
 
     mounted() {
     },
-
-    beforeRouteEnter(to, from, next) {
-      next(vm => {
-      })
+  
+  
+    beforeRouteLeave (to, from, next) {
+      console.group('Event beforeRouteUpdate:')
+      console.log('from:', from)
+      console.log('to:', to)
+      window.location = to.path
+      
     },
-
+    
     data() {
       return {
         // form
@@ -172,7 +176,7 @@
         this.$store.commit(this.storeName + '/setRecord', null)
       },
 			clearCache(){
-        this.$helper.clearCache(this.storeName)
+        helper.clearCache(this.storeName)
 			},
       async exportRecords(payload) {
         await this.$store.dispatch(this.storeName + '/exportRecords', payload)
@@ -215,8 +219,8 @@
             }
           }
         ];
-
-				!alert.warning("Are you sure to delete this " + this.singularName + "?", "center", actions)
+        console.log(actions);
+				alert.warning("Are you sure to delete this " + this.singularName + "?", "center", actions)
       },
       async delete(id) {
         if (id) {
@@ -234,7 +238,8 @@
           filterData: this.filterData,
           parentId: this.parentId
         })
-
+        this.paginated.max = this.pagination.page.lastPage
+        this.paginated.page = this.pagination.page.currentPage
 				this.loading = false
       },
       async submitFilter() {
@@ -267,7 +272,7 @@
 
 		<!--======================== FILTER AND LIST ======================-->
 
-		<div v-if="records.length || loading" id="users-index"
+		<div id="users-index"
 				 class="q-layout-page row justify-center layout-padding">
 
 			<div class="text_title text-blue-9 col-xs-12 q-title text-right">
@@ -388,7 +393,7 @@
 				v-if="paginated.max > 1"
 				v-model="paginated.page"
 				color="primary"
-				@input="getData()"
+				@input="getRecordsHelper()"
 				:max="paginated.max"
 				:max-pages="6"
 				boundary-links
@@ -419,12 +424,12 @@
 
 					<crud-form v-if="customForm"  :record="record" :parentId="parentId" :storeName="storeName" />
 
-					<div v-else class="defaultForm">
+					<div v-else class="row defaultForm">
 
-						<div class="row left-block">
-						<div class="col-12 col-md-9">
+		
+						<div class="col-12 col-md-9 q-px-lg">
 							<div class="row">
-								<div class="col-12"
+								<div class="col-12 q-my-lg"
 										 v-for="(field,index) in fieldsData"
 										 :key="index"
 										 v-if="field.viewPosition ? field.viewPosition == 'left' ? true : false : true">
@@ -459,11 +464,11 @@
 
 
 						</div>
-					</div>
-						<div class="row right-block">
-						<div class="col-12 col-md-3">
+
+
+						<div class="col-12 col-md-3 q-px-lg">
 							<div class="row">
-								<div class="col-12"
+								<div class="col-12 q-my-lg"
 										 v-for="(field,index) in fieldsData"
 										 :key="index"
 										 v-if="field.viewPosition ? field.viewPosition == 'right' ? true : false : true">
@@ -486,10 +491,10 @@
 								</div>
 							</div>
 						</div>
-					</div>
+		
 						<div class="row">
 						<!--=== SAVE ===-->
-						<div class="col-12 text-center q-py-lg">
+						<div class="col-12 text-center q-my-lg">
 							<q-btn :loading="loading"
 										 color="primary"
 										 @click="addEditDialogSave">
@@ -505,9 +510,9 @@
 
 
 		<!--======================== PAGE STICKY BUTTONS ======================-->
-
+ 
 		<!-- EXPORT BUTTON -->
-		<q-page-sticky position="bottom-right absolute" :offset="[18, 65]">
+		<q-page-sticky v-if="records.length" position="bottom-right" :offset="[18, 65]">
 
 			<q-btn
 				fab-mini
@@ -530,7 +535,7 @@
 		<!-- ADD BUTTON -->
 		<q-page-sticky
 			v-if="auth.hasAccess(crudActions.permission+'.create') && (crudActions.actionsData.add.permission ? auth.hasAccess(crudActions.actionsData.add.permission) : true)"
-			position="bottom-right absolute"
+			position="bottom-right"
 			:offset="[18, 18]">
 
 			<q-btn
