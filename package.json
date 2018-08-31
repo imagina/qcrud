@@ -1,6 +1,6 @@
 {
   "name": "@imagina/qcrud",
-  "version": "0.0.2",
+  "version": "0.0.6",
   "description": "Quasar Framework, AsgardCMS, Crud Base Module to Create Simple UI for Entity Administration",
   "main": "index.js",
   "scripts": {

@@ -1,9 +1,9 @@
 import {format} from 'date-fns'
 import exportFromJSON from 'export-from-json'
-import {alert} from '../../../../src/plugins/alert'
+import {alert} from '@imagina/qhelper/_plugins/alert'
 import {required, email, sameAs, minLength} from 'vuelidate/lib/validators';
 import _pick from 'lodash.pick'
-import departmentService from "../../../user/_services/departments";
+import departmentService from "user/_services/departments";
 
 
 
@@ -31,7 +31,7 @@ export const crudActions = {
       //permission:''
     }
   }
-  
+
 }
 
 
@@ -158,22 +158,22 @@ export const crudOps = { // CRUD
     let filter = {};
     for (var key in filterData)
       filter[key] = filterData[key].value
-  
+
     let headers = []
     crudTable.headers.forEach(element => {
       headers.push(element.value);
     })
     console.log("headers", headers)
-  
+
     let headerData = [];
     await departmentService.index(filter)
       .then((response) =>{
-      
+
         response.data.forEach((element,index) => {
-        
+
           headerData.push(_pick(element, headers))
         })
-      
+
         const data = headerData
         const fileName = 'Departments'
         const exportType = 'xls'
@@ -184,7 +184,7 @@ export const crudOps = { // CRUD
         alert.error(errorMessage, 'bottom')
       })
   },
-  
+
   delete: async (payload) => {
     let {id, ...attributes} = payload
 
@@ -197,18 +197,18 @@ export const crudOps = { // CRUD
       })
 
   },
-  
+
   index: async (payload) => {
     let data = []
     const {pagination, filterData} = payload
     let filter = {};
-   
+
     for (var key in filterData)
       filter[key] = filterData[key].value
-    
-    
+
+
       let page = pagination.page ? pagination.page : 1;
-      
+
       await departmentService.index(filter,10,page)
         .then((response) => {
           data = response;
@@ -218,8 +218,8 @@ export const crudOps = { // CRUD
       })
     return {records:data.data,pagination:data.meta}
   },
-  
-  
+
+
   show: async (payload) => {
     const {id} = payload
     let record = { }
@@ -233,8 +233,8 @@ export const crudOps = { // CRUD
       })
     return record
   },
-  
-  
+
+
   create: async (payload) => {
     const {record: {id, ...attributes}} = payload
     let data = {
@@ -249,7 +249,7 @@ export const crudOps = { // CRUD
       })
 
   },
-  
+
   update: async (payload) => {
     let {record: {id, ...attributes}} = payload
     let data = {
@@ -263,7 +263,7 @@ export const crudOps = { // CRUD
         let errorMessage = error.response.data.error ? error.response.data.error : 'Update failed';
         alert.error(errorMessage, 'bottom')
       })
-    
+
   }
-  
+
 }
