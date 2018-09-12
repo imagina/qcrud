@@ -54,16 +54,16 @@
 
     mounted() {
     },
-  
-  
+
+
     beforeRouteLeave (to, from, next) {
       console.group('Event beforeRouteUpdate:')
       console.log('from:', from)
       console.log('to:', to)
-      window.location = to.path
-      
+
+      this.$router.push(to.name)
     },
-    
+
     data() {
       return {
         // form
@@ -426,7 +426,7 @@
 
 					<div v-else class="row defaultForm">
 
-		
+
 						<div class="col-12 col-md-9 q-px-lg">
 							<div class="row">
 								<div class="col-12 q-my-lg"
@@ -491,7 +491,7 @@
 								</div>
 							</div>
 						</div>
-		
+
 						<div class="row">
 						<!--=== SAVE ===-->
 						<div class="col-12 text-center q-my-lg">
@@ -510,7 +510,7 @@
 
 
 		<!--======================== PAGE STICKY BUTTONS ======================-->
- 
+
 		<!-- EXPORT BUTTON -->
 		<q-page-sticky v-if="records.length" position="bottom-right" :offset="[18, 65]">
 
