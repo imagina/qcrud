@@ -60,8 +60,8 @@
       console.group('Event beforeRouteUpdate:')
       console.log('from:', from)
       console.log('to:', to)
-      window.location = to.path
-      
+
+      this.$router.push(to.name)
     },
     
     data() {
