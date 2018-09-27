@@ -1,15 +1,50 @@
 {
-  "name": "@imagina/qcrud",
-  "version": "0.0.5",
+  "_from": "@imagina/qcrud",
+  "_id": "@imagina/qcrud@0.0.11",
+  "_inBundle": false,
+  "_integrity": "sha512-EkuL8f2aV6Ge4A4/j94KxaG6fOPDZCfSAKDnkJoEurWIzwuwilzARkbt8mNBVxZvNyxwXRbfLADMrrb50HFFEg==",
+  "_location": "/@imagina/qcrud",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@imagina/qcrud",
+    "name": "@imagina/qcrud",
+    "escapedName": "@imagina%2fqcrud",
+    "scope": "@imagina",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/",
+    "/@imagina/quser"
+  ],
+  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.9.tgz",
+  "_shasum": "7b60df84a05e7cf9afe43b90592320c418683b33",
+  "_spec": "@imagina/qcrud",
+  "_where": "D:\\Imagina\\html\\copifam_app",
+  "author": {
+    "name": "https://www.imaginacolombia.com"
+  },
+  "bugs": {
+    "url": "https://github.com/imagina/qcrud/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@imagina/qhelper": ">=0.0.6",
+    "@imagina/quser": ">=0.0.16",
+    "@riophae/vue-treeselect": "0.0.30",
+    "axios": "^0.18.0",
+    "date-fns": "^1.29.0",
+    "export-from-json": "^1.0.15",
+    "lodash.pick": "^4.4.0",
+    "vuelidate": "^0.7.4"
+  },
+  "deprecated": false,
   "description": "Quasar Framework, AsgardCMS, Crud Base Module to Create Simple UI for Entity Administration",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/imagina/qcrud.git"
-  },
+  "homepage": "https://github.com/imagina/qcrud#readme",
   "keywords": [
     "quasar",
     "quasar",
@@ -17,10 +52,15 @@
     "asgardcms",
     "crud"
   ],
-  "author": "https://www.imaginacolombia.com",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/imagina/qcrud/issues"
+  "main": "index.js",
+  "name": "@imagina/qcrud",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imagina/qcrud.git"
   },
-  "homepage": "https://github.com/imagina/qcrud#readme"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.0.11"
 }

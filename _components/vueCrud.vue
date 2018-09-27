@@ -287,14 +287,14 @@
 					<div v-for="(filter,index) in filterData" :key="index" :class="'col-12 q-px-xl col-md-'+filter.cols">
 						<q-field>
 							<q-search
-								@keyup.enter="getRecordsHelper"
+								@keyup.enter="paginated.page = 1; getRecordsHelper();"
 								v-if="index=='search'"
 								v-model="filter.value"
 								:placeholder="filter.placeHolder"
 							/>
 
 							<q-input
-								@change="getRecordsHelper"
+								@change="paginated.page = 1; getRecordsHelper();"
 								:type="filter.type"
 								v-if="filter.type!='select' && index!='search'"
 								v-model="filter.value"
@@ -303,7 +303,7 @@
 							/>
 
 							<q-select
-								@input="getRecordsHelper"
+								@input="paginated.page = 1; getRecordsHelper();"
 								v-if="filter.type=='select'"
 								:multiple="filter.multiple ? filter.multiple : false"
 								:chips="filter.chips ? filter.chips : false"
@@ -426,7 +426,7 @@
 
 					<div v-else class="row defaultForm">
 
-		
+						
 						<div class="col-12 col-md-9 q-px-lg">
 							<div class="row">
 								<div class="col-12 q-my-lg"
@@ -441,19 +441,19 @@
 									>
 
 										<q-input
-											:type="field.type"
 											v-if="field.type!='select' && field.type!='select-multiple'"
+											:type="field.type"
 											v-model="record[field.name]"
 											:float-label="field.label+':'"
 											:value="record[field.name]"
 										/>
-
+										
 										<q-select
 											v-if="field.type=='select'"
 											:multiple="field.multiple ? field.multiple : false"
-											:chips="filter.chips ? filter.chips : false"
-											:filter="filter.filter ? filter.filter : false"
-											:radio="filter.radio ? filter.radio : false"
+											:chips="field.chips ? field.chips : false"
+											:filter="field.filter ? field.filter : false"
+											:radio="field.radio ? field.radio : false"
 											v-model="record[field.name]"
 											:options="field.options ? field.options : field.optionsFn ? field.options : []"
 										/>
@@ -485,6 +485,16 @@
 											v-model="record[field.name]"
 											:float-label="field.label+':'"
 											:value="record[field.name]"
+										/>
+										<q-select
+											v-if="field.type=='select'"
+											:multiple="field.multiple ? field.multiple : false"
+											:chips="field.chips ? field.chips : false"
+											:filter="field.filter ? field.filter : false"
+											:radio="field.radio ? field.radio : false"
+											v-model="record[field.name]"
+											:float-label="field.label+':'"
+											:options="field.options ? field.options : field.optionsFn ? field.options : []"
 										/>
 									</q-field>
 
