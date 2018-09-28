@@ -283,8 +283,8 @@
 			<div class="col-12 filter">
 				<crud-filter v-if="customFilter" :filterData="filterData" :parentId="parentId" :storeName="storeName" />
 
-				<div v-else class="row justify-end items-center q-my-xl ">
-					<div v-for="(filter,index) in filterData" :key="index" :class="'col-12 q-px-xl col-md-'+filter.cols">
+				<div v-else class="row justify-end items-center q-my-md ">
+					<div v-for="(filter,index) in filterData" :key="index" :class="'col-12 q-px-md col-md-'+filter.cols">
 						<q-field>
 							<q-search
 								@keyup.enter="paginated.page = 1; getRecordsHelper();"
@@ -318,7 +318,7 @@
 
 				</div>
 			</div>
-
+			<div class="col-12">
 			<div v-if="records.length" class="table-responsive">
 
 				<table class="q-table">
@@ -341,7 +341,7 @@
 							<q-btn
 								v-if="auth.hasAccess(crudActions.permission+'.edit') && (crudActions.actionsData.edit.permission ? auth.hasAccess(crudActions.actionsData.edit.permission) : true)"
 								round
-								class=""
+								class="q-mx-xs"
 								:icon="crudActions.actionsData.edit.icon"
 								color="secondary"
 								@click="addEditDialogOpen(record.id,'Edit')"
@@ -359,7 +359,7 @@
 							<q-btn
 								v-if="auth.hasAccess(crudActions.permission+'.destroy') && (crudActions.actionsData.delete.permission ? auth.hasAccess(crudActions.actionsData.delete.permission) : true)"
 								round
-								class=""
+								class="q-mx-xs"
 								:icon="crudActions.actionsData.delete.icon"
 								color="red"
 								@click="addEditDialogDelete(record.id)"
@@ -399,6 +399,7 @@
 				boundary-links
 				direction-links
 			/>
+			</div>
 		</div>
 
 
@@ -427,9 +428,9 @@
 					<div v-else class="row defaultForm">
 
 						
-						<div class="col-12 col-md-9 q-px-lg">
+						<div class="col-12 col-md-9 q-px-md">
 							<div class="row">
-								<div class="col-12 q-my-lg"
+								<div class="col-12 q-my-md"
 										 v-for="(field,index) in fieldsData"
 										 :key="index"
 										 v-if="field.viewPosition ? field.viewPosition == 'left' ? true : false : true">
@@ -466,9 +467,9 @@
 						</div>
 
 
-						<div class="col-12 col-md-3 q-px-lg">
+						<div class="col-12 col-md-3 q-px-md">
 							<div class="row">
-								<div class="col-12 q-my-lg"
+								<div class="col-12 q-my-md"
 										 v-for="(field,index) in fieldsData"
 										 :key="index"
 										 v-if="field.viewPosition ? field.viewPosition == 'right' ? true : false : true">
@@ -504,7 +505,7 @@
 		
 						<div class="row">
 						<!--=== SAVE ===-->
-						<div class="col-12 text-center q-my-lg">
+						<div class="col-12 text-center q-my-md">
 							<q-btn :loading="loading"
 										 color="primary"
 										 @click="addEditDialogSave">
