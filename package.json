@@ -1,6 +1,6 @@
 {
   "_from": "@imagina/qcrud",
-  "_id": "@imagina/qcrud@0.0.12",
+  "_id": "@imagina/qcrud@0.0.13",
   "_inBundle": false,
   "_integrity": "sha512-EkuL8f2aV6Ge4A4/j94KxaG6fOPDZCfSAKDnkJoEurWIzwuwilzARkbt8mNBVxZvNyxwXRbfLADMrrb50HFFEg==",
   "_location": "/@imagina/qcrud",
@@ -62,5 +62,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.0.12"
+  "version": "0.0.13"
 }

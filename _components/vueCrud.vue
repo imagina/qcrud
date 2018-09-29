@@ -54,16 +54,7 @@
 
     mounted() {
     },
-  
-  
-    beforeRouteLeave (to, from, next) {
-      console.group('Event beforeRouteUpdate:')
-      console.log('from:', from)
-      console.log('to:', to)
 
-      this.$router.push(to.name)
-    },
-    
     data() {
       return {
         // form
@@ -219,7 +210,7 @@
             }
           }
         ];
-        console.log(actions);
+
 				alert.warning("Are you sure to delete this " + this.singularName + "?", "center", actions)
       },
       async delete(id) {
