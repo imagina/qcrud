@@ -20,38 +20,12 @@
 
     },
     created() {
-
-      if (!this.$t || !this.$i18n) this.$t = null // if i18n is not found
-      const store = this.$store
-      const name = this.storeName
-      if (!(store && store.state && store.state[name])) { // register a new module only if doesn't exist
-        store.registerModule(name, _cloneDeep(crud)) // make sure its a deep clone
-        store.state[name].defaultRec = this.crudForm.defaultRec
-        store.state[name].filterData = this.crudFilter.filterData
-        store.state[name].fieldsData = this.crudFields.fieldsData
-        store.state[name].crudData = this.crudActions
-        store.state[name].crudOps = this.crudOps
-      } else { // re-use the already existing module
-      }
-      this.$options.filters.formatters = this.crudTable.formatters // create the formatters programatically
-      this.headers = this.crudTable.headers || {}
-      this.$options.components['crud-filter'] = this.crudFilter.FilterVue
-      this.$options.components['crud-form'] = this.crudForm.FormVue
-
-
-      this.$options.components['crud-filter']().component ? this.customFilter = true : false;
-      this.$options.components['crud-form']().component ? this.customForm = true : false;
-
-
-			if (this.record.id && !this.parentId) { // nested CRUD
-        this.addEditDialogFlag = true
-      }
-      this.getRecordsHelper();
+			
+     this.initialize();
     },
 
-    beforeUpdate() {
-    },
-
+    mounted () { },
+    beforeRouteEnter (to, from, next) { next(vm => { }) },
     mounted() {
     },
 
@@ -122,10 +96,41 @@
     watch: {
       loading: function (newValue, oldValue) {
       },
-
+			'$route' (to, from) {
+        this.initialize();
+			}
+      
     },
 
     methods: {
+      initialize(){
+        if (!this.$t || !this.$i18n) this.$t = null // if i18n is not found
+        const store = this.$store
+        const name = this.storeName
+        if (!(store && store.state && store.state[name])) { // register a new module only if doesn't exist
+          store.registerModule(name, _cloneDeep(crud)) // make sure its a deep clone
+          store.state[name].defaultRec = this.crudForm.defaultRec
+          store.state[name].filterData = this.crudFilter.filterData
+          store.state[name].fieldsData = this.crudFields.fieldsData
+          store.state[name].crudData = this.crudActions
+          store.state[name].crudOps = this.crudOps
+        } else { // re-use the already existing module
+        }
+        this.$options.filters.formatters = this.crudTable.formatters // create the formatters programatically
+        this.headers = this.crudTable.headers || {}
+        this.$options.components['crud-filter'] = this.crudFilter.FilterVue
+        this.$options.components['crud-form'] = this.crudForm.FormVue
+  
+  
+        this.$options.components['crud-filter']().component ? this.customFilter = true : false;
+        this.$options.components['crud-form']().component ? this.customForm = true : false;
+  
+  
+        if (this.record.id && !this.parentId) { // nested CRUD
+          this.addEditDialogFlag = true
+        }
+        this.getRecordsHelper();
+			},
       allRules(){
         var rules = {};
 				var fields = this.fieldsData;
@@ -144,7 +149,7 @@
       async deleteRecord(payload) {
         this.loading = true
         await this.$store.dispatch(this.storeName + '/deleteRecord', payload)
-        this.clearCache()
+        await this.clearCache()
         this.loading = false
       },
       async updateRecord(payload) {
@@ -166,8 +171,9 @@
       setRecord(payload) {
         this.$store.commit(this.storeName + '/setRecord', null)
       },
-			clearCache(){
-        helper.clearCache(this.storeName)
+			async clearCache(){
+        console.log("this.storeName "+this.storeName)
+        await helper.clearCache(this.storeName)
 			},
       async exportRecords(payload) {
         await this.$store.dispatch(this.storeName + '/exportRecords', payload)
@@ -191,7 +197,7 @@
 
         if (this.record.id) await this.updateRecord({record: this.record})
         else await this.createRecord({record: this.record, parentId: this.parentId})
-        this.clearCache()
+        await this.clearCache()
         await this.getRecordsHelper()
         this.closeAddEditDialog()
       },
@@ -380,7 +386,7 @@
 				</p>
 			</div>
 			<q-pagination
-				class="q-ma-lg"
+				class="justify-center q-ma-lg"
 				v-if="paginated.max > 1"
 				v-model="paginated.page"
 				color="primary"

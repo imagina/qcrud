@@ -1,6 +1,6 @@
 {
   "_from": "@imagina/qcrud",
-  "_id": "@imagina/qcrud@0.0.13",
+  "_id": "@imagina/qcrud@0.0.14",
   "_inBundle": false,
   "_integrity": "sha512-EkuL8f2aV6Ge4A4/j94KxaG6fOPDZCfSAKDnkJoEurWIzwuwilzARkbt8mNBVxZvNyxwXRbfLADMrrb50HFFEg==",
   "_location": "/@imagina/qcrud",
@@ -21,7 +21,7 @@
     "/",
     "/@imagina/quser"
   ],
-  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.9.tgz",
+  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.14.tgz",
   "_shasum": "7b60df84a05e7cf9afe43b90592320c418683b33",
   "_spec": "@imagina/qcrud",
   "_where": "D:\\Imagina\\html\\copifam_app",
@@ -62,5 +62,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.0.13"
+  "version": "0.0.14"
 }
