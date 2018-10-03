@@ -124,11 +124,7 @@
   
         this.$options.components['crud-filter']().component ? this.customFilter = true : false;
         this.$options.components['crud-form']().component ? this.customForm = true : false;
-  
-  
-        if (this.record.id && !this.parentId) { // nested CRUD
-          this.addEditDialogFlag = true
-        }
+
         this.getRecordsHelper();
 			},
       allRules(){
