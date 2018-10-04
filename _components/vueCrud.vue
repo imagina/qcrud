@@ -168,7 +168,7 @@
         this.$store.commit(this.storeName + '/setRecord', null)
       },
 			async clearCache(){
-        console.log("this.storeName "+this.storeName)
+ 
         await helper.clearCache(this.storeName)
 			},
       async exportRecords(payload) {

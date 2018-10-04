@@ -1,6 +1,6 @@
 {
   "_from": "@imagina/qcrud",
-  "_id": "@imagina/qcrud@0.0.15",
+  "_id": "@imagina/qcrud@0.0.16",
   "_inBundle": false,
   "_integrity": "sha512-EkuL8f2aV6Ge4A4/j94KxaG6fOPDZCfSAKDnkJoEurWIzwuwilzARkbt8mNBVxZvNyxwXRbfLADMrrb50HFFEg==",
   "_location": "/@imagina/qcrud",
@@ -21,7 +21,7 @@
     "/",
     "/@imagina/quser"
   ],
-  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.15.tgz",
+  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.16.tgz",
   "_shasum": "7b60df84a05e7cf9afe43b90592320c418683b33",
   "_spec": "@imagina/qcrud",
   "_where": "D:\\Imagina\\html\\copifam_app",
@@ -38,7 +38,7 @@
     "@riophae/vue-treeselect": "0.0.30",
     "axios": "^0.18.0",
     "date-fns": "^1.29.0",
-    "export-from-json": "^1.0.15",
+    "export-from-json": "^1.0.16",
     "lodash.pick": "^4.4.0",
     "vuelidate": "^0.7.4"
   },
@@ -62,5 +62,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.0.15"
+  "version": "0.0.16"
 }
