@@ -20,13 +20,7 @@
 
     },
     created() {
-			
      this.initialize();
-    },
-
-    mounted () { },
-    beforeRouteEnter (to, from, next) { next(vm => { }) },
-    mounted() {
     },
 
     data() {
@@ -145,7 +139,8 @@
       async deleteRecord(payload) {
         this.loading = true
         await this.$store.dispatch(this.storeName + '/deleteRecord', payload)
-        await this.clearCache()
+        if(navigator.onLine)
+        	await this.clearCache()
         this.loading = false
       },
       async updateRecord(payload) {
@@ -181,7 +176,8 @@
         if (id) await this.getRecord({id}) // edit
         else this.setRecord() // add
         this.action = action
-        this.addEditDialogFlag = true
+				if(Object.keys(this.record).length)
+        	this.addEditDialogFlag = true
       },
       async addEditDialogSave(e) {
         this.$v.$touch();//validate all fields from form
@@ -193,7 +189,8 @@
 
         if (this.record.id) await this.updateRecord({record: this.record})
         else await this.createRecord({record: this.record, parentId: this.parentId})
-        await this.clearCache()
+				if(navigator.onLine)
+        	await this.clearCache()
         await this.getRecordsHelper()
         this.closeAddEditDialog()
       },
@@ -218,7 +215,9 @@
       async delete(id) {
         if (id) {
           await this.deleteRecord({id})
-          await this.getRecordsHelper()
+          if(navigator.onLine){
+            await this.getRecordsHelper()
+          }
         }
         this.closeAddEditDialog()
         this.loading = false;
@@ -234,7 +233,10 @@
 				if(this.totalRecs) {
           this.paginated.max = this.pagination.page.lastPage
           this.paginated.page = this.pagination.page.currentPage
-        }
+        }else{
+          this.paginated.max = 1
+          this.paginated.page = 1
+				}
 				this.loading = false
       },
       async submitFilter() {
