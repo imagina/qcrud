@@ -1,4 +1,4 @@
-##Module Vcrud
+##Module Qcrud
 A VueJS CRUD component which is customisable and extensible to suit more complex situations such as Nested CRUD, custom filters, custom form custom actions. Views Based in Quasar Framework.
 
 ##Requiered
@@ -14,23 +14,46 @@ A VueJS CRUD component which is customisable and extensible to suit more complex
 ##Usage
 
 ####Configuration 
-In each module directory `/_components` add: `/crud/configuration.js`
- 
- see `@imagina/vcrud/_components/crud/configuration.js` 
+In each module directory `/_components` create `/crud` directory and copy base configuration file from 
+`@imagina/vcrud/_components/crud/configuration.js`  
+rename with the crud name that you are going to implement like:
+ `@imagina/vcrud/_components/crud/yourCrudConfig.js`
+
 
 ####Routes 
 
-In each module file `/_router/routes` add:
+In your master proyect `src/router` create file `crudRoutes`:
 ```js
-import vueCrud from '@imagina/vcrud/_components/vueCrud'
+import Route from 'vue-routisan'
+import auth from '@imagina/quser/_router/middlewares/auth' //Middleware auth
+import access from '@imagina/quser/_router/middlewares/access' //Middleware access
 
-/*CRUD CONFIGURATIONS*/
-import * as configuration from '../_components/crud/configuration'
+/*YOUR MASTER LAYOUT*/
+import home from 'src/layouts/master'
 
-Route.view('/example', vueCrud).options({
+import vueCrud from '@imagina/qcrud/_components/vueCrud'
+
+/*CRUD TAX RATES CONFIGURATIONS*/
+import * as yourCrudConfig from 'src/components/crud/yourCrudConfig'
+
+/*CRUD ROUTES*/
+Route.view('/masterLayoutRoute', home)
+  .guard(auth)
+  .children(() => {
+    Route.view('/yourCrudRoute', vueCrud).options({
       name: 'alias',
-      meta: {permission: 'permission.to.this.route'},
+      meta: {permission: 'permission.for.this.route'},
       guard: access,
-      props: (route) => { return { storeName: 'examples', singularName:'example', parentId: route.params.parentId || null, ...configuration, doPage: false } },
+      props: (route) => { return { storeName: 'pluralnameinlowercase', singularName:'singularnameinlowercase', parentId: route.params.parentId || null, ...yourCrudConfig, doPage: false } },
     })
+  
+  })
+
+export default Route.all()
+
+```
+
+In `src/router/routes.js` add:
+```js
+import crudRoutes from './crudRoutes' //Routes Crud
 ```

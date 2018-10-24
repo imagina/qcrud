@@ -231,8 +231,10 @@
           filterData: this.filterData,
           parentId: this.parentId
         })
-        this.paginated.max = this.pagination.page.lastPage
-        this.paginated.page = this.pagination.page.currentPage
+				if(this.totalRecs) {
+          this.paginated.max = this.pagination.page.lastPage
+          this.paginated.page = this.pagination.page.currentPage
+        }
 				this.loading = false
       },
       async submitFilter() {

@@ -3,13 +3,15 @@ import exportFromJSON from 'export-from-json'
 import {alert} from '@imagina/qhelper/_plugins/alert'
 import {required, email, sameAs, minLength} from 'vuelidate/lib/validators';
 import _pick from 'lodash.pick'
-import departmentService from "user/_services/departments";
 
+// change this import for which you are going to use
+import service from "user/services/departments";
 
 
 export const crudActions = {
+  // base permission to make crud, example 'fhia.departments' + '.create' or + '.index' or + '.destroy' or + '.edit'
   permission: 'fhia.departments',
-  actionsData:{
+  actionsData: {
     add: {
       icon: 'add',
       tooltip: '',
@@ -31,22 +33,21 @@ export const crudActions = {
       //permission:''
     }
   }
-
+  
 }
 
 
-
 /**
- *
+ * titles for dataTable and values like names of backend data
  * @type {{inline: null, headers: *[], formatters: (function(*, *): *)}}
  */
 export const crudTable = {
   headers: [
-    { text: 'Title', value: 'title' },
-    { text: 'Updated At', value: 'updated_at' },
-    { text: 'Created At', value: 'created_at' }
+    {text: 'Title', value: 'title'},
+    {text: 'Updated At', value: 'updated_at'},
+    {text: 'Created At', value: 'created_at'}
   ]
-
+  
 }
 
 /**
@@ -78,7 +79,7 @@ export const crudTable = {
  *
  */
 export const crudFields = {
-  fieldsData:{
+  fieldsData: {
     title: {
       type: 'text',
       label: 'Department Title',
@@ -129,10 +130,10 @@ export const crudFilter = {
   filterData: {
     search: {
       type: 'text',
-      label:'',
+      label: '',
       placeHolder: 'Text Search',
       value: '',
-      cols:'4'
+      cols: '4'
     }
   }
 }
@@ -154,116 +155,122 @@ export const crudForm = {
 
 export const crudOps = { // CRUD
   export: async (payload) => {
-    const {filterData,crudTable} = payload // pagination
+    const {filterData, crudTable} = payload // pagination
     let filter = {};
     for (var key in filterData)
       filter[key] = filterData[key].value
-
+    
     let headers = []
     crudTable.headers.forEach(element => {
       headers.push(element.value);
     })
     console.log("headers", headers)
-
+    
     let headerData = [];
-    await departmentService.index(filter)
-      .then((response) =>{
-
-        response.data.forEach((element,index) => {
-
+    await service.index(filter)
+      .then((response) => {
+        
+        response.data.forEach((element, index) => {
+          
           headerData.push(_pick(element, headers))
         })
-
+        
         const data = headerData
         const fileName = 'Departments'
         const exportType = 'xls'
-        exportFromJSON({ data, fileName, exportType })
+        exportFromJSON({data, fileName, exportType})
       })
       .catch((error) => {
         let errorMessage = error.response.data.error ? error.response.data.error : 'No Departments found';
         alert.error(errorMessage, 'bottom')
       })
   },
-
+  
   delete: async (payload) => {
     let {id, ...attributes} = payload
-
-    await departmentService.delete(id)
+    
+    await service.delete(id)
       .then((response) => {
         alert.success('Department Deleted', 'top')
       }).catch(error => {
         let errorMessage = error.response.data.error ? error.response.data.error : 'Delete failed';
         alert.error(errorMessage, 'bottom')
       })
-
+    
   },
-
+  
   index: async (payload) => {
-    let data = []
+    let data = {
+      data: {},
+      meta: {}
+    }
     const {pagination, filterData} = payload
     let filter = {};
-
+    
     for (var key in filterData)
       filter[key] = filterData[key].value
-
-
-      let page = pagination.page ? pagination.page : 1;
-
-      await departmentService.index(filter,10,page)
+    
+    
+    let page = pagination.page ? pagination.page : 1;
+    
+    if (navigator.onLine)
+      await service.index(filter, 10, page)
         .then((response) => {
           data = response;
-      }).catch(error => {
-        let errorMessage = error.response.data.error ? error.response.data.error : 'No departments found';
-        alert.error(errorMessage, 'bottom')
-      })
-    return {records:data.data,pagination:data.meta}
+        }).catch(error => {
+          let errorMessage = error.response.data.error ? error.response.data.error : 'No departments found';
+          alert.error(errorMessage, 'bottom')
+        })
+    return {records: data.data, pagination: data.meta}
   },
-
-
+  
+  
   show: async (payload) => {
     const {id} = payload
-    let record = { }
+    let record = {}
     let fields = 'id,title,updated_at,created_at'
-    await departmentService.show(id,null,fields)
-      .then((response) => {
-        record = response.data;
-      }).catch(error => {
-        let errorMessage = error.response.data.error ? error.response.data.error : 'department not found';
-        alert.error(errorMessage, 'bottom')
-      })
+    
+    if (navigator.onLine)
+      await service.show(id, null, fields)
+        .then((response) => {
+          record = response.data;
+        }).catch(error => {
+          let errorMessage = error.response.data.error ? error.response.data.error : 'department not found';
+          alert.error(errorMessage, 'bottom')
+        })
     return record
   },
-
-
+  
+  
   create: async (payload) => {
     const {record: {id, ...attributes}} = payload
     let data = {
       attributes: attributes
     }
-    await departmentService.create(data)
+    await service.create(data)
       .then((response) => {
         alert.success('Department Created', 'top')
       }).catch(error => {
         let errorMessage = error.response.data.error ? error.response.data.error : 'Create failed';
         alert.error(errorMessage, 'bottom')
       })
-
+    
   },
-
+  
   update: async (payload) => {
     let {record: {id, ...attributes}} = payload
     let data = {
       id: id,
-      attributes:attributes
+      attributes: attributes
     }
-    await departmentService.update(data,data.id)
+    await service.update(data, data.id)
       .then((response) => {
         alert.success('Department Updated', 'top')
       }).catch(error => {
         let errorMessage = error.response.data.error ? error.response.data.error : 'Update failed';
         alert.error(errorMessage, 'bottom')
       })
-
+    
   }
-
+  
 }
