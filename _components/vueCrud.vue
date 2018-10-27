@@ -282,7 +282,7 @@
 
 				<div v-else class="row justify-end items-center q-my-md ">
 					<div v-for="(filter,index) in filterData" :key="index" :class="'col-12 q-px-md col-md-'+filter.cols">
-						<q-field>
+						<q-field class="q-py-sm">
 							<q-search
 								@keyup.enter="paginated.page = 1; getRecordsHelper();"
 								v-if="index=='search'"
