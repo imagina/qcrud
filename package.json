@@ -1,20 +1,20 @@
 {
-  "_from": "@imagina/qcrud",
+  "_from": "@imagina/qcrud@0.0.19",
   "_id": "@imagina/qcrud@0.0.19",
   "_inBundle": false,
-  "_integrity": "sha512-EkuL8f2aV6Ge4A4/j94KxaG6fOPDZCfSAKDnkJoEurWIzwuwilzARkbt8mNBVxZvNyxwXRbfLADMrrb50HFFEg==",
+  "_integrity": "sha512-iLkjcD6zqp/Ofjq+d3UOoA/JSe4Z/JZtGtVCKAW0RLGK5lEbrXiSjtNsKU+hvt46SH4j5JcmjBHV5A/CnCQLeA==",
   "_location": "/@imagina/qcrud",
   "_phantomChildren": {},
   "_requested": {
-    "type": "tag",
+    "type": "version",
     "registry": true,
-    "raw": "@imagina/qcrud",
+    "raw": "@imagina/qcrud@0.0.19",
     "name": "@imagina/qcrud",
     "escapedName": "@imagina%2fqcrud",
     "scope": "@imagina",
-    "rawSpec": "",
+    "rawSpec": "0.0.19",
     "saveSpec": null,
-    "fetchSpec": "latest"
+    "fetchSpec": "0.0.19"
   },
   "_requiredBy": [
     "#USER",
@@ -22,9 +22,9 @@
     "/@imagina/quser"
   ],
   "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.19.tgz",
-  "_shasum": "7b60df84a05e7cf9afe43b90592320c418683b33",
-  "_spec": "@imagina/qcrud",
-  "_where": "D:\\Imagina\\html\\copifam_app",
+  "_shasum": "429ac5a1dc6071212c72680e222c72332b2774dd",
+  "_spec": "@imagina/qcrud@0.0.19",
+  "_where": "D:\\Imagina\\html\\Applications\\fhia_app",
   "author": {
     "name": "https://www.imaginacolombia.com"
   },
@@ -39,8 +39,8 @@
     "axios": "^0.18.0",
     "date-fns": "^1.29.0",
     "export-from-json": "^1.0.14",
+    "lodash.clonedeep": "^4.5.0",
     "lodash.pick": "^4.4.0",
-    "lodash.clonedeep":"^4.5.0",
     "vuelidate": "^0.7.4"
   },
   "deprecated": false,

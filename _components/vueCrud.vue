@@ -84,6 +84,11 @@
         if (!value) return ''
         value = value.toString()
         return value.charAt(0).toUpperCase() + value.slice(1)
+      },
+
+      formatters:function (value) {
+        return this.crudTable.formatters(value);
+
       }
     },
 
@@ -93,7 +98,7 @@
 			'$route' (to, from) {
         this.initialize();
 			}
-      
+
     },
 
     methods: {
@@ -114,8 +119,8 @@
         this.headers = this.crudTable.headers || {}
         this.$options.components['crud-filter'] = this.crudFilter.FilterVue
         this.$options.components['crud-form'] = this.crudForm.FormVue
-  
-  
+
+
         this.$options.components['crud-filter']().component ? this.customFilter = true : false;
         this.$options.components['crud-form']().component ? this.customForm = true : false;
 
@@ -163,7 +168,7 @@
         this.$store.commit(this.storeName + '/setRecord', null)
       },
 			async clearCache(){
- 
+
         await helper.clearCache(this.storeName)
 			},
       async exportRecords(payload) {
@@ -322,7 +327,7 @@
 					<thead>
 					<tr class="text-left">
 						<th :key="header.value" v-for="header in headers">
-							{{ header.text | formatters(header.text) }}
+              {{ header.text  }}
 						</th>
 						<th>Actions</th>
 					</tr>
@@ -330,7 +335,7 @@
 					<tbody>
 					<tr v-for="(record,index) in records" :key="index">
 						<td :key="header.value" v-for="header in headers">
-							{{ record[header.value] | formatters(record[header.value])}}
+							{{header.type == 'datetime' ? $d(new Date(record[header.value]),'short',$q.i18n.lang) : record[header.value] }}
 						</td>
 
 						<td>
@@ -424,7 +429,7 @@
 
 					<div v-else class="row defaultForm">
 
-						
+
 						<div class="col-12 col-md-9 q-px-md">
 							<div class="row">
 								<div class="col-12 q-my-md"
@@ -445,7 +450,7 @@
 											:float-label="field.label+':'"
 											:value="record[field.name]"
 										/>
-										
+
 										<q-select
 											v-if="field.type=='select'"
 											:multiple="field.multiple ? field.multiple : false"
@@ -499,7 +504,7 @@
 								</div>
 							</div>
 						</div>
-		
+
 						<div class="row">
 						<!--=== SAVE ===-->
 						<div class="col-12 text-center q-my-md">
@@ -518,7 +523,7 @@
 
 
 		<!--======================== PAGE STICKY BUTTONS ======================-->
- 
+
 		<!-- EXPORT BUTTON -->
 		<q-page-sticky v-if="records.length" position="bottom-right" :offset="[18, 65]">
 
