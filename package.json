@@ -1,6 +1,6 @@
 {
-  "_from": "@imagina/qcrud@0.0.19",
-  "_id": "@imagina/qcrud@0.0.19",
+  "_from": "@imagina/qcrud@0.0.20",
+  "_id": "@imagina/qcrud@0.0.20",
   "_inBundle": false,
   "_integrity": "sha512-iLkjcD6zqp/Ofjq+d3UOoA/JSe4Z/JZtGtVCKAW0RLGK5lEbrXiSjtNsKU+hvt46SH4j5JcmjBHV5A/CnCQLeA==",
   "_location": "/@imagina/qcrud",
@@ -8,22 +8,22 @@
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "@imagina/qcrud@0.0.19",
+    "raw": "@imagina/qcrud@0.0.20",
     "name": "@imagina/qcrud",
     "escapedName": "@imagina%2fqcrud",
     "scope": "@imagina",
-    "rawSpec": "0.0.19",
+    "rawSpec": "0.0.20",
     "saveSpec": null,
-    "fetchSpec": "0.0.19"
+    "fetchSpec": "0.0.20"
   },
   "_requiredBy": [
     "#USER",
     "/",
     "/@imagina/quser"
   ],
-  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.19.tgz",
+  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.20.tgz",
   "_shasum": "429ac5a1dc6071212c72680e222c72332b2774dd",
-  "_spec": "@imagina/qcrud@0.0.19",
+  "_spec": "@imagina/qcrud@0.0.20",
   "_where": "D:\\Imagina\\html\\Applications\\fhia_app",
   "author": {
     "name": "https://www.imaginacolombia.com"
@@ -63,5 +63,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.0.19"
+  "version": "0.0.20"
 }
