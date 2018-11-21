@@ -335,7 +335,7 @@
 					<tbody>
 					<tr v-for="(record,index) in records" :key="index">
 						<td :key="header.value" v-for="header in headers">
-							{{header.type == 'datetime' ? $d(new Date(record[header.value]),'short',$q.i18n.lang) : record[header.value] }}
+							{{header.type == 'datetime' ? $d($moment(record[header.value], 'YYYY-MM-DD HH:mm').toDate(),'short',$q.i18n.lang) : record[header.value] }}
 						</td>
 
 						<td>
