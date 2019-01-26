@@ -1,14 +1,20 @@
 {
-  "_from": "@imagina/qcrud@0.0.21",
-  "_id": "@imagina/qcrud@0.0.21",
+  "_args": [
+    [
+      "@imagina/qcrud@0.0.22",
+      "C:\\imagina\\html\\fhaproducts2018_frontend"
+    ]
+  ],
+  "_from": "@imagina/qcrud@0.0.22",
+  "_id": "@imagina/qcrud@0.0.22",
   "_inBundle": false,
-  "_integrity": "sha512-iLkjcD6zqp/Ofjq+d3UOoA/JSe4Z/JZtGtVCKAW0RLGK5lEbrXiSjtNsKU+hvt46SH4j5JcmjBHV5A/CnCQLeA==",
+  "_integrity": "sha512-WUjLI/9c/1MZtYbb4548JjW7f2Ya0mEzN9d/VXyti0jH6P9VMMYwqabRniH9wJxnnRUvv6PNWxQSAHthPG+yFA==",
   "_location": "/@imagina/qcrud",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "@imagina/qcrud@0.0.21",
+    "raw": "@imagina/qcrud@0.0.22",
     "name": "@imagina/qcrud",
     "escapedName": "@imagina%2fqcrud",
     "scope": "@imagina",
@@ -17,14 +23,13 @@
     "fetchSpec": "0.0.21"
   },
   "_requiredBy": [
-    "#USER",
     "/",
     "/@imagina/quser"
   ],
   "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.21.tgz",
   "_shasum": "429ac5a1dc6071212c72680e222c72332b2774dd",
-  "_spec": "@imagina/qcrud@0.0.21",
-  "_where": "D:\\Imagina\\html\\Applications\\fhia_app",
+  "_spec": "0.0.21",
+  "_where": "C:\\imagina\\html\\fhaproducts2018_frontend",
   "author": {
     "name": "https://www.imaginacolombia.com"
   },
@@ -63,5 +68,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.0.21"
+  "version": "0.0.22"
 }

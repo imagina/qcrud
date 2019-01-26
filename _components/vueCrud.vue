@@ -8,6 +8,7 @@
     props: {
       parentId: {type: String, default: null},
       storeName: {type: String, required: true},
+      pluralName: {type: String, required: true},
       singularName: {type: String, required: true},
       crudActions: {type: Object, required: true},
       crudFields: {type: Object, required: true},
@@ -278,7 +279,7 @@
 				 class="q-layout-page row justify-center layout-padding">
 
 			<div class="text_title text-blue-9 col-xs-12 q-title text-right">
-				<span>{{storeName | capitalize}}</span>
+				<span>{{pluralName | capitalize}}</span>
 
 
 			</div>
@@ -335,7 +336,8 @@
 					<tbody>
 					<tr v-for="(record,index) in records" :key="index">
 						<td :key="header.value" v-for="header in headers">
-							{{header.type == 'datetime' ? $d($moment(record[header.value], 'YYYY-MM-DD HH:mm').toDate(),'short',$q.i18n.lang) : record[header.value] }}
+							{{header.type == 'datetime' ? $d($moment(record[header.value], 'YYYY-MM-DD HH:mm').toDate(),'short',$q.i18n.lang) :
+							header.type == 'status' ? record[header.value] == "1" || !record[header.value] ? 'enabled': 'disabled' : record[header.value] }}
 						</td>
 
 						<td>
@@ -386,7 +388,7 @@
 					 style="margin-top: 60px">
 				<p class="text-faded"
 				>
-					No <b>{{storeName | capitalize}}</b> found...
+					No <b>{{pluralName | capitalize}}</b> found...
 
 				</p>
 			</div>
