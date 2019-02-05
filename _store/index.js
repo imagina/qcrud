@@ -11,6 +11,12 @@ export default {
     filterData: {},
     defaultRec: {},
     fieldsData: {},
+    configNames: {
+      storeName:'',
+      pluralName:'',
+      singularName:''
+    },
+    
     crudOps: {
       export: null,
       index: null,
@@ -66,29 +72,29 @@ export default {
     setPagination({commit}, payload) {
       commit('setPagination', payload)
     },
-    async deleteRecord({commit, getters}, payload) {
-      await getters.crudOps.delete(payload)
+    async deleteRecord({commit, getters, state}, payload) {
+      await getters.crudOps.delete(payload, state.configNames)
     },
-    async getRecord({commit, getters}, payload) {
-      let record = await getters.crudOps.show(payload)
+    async getRecord({commit, getters, state}, payload) {
+      let record = await getters.crudOps.show(payload, state.configNames)
       commit('setRecord', record)
     },
-    async getRecords({commit, getters}, payload) {
+    async getRecords({commit, getters, state}, payload) {
       //payload.user = this.getters.user
-      let {records, pagination} = await getters.crudOps.index(payload)
+      let {records, pagination} = await getters.crudOps.index(payload, state.configNames)
       const totalRecs = records.length
       commit('setPagination', pagination)
       commit('setFilterData', payload.filterData)
       commit('setRecords', {records, totalRecs})
     },
-    async exportRecords({commit, getters}, payload) {
-      await getters.crudOps.export(payload)
+    async exportRecords({commit, getters, state}, payload) {
+      await getters.crudOps.export(payload, state.configNames)
     },
-    async updateRecord({commit, getters}, payload) {
-      await getters.crudOps.update(payload)
+    async updateRecord({commit, getters, state}, payload) {
+      await getters.crudOps.update(payload, state.configNames)
     },
-    async createRecord({commit, getters, dispatch}, payload) {
-      await getters.crudOps.create(payload)
+    async createRecord({commit, getters, state}, payload) {
+      await getters.crudOps.create(payload, state.configNames)
     }
   }
 }

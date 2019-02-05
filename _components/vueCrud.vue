@@ -22,6 +22,7 @@
     },
     created() {
      this.initialize();
+
     },
 
     data() {
@@ -114,6 +115,9 @@
           store.state[name].fieldsData = this.crudFields.fieldsData
           store.state[name].crudData = this.crudActions
           store.state[name].crudOps = this.crudOps
+          store.state[name].configNames.storeName = this.storeName
+          store.state[name].configNames.pluralName = this.pluralName
+          store.state[name].configNames.singularName = this.singularName
         } else { // re-use the already existing module
         }
         this.$options.filters.formatters = this.crudTable.formatters // create the formatters programatically
@@ -427,7 +431,7 @@
 
 				<div class="layout-padding">
 
-					<crud-form v-if="customForm"  :record="record" :parentId="parentId" :storeName="storeName" />
+					<crud-form v-if="customForm" :record="record" :storeName="storeName"  @closeModal="closeAddEditDialog" @getRecords="getRecordsHelper" @clearCache="clearCache"/>
 
 					<div v-else class="row defaultForm">
 

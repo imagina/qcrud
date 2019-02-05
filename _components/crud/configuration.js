@@ -5,13 +5,28 @@ import {required, email, sameAs, minLength} from 'vuelidate/lib/validators';
 import _pick from 'lodash.pick'
 
 // change this import for which you are going to use
-import service from "user/services/departments";
+import service from '../../_services/profile/index'
+
+/**
+ *
+ * @type {{inline: null, headers: *[], formatters: (function(*, *): *)}}
+ */
+export const crudTable = {
+  inline: null,
+  headers: [
+    { text: 'Id', value: 'id' },
+    { text: 'Title', value: 'title' },
+    { text: 'Updated At', value: 'updatedAt', type: 'datetime' },
+    { text: 'Created At', value: 'createdAt', type: 'datetime' }
+  ],
+  
+}
 
 
 export const crudActions = {
   // base permission to make crud, example 'fhia.departments' + '.create' or + '.index' or + '.destroy' or + '.edit'
   permission: 'fhia.departments',
-  actionsData: {
+  actionsData:{
     add: {
       icon: 'add',
       tooltip: '',
@@ -36,50 +51,8 @@ export const crudActions = {
   
 }
 
-
-/**
- * titles for dataTable and values like names of backend data
- * @type {{inline: null, headers: *[], formatters: (function(*, *): *)}}
- */
-export const crudTable = {
-  headers: [
-    {text: 'Title', value: 'title'},
-    {text: 'Updated At', value: 'updated_at'},
-    {text: 'Created At', value: 'created_at'}
-  ]
-  
-}
-
-/**
- *
- * @type {{
- * fieldsData: {
- *  db_column: {
- *    type: 'text' or 'select',
- *    label: string,
- *    name: string,
- *    placeHolder: string,
- *    multiple: boolean,
- *    filter: boolean,
- *    chips: boolean,
- *    radio: boolean,
- *    options: [
- *      {
- *        label: string,
- *        icon: string,
- *        value: string or integer
- *      }
- *    optionsFn: async function,
- *    viewPosition: 'left' or 'right',
- *    value: string or integer,
- *    rules: { vuelidate rules }
- *  }
- * }
- * }}
- *
- */
 export const crudFields = {
-  fieldsData: {
+  fieldsData:{
     title: {
       type: 'text',
       label: 'Department Title',
@@ -93,69 +66,35 @@ export const crudFields = {
   }
 }
 
-
-/**
- *
- * @type {{
- * FilterVue: (function(): {}),
- * filterData: {
- *  filterName: {
- *    type: 'text' or 'select',
- *    label: string,
- *    name: string,
- *    placeHolder: string,
- *    multiple: boolean,
- *    filter: boolean,
- *    chips: boolean,
- *    radio: boolean,
- *    options: [
- *      {
- *        label: string,
- *        icon: string,
- *        value: string or integer
- *      }
- *    optionsFn: async function,
- *    viewPosition: 'left' or 'right',
- *    value: string or integer,
- *    rules: { vuelidate rules }
- *  }
- * }
- * }}
- *
- */
 export const crudFilter = {
-  FilterVue: () => ({ // you can set your custom filter view
+  FilterVue: () => ({// you can set your custom filter view
     //component: import('./departmentFilter.vue')
   }),
   filterData: {
     search: {
       type: 'text',
-      label: '',
+      label:'',
       placeHolder: 'Text Search',
       value: '',
-      cols: '4'
+      cols:'4'
     }
   }
 }
 
-
-/**
- *
- * @type {{FormVue: (function(): {}), defaultRec: (function(): {})}}
- */
 export const crudForm = {
   FormVue: () => ({
-    //component: import('./configurationForm.vue')
+    //component: import('./departmentForm.vue')
   }),
-  defaultRec: () => ({ // here you can put de initial values for the record
+  defaultRec: () => ({ // you can use function to initialize record as well
     title: ''
+    // created: format(new Date(), 'YYYY-MM-DD HH:mm:ss'), // example for date format
   })
 }
 
-
 export const crudOps = { // CRUD
-  export: async (payload) => {
-    const {filterData, crudTable} = payload // pagination
+  
+  export: async (payload, configNames) => {
+    const {filterData,crudTable} = payload // pagination
     let filter = {};
     for (var key in filterData)
       filter[key] = filterData[key].value
@@ -164,113 +103,124 @@ export const crudOps = { // CRUD
     crudTable.headers.forEach(element => {
       headers.push(element.value);
     })
-    console.log("headers", headers)
+    
+    let params = {
+      params:{
+        filter:filter,
+        fields:'id,title'
+      }
+    }
+    
     
     let headerData = [];
-    await service.index(filter)
-      .then((response) => {
+    await service.crud.index(configNames.storeName,params)
+      .then((response) =>{
         
-        response.data.forEach((element, index) => {
+        response.data.forEach((element,index) => {
           
           headerData.push(_pick(element, headers))
         })
         
         const data = headerData
-        const fileName = 'Departments'
+        const fileName = configNames.pluralName
         const exportType = 'xls'
-        exportFromJSON({data, fileName, exportType})
+        exportFromJSON({ data, fileName, exportType })
       })
       .catch((error) => {
-        let errorMessage = error.response.data.error ? error.response.data.error : 'No Departments found';
+        let errorMessage = error ? error : 'No '+ configNames.pluralName +' found';
         alert.error(errorMessage, 'bottom')
       })
   },
   
-  delete: async (payload) => {
+  
+  delete: async (payload, configNames) => {
     let {id, ...attributes} = payload
     
-    await service.delete(id)
+    await service.crud.delete(configNames.storeName,id)
       .then((response) => {
-        alert.success('Department Deleted', 'top')
+        alert.success(configNames.singularName +' Deleted', 'top')
       }).catch(error => {
-        let errorMessage = error.response.data.error ? error.response.data.error : 'Delete failed';
+        let errorMessage = error ? error: 'Delete failed';
         alert.error(errorMessage, 'bottom')
       })
     
   },
   
-  index: async (payload) => {
-    let data = {
-      data: {},
-      meta: {}
-    }
+  index: async (payload, configNames) => {
+    let data = []
     const {pagination, filterData} = payload
     let filter = {};
     
     for (var key in filterData)
       filter[key] = filterData[key].value
     
+    let params = {
+      params:{
+        filter:filter,
+        page: pagination.page ? pagination.page : 1,
+        take: 10,
+        fields:'id,title,updated_at,created_at'
+      }
+    }
     
-    let page = pagination.page ? pagination.page : 1;
-    
-    if (navigator.onLine)
-      await service.index(filter, 10, page)
-        .then((response) => {
-          data = response;
-        }).catch(error => {
-          let errorMessage = error.response.data.error ? error.response.data.error : 'No departments found';
-          alert.error(errorMessage, 'bottom')
-        })
-    return {records: data.data, pagination: data.meta}
+    await service.crud.index(configNames.storeName,params)
+      .then((response) => {
+        data = response;
+      }).catch(error => {
+        let errorMessage = error ? error : 'No '+configNames.pluralName+' found';
+        alert.error(errorMessage, 'bottom')
+      })
+    return {records:data.data,pagination:data.meta}
   },
   
   
-  show: async (payload) => {
+  show: async (payload, configNames) => {
     const {id} = payload
-    let record = {}
-    let fields = 'id,title,updated_at,created_at'
-    
-    if (navigator.onLine)
-      await service.show(id, null, fields)
-        .then((response) => {
-          record = response.data;
-        }).catch(error => {
-          let errorMessage = error.response.data.error ? error.response.data.error : 'department not found';
-          alert.error(errorMessage, 'bottom')
-        })
+    let record = { }
+    let params = {
+      params:{
+        fields:'id,title,updated_at,created_at'
+      }
+    }
+    await service.crud.show(configNames.storeName,id,params)
+      .then((response) => {
+        record = response.data;
+      }).catch(error => {
+        let errorMessage = error ? error : configNames.singularName+' not found';
+        alert.error(errorMessage, 'bottom')
+      })
     return record
   },
   
   
-  create: async (payload) => {
+  create: async (payload, configNames) => {
     const {record: {id, ...attributes}} = payload
-    let data = {
-      attributes: attributes
-    }
-    await service.create(data)
+    
+    await service.crud.create(configNames.storeName,attributes)
       .then((response) => {
-        alert.success('Department Created', 'top')
+        alert.success(configNames.singularName+' Created', 'top')
       }).catch(error => {
-        let errorMessage = error.response.data.error ? error.response.data.error : 'Create failed';
+        let errorMessage = error ? error : 'Create failed';
         alert.error(errorMessage, 'bottom')
       })
     
   },
   
-  update: async (payload) => {
+  update: async (payload, configNames) => {
     let {record: {id, ...attributes}} = payload
-    let data = {
-      id: id,
-      attributes: attributes
-    }
-    await service.update(data, data.id)
+    attributes["id"] = id;
+    await service.crud.update(configNames.storeName,id,attributes)
       .then((response) => {
-        alert.success('Department Updated', 'top')
+        alert.success(configNames.singularName+' Updated', 'top')
       }).catch(error => {
-        let errorMessage = error.response.data.error ? error.response.data.error : 'Update failed';
+        let errorMessage = error ? error : 'Update failed';
         alert.error(errorMessage, 'bottom')
       })
     
   }
   
 }
+
+
+
+

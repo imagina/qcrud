@@ -41,10 +41,18 @@ Route.view('/masterLayoutRoute', home)
   .guard(auth)
   .children(() => {
     Route.view('/yourCrudRoute', vueCrud).options({
-      name: 'alias',
+      name: 'route.name',
       meta: {permission: 'permission.for.this.route'},
       guard: access,
-      props: (route) => { return { storeName: 'pluralnameinlowercase', singularName:'singularnameinlowercase', parentId: route.params.parentId || null, ...yourCrudConfig, doPage: false } },
+      props: (route) => {
+        return {
+          storeName: 'storage.name.for.broadcast.clear.cache', //config.name for services
+          singularName: 'singular name',
+          pluralName: 'plural name',
+          parentId: route.params.parentId || null, ...yourCrudConfig,
+          doPage: false
+        }
+      },
     })
   
   })
