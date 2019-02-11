@@ -51,6 +51,34 @@ export const crudActions = {
   
 }
 
+/**
+ *
+ * @type {{
+ * fieldsData: {
+ *  db_column: {
+ *    type: 'text' or 'select',
+ *    label: string,
+ *    name: string,
+ *    placeHolder: string,
+ *    multiple: boolean,
+ *    filter: boolean,
+ *    chips: boolean,
+ *    radio: boolean,
+ *    options: [
+ *      {
+ *        label: string,
+ *        icon: string,
+ *        value: string or integer
+ *      }
+ *    optionsFn: async function,
+ *    viewPosition: 'left' or 'right',
+ *    value: string or integer,
+ *    rules: { vuelidate rules }
+ *  }
+ * }
+ * }}
+ *
+ */
 export const crudFields = {
   fieldsData:{
     title: {
@@ -66,6 +94,36 @@ export const crudFields = {
   }
 }
 
+
+/**
+ *
+ * @type {{
+ * FilterVue: (function(): {}),
+ * filterData: {
+ *  filterName: {
+ *    type: 'text' or 'select',
+ *    label: string,
+ *    name: string,
+ *    placeHolder: string,
+ *    multiple: boolean,
+ *    filter: boolean,
+ *    chips: boolean,
+ *    radio: boolean,
+ *    options: [
+ *      {
+ *        label: string,
+ *        icon: string,
+ *        value: string or integer
+ *      }
+ *    optionsFn: async function,
+ *    viewPosition: 'left' or 'right',
+ *    value: string or integer,
+ *    rules: { vuelidate rules }
+ *  }
+ * }
+ * }}
+ *
+ */
 export const crudFilter = {
   FilterVue: () => ({// you can set your custom filter view
     //component: import('./departmentFilter.vue')

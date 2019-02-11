@@ -1,8 +1,13 @@
 <script>
+  /* Plugins */
   import _cloneDeep from 'lodash.clonedeep'
   import {alert} from '@imagina/qhelper/_plugins/alert'
 	import crud from '../_store/index'
   import {helper} from '@imagina/qhelper/_plugins/helper'
+  import store from 'src/store/index'
+  /* Components */
+  import Treeselect from '@riophae/vue-treeselect';
+  import '@riophae/vue-treeselect/dist/vue-treeselect.css';
 
   export default {
     props: {
@@ -20,10 +25,21 @@
       doPage: {type: Boolean, default: true},
 
     },
+  
+    components: {
+      Treeselect
+    },
+		
     created() {
+		
      this.initialize();
 
     },
+    async mounted () {
+      for (var key in this.fieldsData) {
+        if (this.fieldsData[key].optionsFn) this.fieldsData[key].options = await this.fieldsData[key].optionsFn()
+      }
+		},
 
     data() {
       return {
@@ -78,7 +94,7 @@
       }, // not used
       record() {
         return this.$store.getters[this.storeName + '/record']
-      },
+      }
     },
 
     filters: {
@@ -102,7 +118,7 @@
 			}
 
     },
-
+			
     methods: {
       initialize(){
         if (!this.$t || !this.$i18n) this.$t = null // if i18n is not found
@@ -450,13 +466,13 @@
 									>
 
 										<q-input
-											v-if="field.type!='select' && field.type!='select-multiple'"
+											v-if="field.type!='select' && field.type!='treeselect'"
 											:type="field.type"
 											v-model="record[field.name]"
 											:float-label="field.label+':'"
 											:value="record[field.name]"
 										/>
-
+										
 										<q-select
 											v-if="field.type=='select'"
 											:multiple="field.multiple ? field.multiple : false"
@@ -464,10 +480,20 @@
 											:filter="field.filter ? field.filter : false"
 											:radio="field.radio ? field.radio : false"
 											v-model="record[field.name]"
-											:options="field.options ? field.options : field.optionsFn ? field.options : []"
+											:options="field.options ? field.options : []"
+										/>
+										
+										<treeselect
+											v-if="field.type=='treeselect'"
+			
+											:multiple="field.multiple ? field.multiple : false"
+											:options="field.options ? field.options : []"
+											:value-consists-of="field.valueConsistsOf"
+											v-model="record[field.name]"
+											:placeholder="field.placeHolder"
 										/>
 									</q-field>
-
+									
 								</div>
 							</div>
 
@@ -490,11 +516,12 @@
 
 										<q-input
 											:type="field.type"
-											v-if="field.type!='select' && field.type!='select-multiple'"
+											v-if="field.type!='select' && field.type!='treeselect'"
 											v-model="record[field.name]"
 											:float-label="field.label+':'"
 											:value="record[field.name]"
 										/>
+						
 										<q-select
 											v-if="field.type=='select'"
 											:multiple="field.multiple ? field.multiple : false"
@@ -503,10 +530,20 @@
 											:radio="field.radio ? field.radio : false"
 											v-model="record[field.name]"
 											:float-label="field.label+':'"
-											:options="field.options ? field.options : field.optionsFn ? field.options : []"
+											:options="field.options ? field.options : []"
+										/>
+										
+										<treeselect
+											v-if="field.type=='treeselect'"
+											
+											:multiple="field.multiple ? field.multiple : false"
+											:options="field.options ? field.options : []"
+											:value-consists-of="field.valueConsistsOf"
+											v-model="record[field.name]"
+											:placeholder="field.placeHolder"
 										/>
 									</q-field>
-
+						
 								</div>
 							</div>
 						</div>
@@ -579,7 +616,7 @@
 
 </template>
 
-<style lang="css" scoped>
+<style lang="stylus" scoped>
 	.make-modal {
 		margin: 0;
 		position: fixed;
@@ -590,5 +627,8 @@
 		min-width: 100%;
 		min-height: 100%;
 		background-color: #fff;
+	}
+	.q-field-bottom{
+		margin: -1px;
 	}
 </style>
