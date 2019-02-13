@@ -144,7 +144,10 @@
 
         this.$options.components['crud-filter']().component ? this.customFilter = true : false;
         this.$options.components['crud-form']().component ? this.customForm = true : false;
-
+        this.paginated = {
+          page: 1,
+            max: 1
+        },
         this.getRecordsHelper();
 			},
       allRules(){
@@ -295,7 +298,7 @@
 
 		<!--======================== FILTER AND LIST ======================-->
 
-		<div id="users-index"
+		<div id="vueCrud"
 				 class="q-layout-page row justify-center layout-padding">
 
 			<div class="text_title text-blue-9 col-xs-12 q-title text-right">
@@ -360,7 +363,7 @@
 							header.type == 'status' ? record[header.value] == "1" || !record[header.value] ? 'enabled': 'disabled' : record[header.value] }}
 						</td>
 
-						<td>
+						<td  class="text-center">
 
 							<q-btn
 								v-if="auth.hasAccess(crudActions.permission+'.edit') && (crudActions.actionsData.edit.permission ? auth.hasAccess(crudActions.actionsData.edit.permission) : true)"
@@ -617,6 +620,11 @@
 </template>
 
 <style lang="stylus" scoped>
+	#vueCrud{
+		tr {
+			border .1em solid #e5e5e5
+		}
+	}
 	.make-modal {
 		margin: 0;
 		position: fixed;
