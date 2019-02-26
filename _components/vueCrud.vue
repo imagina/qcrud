@@ -290,12 +290,6 @@
 
 	<q-page class="relative-position">
 
-		<!--======================== LOADING ======================-->
-
-		<q-inner-loading :visible="loading" style="z-index:1001; max-height: 100vh">
-			<q-spinner-hourglass size="50px" color="primary"/>
-		</q-inner-loading>
-
 		<!--======================== FILTER AND LIST ======================-->
 
 		<div id="vueCrud"
@@ -614,6 +608,15 @@
 
 		</q-page-sticky>
 
+		<!--======================== LOADING ======================-->
+
+		<!--Inner loading-->
+		<q-inner-loading :visible="loading">
+			<div class="q-box-inner-loading">
+				<q-spinner-hourglass size="50px" color="primary"/>
+				<h6 class="q-ma-none text-primary q-title">Loading...</h6>
+			</div>
+		</q-inner-loading>
 
 	</q-page>
 
