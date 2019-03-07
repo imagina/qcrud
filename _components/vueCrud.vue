@@ -366,7 +366,7 @@
 						<td  class="text-center">
 
 							<q-btn
-								v-if="auth.hasAccess(crudActions.permission+'.edit') && (crudActions.actionsData.edit.permission ? auth.hasAccess(crudActions.actionsData.edit.permission) : true)"
+								v-if="!crudActions.permission || auth.hasAccess(crudActions.permission+'.edit') && (crudActions.actionsData.edit.permission ? auth.hasAccess(crudActions.actionsData.edit.permission) : true)"
 								round
 								class="q-mx-xs"
 								:icon="crudActions.actionsData.edit.icon"
@@ -384,7 +384,7 @@
 							</q-btn>
 
 							<q-btn
-								v-if="auth.hasAccess(crudActions.permission+'.destroy') && (crudActions.actionsData.delete.permission ? auth.hasAccess(crudActions.actionsData.delete.permission) : true)"
+								v-if="!crudActions.permission || auth.hasAccess(crudActions.permission+'.destroy') && (crudActions.actionsData.delete.permission ? auth.hasAccess(crudActions.actionsData.delete.permission) : true)"
 								round
 								class="q-mx-xs"
 								:icon="crudActions.actionsData.delete.icon"
@@ -570,48 +570,59 @@
 
 		<!--======================== PAGE STICKY BUTTONS ======================-->
 
-		<!-- EXPORT BUTTON -->
+		<!-- EXPORT BUTTON
 		<q-page-sticky v-if="records.length" position="bottom-right" :offset="[18, 65]">
-
-			<q-btn
-				fab-mini
-				color="primary"
-				:icon="crudActions.actionsData.export.icon"
-				class="animate-pop"
-				@click="exportBtnClick"
-			/>
-
-			<q-tooltip
-				class="bg-primary"
-				anchor="center left"
-				self="center right"
-				:offset="[10, 10]">
-				 {{crudActions.actionsData.export.tooltip !='' ? crudActions.actionsData.export.tooltip : 'Export ' + singularName | capitalize}}
-			</q-tooltip>
-
+		
+	
 		</q-page-sticky>
-
+		-->
 		<!-- ADD BUTTON -->
 		<q-page-sticky
-			v-if="auth.hasAccess(crudActions.permission+'.create') && (crudActions.actionsData.add.permission ? auth.hasAccess(crudActions.actionsData.add.permission) : true)"
 			position="bottom-right"
 			:offset="[18, 18]">
-
-			<q-btn
-				fab-mini
-				color="secondary"
-				icon="add"
-				class="animate-pop"
-				@click="addEditDialogOpen(false,'Create')"
-			/>
+			
+			<div class="column items-center">
+				<q-btn
+					fab-mini
+          v-if="!crudActions.permission || auth.hasAccess(crudActions.permission+'.export') && (crudActions.actionsData.export.permission ? auth.hasAccess(crudActions.actionsData.export.permission) : true)"
+					color="primary"
+					:icon="crudActions.actionsData.export.icon ? crudActions.actionsData.export.icon : 'add'"
+					class="animate-pop"
+					@click="exportBtnClick">
+				
+				
 				<q-tooltip
-					class="bg-secondary"
+					class="bg-primary"
 					anchor="center left"
 					self="center right"
 					:offset="[10, 10]">
-					{{crudActions.actionsData.add.tooltip !='' ? crudActions.actionsData.add.tooltip : 'New ' + singularName | capitalize}}
+					{{crudActions.actionsData.export.tooltip !='' ? crudActions.actionsData.export.tooltip : 'Export ' + singularName | capitalize}}
 				</q-tooltip>
-
+				</q-btn>
+				
+				
+				<q-btn
+					fab-mini
+          v-if="!crudActions.permission || auth.hasAccess(crudActions.permission+'.create') && (crudActions.actionsData.add.permission ? auth.hasAccess(crudActions.actionsData.add.permission) : true)"
+					color="secondary"
+					icon="add"
+					class="animate-pop q-mt-sm"
+					@click="addEditDialogOpen(false,'Create')"
+				>
+					<q-tooltip
+						class="bg-secondary"
+						anchor="center left"
+						self="center right"
+						:offset="[10, 10]">
+						{{crudActions.actionsData.add.tooltip !='' ? crudActions.actionsData.add.tooltip : 'New ' + singularName | capitalize}}
+					</q-tooltip>
+				</q-btn>
+				
+		
+	
+			</div>
+	
+			
 		</q-page-sticky>
 
 
