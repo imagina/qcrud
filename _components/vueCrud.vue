@@ -353,8 +353,9 @@
 					<tbody>
 					<tr v-for="(record,index) in records" :key="index">
 						<td :key="header.value" v-for="header in headers">
+  
 							{{header.type == 'datetime' ? $d($moment(record[header.value], 'YYYY-MM-DD HH:mm').toDate(),'short',$q.i18n.lang) :
-							header.type == 'status' ? record[header.value] == "1" || !record[header.value] ? 'enabled': 'disabled' : record[header.value] }}
+							header.type == 'status' ? record[header.value] == 1 || record[header.value] ? 'enabled': 'disabled' : record[header.value] }}
 						</td>
 
 						<td  class="text-center">
