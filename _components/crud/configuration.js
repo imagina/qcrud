@@ -5,7 +5,7 @@ import {required, email, sameAs, minLength} from 'vuelidate/lib/validators';
 import _pick from 'lodash.pick'
 
 // change this import for which you are going to use
-import service from '../../_services/profile/index'
+import service from '@imagina/quser/_services/profile/index'
 
 /**
  *
