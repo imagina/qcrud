@@ -1,35 +1,48 @@
 {
   "_args": [
     [
-      "@imagina/qcrud@0.0.24",
-      "C:\\imagina\\html\\fhaproducts2018_frontend"
+      "@imagina/qcrud@0.0.26",
+      "D:\\imagina\\projects\\baseQuasarFrontend\\front-end"
     ]
   ],
-  "_from": "@imagina/qcrud@0.0.24",
-  "_id": "@imagina/qcrud@0.0.24",
+  "_from": "@imagina/qcrud@0.0.26",
+  "_id": "@imagina/qcrud@0.0.26",
   "_inBundle": false,
-  "_integrity": "sha512-WUjLI/9c/1MZtYbb4548JjW7f2Ya0mEzN9d/VXyti0jH6P9VMMYwqabRniH9wJxnnRUvv6PNWxQSAHthPG+yFA==",
+  "_integrity": "sha512-0aZFU2hqSvvpB+36TRSVqABW44JDVBDd57TQIU17uTMGixSYQyW8IoQoZ1L4xgb1L2juic8AdR2mosp8kjPQlQ==",
   "_location": "/@imagina/qcrud",
-  "_phantomChildren": {},
+  "_phantomChildren": {
+    "@imagina/qcrud": "0.0.26",
+    "@imagina/qhelper": "0.0.24",
+    "axios": "0.18.0",
+    "date-fns": "1.30.1",
+    "easings-css": "1.0.0",
+    "export-from-json": "1.1.3",
+    "fuzzysearch": "1.0.3",
+    "google-material-color": "1.3.1",
+    "lodash": "4.17.11",
+    "lodash.pick": "4.4.0",
+    "vuelidate": "0.7.4"
+  },
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "@imagina/qcrud@0.0.24",
+    "raw": "@imagina/qcrud@0.0.26",
     "name": "@imagina/qcrud",
     "escapedName": "@imagina%2fqcrud",
     "scope": "@imagina",
-    "rawSpec": "0.0.21",
+    "rawSpec": "0.0.26",
     "saveSpec": null,
-    "fetchSpec": "0.0.21"
+    "fetchSpec": "0.0.26"
   },
   "_requiredBy": [
     "/",
+    "/@imagina/qcrud/@imagina/quser",
     "/@imagina/quser"
   ],
-  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.21.tgz",
-  "_shasum": "429ac5a1dc6071212c72680e222c72332b2774dd",
-  "_spec": "0.0.21",
-  "_where": "C:\\imagina\\html\\fhaproducts2018_frontend",
+  "_resolved": "https://registry.npmjs.org/@imagina/qcrud/-/qcrud-0.0.26.tgz",
+  "_shasum": "429ac5a1dc6071212c72680e222c72532b2774dd",
+  "_spec": "0.0.26",
+  "_where": "D:\\imagina\\projects\\baseQuasarFrontend\\front-end",
   "author": {
     "name": "https://www.imaginacolombia.com"
   },
@@ -38,8 +51,8 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "@imagina/qhelper": ">=0.0.6",
-    "@imagina/quser": ">=0.0.18",
+    "@imagina/qhelper": "^0.0.24",
+    "@imagina/quser": "^0.0.46",
     "@riophae/vue-treeselect": "0.0.30",
     "axios": "^0.18.0",
     "date-fns": "^1.29.0",
@@ -68,5 +81,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.0.24"
+  "version": "0.0.26"
 }
