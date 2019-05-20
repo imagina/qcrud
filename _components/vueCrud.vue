@@ -365,12 +365,12 @@
 								round
 								class="q-mx-xs"
 								:icon="crudActions.actionsData.edit.icon"
-								color="secondary"
+								color="positive"
 								@click="addEditDialogOpen(record.id,'Edit')"
 								size="sm"
 							>
 								<q-tooltip
-									class="bg-secondary"
+									class="bg-positive"
 									anchor="bottom middle"
 									self="top middle"
 									:offset="[10, 10]">
@@ -388,7 +388,7 @@
 								size="sm"
 							>
 								<q-tooltip
-									class="bg-red"
+									class="bg-negative"
 									anchor="bottom middle"
 									self="top middle"
 									:offset="[10, 10]">
@@ -599,13 +599,13 @@
 				<q-btn
 					fab-mini
           v-if="!crudActions.permission || auth.hasAccess(crudActions.permission+'.create') && (crudActions.actionsData.add.permission ? auth.hasAccess(crudActions.actionsData.add.permission) : true)"
-					color="secondary"
+					color="positive"
 					icon="add"
 					class="animate-pop q-mt-sm"
 					@click="addEditDialogOpen(false,'Create')"
 				>
 					<q-tooltip
-						class="bg-secondary"
+						class="bg-positive"
 						anchor="center left"
 						self="center right"
 						:offset="[10, 10]">
