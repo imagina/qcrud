@@ -3,24 +3,23 @@
 		
 		<!--======================== LOADING ======================-->
 		<!--Inner loading-->
-		<q-inner-loading :visible="loading">
-			<div class="q-box-inner-loading">
-				<q-spinner-hourglass size="50px" color="primary"/>
-				<h6 class="q-ma-none text-primary q-title">Loading...</h6>
-			</div>
-		</q-inner-loading>
+		<inner-loading :visible="loading" />
 		
 		<q-page-container>
 			<router-view :key="$route.fullPath"></router-view>
 			<q-ajax-bar/>
 		</q-page-container>
-		
-
 	</q-page>
 </template>
 
 <script>
+	//components
+	import innerLoading from 'src/components/master/innerLoading'
+
   export default {
+		components : {
+			innerLoading
+		},
     data () {
       return {
         loading:false,
