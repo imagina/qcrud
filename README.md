@@ -1,67 +1,54 @@
-##Module Qcrud
-A VueJS CRUD component which is customisable and extensible to suit more complex situations such as Nested CRUD, custom filters, custom form custom actions. Views Based in Quasar Framework.
+## QCRUD  | 1.0.0
 
-##Requiered
-####Plugins
-- helper
-- vuelidate
-- axios
-- date-fns
-- export-from-json
-- @imagina/quser/_plugins/auth
-- lodash.clonedeep
-- lodash.pick
-##Usage
+This package has a components to make a CRUD in the best and fast way
 
-####Configuration 
-In each module directory `/_components` create `/crud` directory and copy base configuration file from 
-`@imagina/vcrud/_components/crud/configuration.js`  
-rename with the crud name that you are going to implement like:
- `@imagina/vcrud/_components/crud/yourCrudConfig.js`
+## Installation
 
+`` npm i @imagina/qcrud@1.0.0 ``
 
-####Routes 
+## Usage
 
-In your master proyect `src/router` create file `crudRoutes`:
-```js
-import Route from 'vue-routisan'
-import auth from '@imagina/quser/_router/middlewares/auth' //Middleware auth
-import access from '@imagina/quser/_router/middlewares/access' //Middleware access
+- You must create a file `.vue` with a `computed` method, than will content all params 
+  to config your CRUD. with next format:
 
-/*YOUR MASTER LAYOUT*/
-import home from 'src/layouts/master'
+    ```html
+    <template></template>
+    <script>
+      export default {
+        computed: {
+          crudData() {
+            return {
+              apiRoute: 'api-route-name',
+              permission: 'prefix-permissions (ejm: iblog.posts)',
+              create: {title: 'title'},
+              read: {
+                columns: ['array of object with columns to component qtable'],
+                requestParams : {'standard-params-to-request'}
+              },
+              update: {
+                title: 'title'
+                requestParams : {'standard-params-to-request'}
+              },
+              delete: 'Boolean to allow or disable method delete record',
+              formLeft: {{},{},'... Object with form fields'},
+              formRight: {{},{},'... Object with form fields'},
+            }
+          }
+        },
+      }
+    </script>
+    ```
+    
+- When the `cud.vue` file has been created, you just use the `<crud>` component (this component is registered globally 
+  for use) and set the necesary props. with next format:
 
-import vueCrud from '@imagina/qcrud/_components/vueCrud'
-
-/*CRUD TAX RATES CONFIGURATIONS*/
-import * as yourCrudConfig from 'src/components/crud/yourCrudConfig'
-
-/*CRUD ROUTES*/
-Route.view('/masterLayoutRoute', home)
-  .guard(auth)
-  .children(() => {
-    Route.view('/yourCrudRoute', vueCrud).options({
-      name: 'route.name',
-      meta: {permission: 'permission.for.this.route'},
-      guard: access,
-      props: (route) => {
-        return {
-          storeName: 'storage.name.for.broadcast.clear.cache', //config.name for services
-          singularName: 'singular name',
-          pluralName: 'plural name',
-          parentId: route.params.parentId || null, ...yourCrudConfig,
-          doPage: false
-        }
-      },
-    })
-  
-  })
-
-export default Route.all()
-
-```
-
-In `src/router/routes.js` add:
-```js
-import crudRoutes from './crudRoutes' //Routes Crud
-```
+    ```html
+      <!---Component CRUD-->
+      <crud :crud-data="import('route-file-crud')"/>
+    ```
+  If you just need use function "Create" from CRUD you can use the `PROP` `just-create` and listen the event `@created`
+    
+    ```html
+      <!---Component CRUD-->
+      <crud :crud-data="import('route-file-crud')" just-create @created="your-method"/>
+    ```
