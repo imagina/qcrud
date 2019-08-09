@@ -11,7 +11,9 @@
           :pagination.sync="table.pagination"
           @request="getData"
           :filter="table.filter"
-          class="shadow-1 border-top-color"
+          class="box-table"
+          :hide-header="!showSlotTable.header"
+          :hide-bottom="!showSlotTable.bottom"
         >
           <!--Slot Top-->
           <template slot="top">
@@ -19,7 +21,14 @@
             <div class="table-top-left col-12 col-md-4 col-xl-3">
               <!--Search-->
               <q-search hide-underline clearable v-model="table.filter.search"
-                        @input="getDataTable" class="q-my-xs"/>
+                        @input="getDataTable" class="q-my-xs" v-if="params.read.search !== false"/>
+              <!--Title-->
+              <div class="q-title text-primary ellipsis" v-if="params.read.title || params.read.icon">
+                <q-icon v-if="params.read.icon" class="q-mr-sm" :name="params.read.icon"/>
+                <span v-if="params.read.title" :title="params.read.title">
+                  {{params.read.title}}
+                </span>
+              </div>
             </div>
             <!--Table slot Right-->
             <div class="table-top-right col-12 col-md-8 col-xl-9 text-right">
@@ -140,7 +149,7 @@
     data() {
       return {
         success: false,//Global status of component
-        loading: false,//Loading
+        loading: true,//Loading
         table: {//Object config table
           data: [],
           pagination: {
@@ -157,17 +166,31 @@
         filter: {
           available: false,
           show: false,
-        }
+        },
+        dataField: []
       }
     },
-    computed: {},
+    computed: {
+      showSlotTable(){
+        let data = this.$clone(this.table.data)
+        let lengData = (data && data.length) ? data.length : false
+        let pagination = this.$clone(this.table.pagination)
+
+        //Order response
+        let response = {
+          header : lengData ? true : false,
+          bottom : (pagination.rowsNumber >= pagination.rowsPerPage) ? true : (!lengData ? true : false)
+        }
+
+        return response //Response
+      }
+    },
     methods: {
       //init form
       async init() {
         this.success = true
         this.orderFilters()//Order filters
         this.getDataTable()//Get data
-        this.loading = false //hidden Loading
       },
       //Order filters
       orderFilters() {
@@ -214,12 +237,22 @@
 
         //Request
         this.$crud.index(propParams.apiRoute, params).then(response => {
-          this.table.data = response.data
+          let dataTable = response.data
+
+          //If is field change format
+          if (this.params.field){
+            dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
+            this.dataField = response.data[0]
+          }
+
+          //Set data to table
+          this.table.data = dataTable
           this.table.pagination.page = response.meta.page.currentPage
           this.table.pagination.rowsNumber = response.meta.page.total
           this.table.pagination.rowsPerPage = pagination.rowsPerPage
           this.loading = false
         }).catch(error => {
+          console.error(error)
           this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
           this.loading = false
         })
@@ -229,15 +262,34 @@
         this.loading = true
         let propParams = this.$clone(this.params)
         let item = this.$clone(this.itemIdToDelete)
-        this.$crud.delete(propParams.apiRoute, item.id).then(response => {
-          this.$alert.success({message: this.$tr('ui.message.recordDeleted')})
-          this.getDataTable(true)
-          this.dialogDeleteItem = false
-          this.loading = false
-        }).catch(error => {
-          this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
-          this.loading = false
-        })
+
+        //If is crud field
+        if (this.params.field) {
+          let dataField = this.$clone(this.dataField)//get data table
+          dataField.value.splice(this.itemIdToDelete.__index, 1)//Remove field
+
+          //Request
+          this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
+            this.$alert.success({message: this.$tr('ui.message.recordDeleted')})
+            this.getDataTable(true)
+            this.dialogDeleteItem = false
+            this.loading = false
+          }).catch(error => {
+            this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
+            this.loading = false
+          })
+        } else {
+          //Request
+          this.$crud.delete(propParams.apiRoute, item.id).then(response => {
+            this.$alert.success({message: this.$tr('ui.message.recordDeleted')})
+            this.getDataTable(true)
+            this.dialogDeleteItem = false
+            this.loading = false
+          }).catch(error => {
+            this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
+            this.loading = false
+          })
+        }
       },
       //Check if permit action (delete or update)
       permitAction(field) {
@@ -274,10 +326,10 @@
     .q-table-container
       @media screen and (max-width: $breakpoint-sm)
         .table-top-left
-          order 2
+          order 1
 
         .table-top-right
-          order 1
+          order 2
 
         .table-top-filters
           order 3

@@ -1,7 +1,7 @@
 <template>
   <div>
     <!--Dynamic component to get crud data-->
-    <div v-if="componentCrudData" :is="componentCrudData" ref="componentCrudData" />
+    <div v-if="componentCrudData" :is="componentCrudData" ref="componentCrudData"/>
     <!--Button Create-->
     <q-btn icon="fas fa-plus" color="positive"
            @click="indexEmmitCreate" v-if="justCreate && params.create && hasPermission.create"
@@ -12,9 +12,8 @@
                   @create="indexEmmitCreate" @update="indexEmmitUpdate"/>
       <!--Modal create/update component-->
       <crud-form v-model="showModal" v-if="(params.create || params.update) && showModal"
-                 :params="$clone(paramsProps)" :item-id="itemIdToEdit"
-                 @created="formEmmit()"
-                 @updated="formEmmit('updated')"/>
+                 :params="$clone(paramsProps)" :item-id="itemIdToEdit" :field="fieldData"
+                 @created="formEmmit()" @updated="formEmmit('updated')"/>
     </div>
   </div>
 </template>
@@ -25,8 +24,8 @@
 
   export default {
     props: {
-      crudData : {default : false},//import of vue with computed
-      justCreate : {type : Boolean, default : false}
+      crudData: {default: false},//import of vue with computed
+      justCreate: {type: Boolean, default: false}
     },
     components: {crudIndex, crudForm},
     watch: {},
@@ -40,8 +39,8 @@
     },
     data() {
       return {
-        componentCrudData : false,//To get crud data from computed
-        params : false,
+        componentCrudData: false,//To get crud data from computed
+        params: false,
         success: false,//Global status of component
         loading: true,//Loading
         paramsProps: {},
@@ -49,7 +48,8 @@
           requiredApiRoute: false,
         },
         showModal: false,//vmodel modal
-        itemIdToEdit: false//item ot edit
+        fieldData: false,//Field data
+        itemIdToEdit: false//item ID to edit
       }
     },
     computed: {
@@ -66,11 +66,11 @@
     methods: {
       //init form
       async init() {
-        if(this.crudData){
+        if (this.crudData) {
           //Get crudData
           this.crudData.then((response) => {
             this.componentCrudData = response.default//asign component
-            setTimeout(()=>{
+            setTimeout(() => {
               //asing crudData to params
               this.params = this.$refs.componentCrudData.crudData
               //check global params
@@ -78,23 +78,25 @@
               this.paramsProps.hasPermission = this.hasPermission//Add permission validated
               this.success = true//udate success
               this.loading = false //hidden Loading
-            },100)
+            }, 100)
           })
         }
       },
       //watch emit create from index component
       indexEmmitCreate() {
         this.itemIdToEdit = false
+        this.fieldData = false
         this.showModal = true
       },
       //watch emit update from index component
       indexEmmitUpdate(params) {
         this.itemIdToEdit = params.id
+        if (this.params.field) this.fieldData = params
         this.showModal = true
       },
       //watch emit update from form component
-      formEmmit(type = 'created'){
-        if(this.params.read && !this.justCreate)
+      formEmmit(type = 'created') {
+        if (this.params.read && !this.justCreate)
           this.$refs.crudIndex.getDataTable(true)
         this.$emit(type)
       },

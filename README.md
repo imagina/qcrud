@@ -1,4 +1,4 @@
-## QCRUD  | 1.0.0
+## QCRUD  | 1.0.1
 
 This package has a components to make a CRUD in the best and fast way
 

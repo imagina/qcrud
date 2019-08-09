@@ -5,8 +5,10 @@
     <q-modal-layout :class="`${existFormRight ? 'col-2' : 'col-1'}`">
       <!--Header-->
       <q-toolbar slot="header">
-        <q-toolbar-title v-if="!itemId">{{params.create.title}}</q-toolbar-title>
-        <q-toolbar-title v-else>{{params.update.title}} ID: {{itemId}}</q-toolbar-title>
+        <q-toolbar-title v-if="!itemId && !field">{{params.create.title}}</q-toolbar-title>
+        <q-toolbar-title v-else>
+          {{params.update.title}} <span v-if="!field">ID: {{itemId}}</span>
+        </q-toolbar-title>
         <q-btn flat v-close-overlay icon="fas fa-times"/>
       </q-toolbar>
 
@@ -15,7 +17,7 @@
         <q-toolbar-title></q-toolbar-title>
         <!--Button Save-->
         <q-btn icon="fas fa-save" color="positive"
-               v-if="!itemId" :label="$tr('ui.label.save')"
+               v-if="!itemId && !field" :label="$tr('ui.label.save')"
                :loading="loading" @click="createItem()"/>
         <!--Button Update-->
         <q-btn :label="$tr('ui.label.update')" icon="fas fa-pen" color="positive"
@@ -82,6 +84,7 @@
     props: {
       value: {default: false},
       itemId: {default: false},
+      field: {default: false},
       params: {default: false}
     },
     components: {
@@ -111,7 +114,8 @@
         show: false,
         locale: {fields: {options: {}}, fieldsTranslatable: {}, validations: {}},
         loading: false,
-        updatePassword: false//Permit edit password
+        updatePassword: false,//Permit edit password
+        dataField: []
       }
     },
     computed: {
@@ -129,7 +133,7 @@
         this.$v.$reset()//Reset validations
         this.show = this.value//Assign props value to show modal
         this.success = true//succesfull
-        if (this.itemId) await this.getDataItem()//Get data item
+        if (this.itemId || this.params.field) await this.getDataItem()//Get data item
       },
       //Order fields of parms
       orderFields() {
@@ -217,16 +221,42 @@
           if (!params.params.filter) params.params.filter = {}
           params.params.filter.allTranslations = true
 
-          //Request
-          this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
-            this.locale.form = _cloneDeep(response.data)
-            resolve(true)
-            this.loading = false//hide loading
-          }).catch(error => {
-            this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
-            reject(false)
-            this.loading = false//hide loading
-          })
+          //Request if exist item ID
+          if (this.itemId) {
+            //Request
+            this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
+              this.locale.form = _cloneDeep(response.data)
+              resolve(true)
+              this.loading = false//hide loading
+            }).catch(error => {
+              this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
+              reject(false)
+              this.loading = false//hide loading
+            })
+          }
+
+          //Request if exist field
+          if (this.params.field) {
+            //Request
+            this.$crud.index(propParams.apiRoute, params).then(response => {
+              //Save data field
+              this.dataField = {
+                id: (response.data[0] && response.data[0].id) ? _cloneDeep(response.data[0].id) : null,
+                name: this.params.field,
+                value: (response.data[0] && response.data[0].value) ? _cloneDeep(response.data[0].value) : []
+              }
+
+              //Set data item if is update
+              if (this.field) this.locale.form = _cloneDeep(this.field)
+
+              resolve(true)
+              this.loading = false//hide loading
+            }).catch(error => {
+              this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
+              reject(false)
+              this.loading = false//hide loading
+            })
+          }
         })
       },
       //Create Category
@@ -237,6 +267,7 @@
           this.loading = true
           let propParams = this.$clone(this.params)
 
+          //Request
           this.$crud.create(propParams.apiRoute, this.getDataForm()).then(response => {
             this.$root.$emit(`crudForm${propParams.apiRoute}Created`)//emmit event
             this.$alert.success({message: `${this.$tr('ui.message.recordCreated')}`})
@@ -268,8 +299,12 @@
         if (!this.$v.$error) {
           this.loading = true
           let propParams = this.$clone(this.params)
+          let criteria = this.itemId
 
-          this.$crud.update(propParams.apiRoute, this.itemId, this.getDataForm()).then(response => {
+          //If is field update criteria
+          if(this.params.field && this.dataField.id) criteria = this.dataField.id
+
+          this.$crud.update(propParams.apiRoute, criteria, this.getDataForm()).then(response => {
             this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
             this.$alert.success({message: this.$tr('ui.message.recordUpdated')})
             this.initForm()
@@ -292,6 +327,19 @@
         //Remove password if not allow update and is update
         if (this.itemId && !this.updatePassword)
           delete data.password
+
+        //order if is field
+        if (this.params.field) {
+          if (this.field) this.dataField.value[this.field.__index] = data//Update field
+          else this.dataField.value.push(data)//Add to data field
+
+          //Format data field
+          data = {
+            userId: data.userId,
+            name: this.params.field,
+            value: this.dataField.value
+          }
+        }
 
         return data//Response
       },
@@ -333,11 +381,11 @@
         //Check if is field "masterRecord" and check permission
         if (field.isFakeField && (fieldName == 'masterRecord')) {
           //Validate permission to create
-          if(!this.itemId && !this.$auth.hasAccess('isite.master.records.create'))
+          if (!this.itemId && !this.$auth.hasAccess('isite.master.records.create'))
             response = false
 
           //Validate permission to update
-          if(this.itemId && !this.$auth.hasAccess('isite.master.records.edit'))
+          if (this.itemId && !this.$auth.hasAccess('isite.master.records.edit'))
             response = false
         }
 
