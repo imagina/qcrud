@@ -23,7 +23,15 @@ This package has a components to make a CRUD in the best and fast way
               create: {title: 'title'},
               read: {
                 columns: ['array of object with columns to component qtable'],
-                requestParams : {'standard-params-to-request'}
+                requestParams : {'standard-params-to-request'},
+                actions : [//Add action buttons by record
+                  {
+                    icon : '',
+                    color : '',
+                    route : 'name.route', //redirect to route, and set all data row as route params
+                    action : () => {}
+                  }
+                ]
               },
               update: {
                 title: 'title'
