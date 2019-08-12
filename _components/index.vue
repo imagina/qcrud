@@ -106,6 +106,11 @@
                    @click="itemIdToDelete = props.row; dialogDeleteItem = true">
               <q-tooltip :delay="300">{{$tr('ui.label.delete')}}</q-tooltip>
             </q-btn>
+            <!-- Custom Actions -->
+            <q-btn v-for="(action, key) in params.read.actions" size="sm"
+                   v-if="params.read.actions" :key="key" class="q-ml-xs"
+                   :icon="action.icon || ''" :color="action.color || ''"
+                   @click="callCustomAction(action,props.row)"/>
           </q-td>
         </q-table>
 
@@ -315,6 +320,14 @@
 
         //Response
         return {edit: edit, destroy: destroy}
+      },
+      //Call custom action
+      callCustomAction(action, row){
+        //Check if has action function
+        if(action.action) action.action()
+        //Check if has redirect to route
+        if(action.route)
+          this.$router.push({name : action.route, params : row || {}})
       }
     }
   }
