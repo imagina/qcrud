@@ -29,7 +29,7 @@ This package has a components to make a CRUD in the best and fast way
                     icon : '',
                     color : '',
                     route : 'name.route', //redirect to route, and set all data row as route params
-                    action : () => {}
+                    action : (rowData) => {} //Get row data as param
                   }
                 ]
               },
