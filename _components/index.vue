@@ -324,7 +324,7 @@
       //Call custom action
       callCustomAction(action, row){
         //Check if has action function
-        if(action.action) action.action()
+        if(action.action) action.action(row)
         //Check if has redirect to route
         if(action.route)
           this.$router.push({name : action.route, params : row || {}})
