@@ -97,7 +97,9 @@
             <q-btn v-for="(action, key) in params.read.actions" size="sm"
                    v-if="params.read.actions" :key="key" class="q-ml-xs"
                    :icon="action.icon || ''" :color="action.color || ''"
-                   @click="callCustomAction(action,props.row)"/>
+                   @click="callCustomAction(action,props.row)">
+              <q-tooltip v-if="action.tooltip">{{action.tooltip}}</q-tooltip>
+            </q-btn>
           </q-td>
         </q-table>
 
