@@ -83,7 +83,7 @@
             <!--Edit button-->
             <q-btn color="positive" icon="fas fa-pen" size="sm"
                    v-if="permitAction(props.row).edit"
-                   :to="params.update.to ? {name : params.update.to, params : {id : props.row.id}} : {}"
+                   :to="params.update.to ? {name : params.update.to, params : props.row} : {}"
                    @click="params.update.to ? false : $emit('update', props.row)">
               <q-tooltip :delay="300">{{$tr('ui.label.edit')}}</q-tooltip>
             </q-btn>
