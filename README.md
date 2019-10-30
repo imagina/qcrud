@@ -1,10 +1,10 @@
-## QCRUD  | 2.0.3
+## QCRUD  | 2.0.4
 
 This package has a components to make a CRUD in the best and fast way
 
 ## Installation
 
-`` npm i @imagina/qcrud@2.0.3 ``
+`` npm i @imagina/qcrud@2.0.4 ``
 
 ## Usage
 
@@ -107,6 +107,9 @@ to config your CRUD. with next format:
   | show | `$crud.show(<apiRoute>, criteria, params : {refresh, remember , params})` | Request single record |
   | update | `$crud.update(<apiRoute>, criteria, data, params : {params})` | Update record |
   | delete | `$crud.delete(<apiRoute>, criteria, params : {params})` | Delete Record |
+  | post | `$crud.post(<apiRoute>, params : {data, requestParams}})` | Method post |
+  | get | `$crud.get(<apiRoute>, params})` | Method get | 
+  | put | `$crud.put(<apiRoute>, data})` | Method put | 
   
 ## Store    
 
