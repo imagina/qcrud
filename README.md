@@ -1,10 +1,10 @@
-## QCRUD  | 2.0.4
+## QCRUD  | 2.0.5
 
 This package has a components to make a CRUD in the best and fast way
 
 ## Installation
 
-`` npm i @imagina/qcrud@2.0.4 ``
+`` npm i @imagina/qcrud@2.0.5 ``
 
 ## Usage
 
@@ -64,6 +64,7 @@ to config your CRUD. with next format:
         type: [text,number,phone,password,checkPassword,textarea,chips,select,date,html,multiSelect,checkbox,media],
         rules : [], //rules to validate field
         isTranslatable : Booblean, //Set field as translatable
+        props : {},//Props to components fields as q-select or q-input
         options: [ //Options to load only in type [select, multiSelect]
           {label: this.$tr('ui.label.all'), id: '0'}
         ],
@@ -94,6 +95,13 @@ to config your CRUD. with next format:
     ```html
       <!---Component CRUD-->
       <crud :crud-data="import('route-file-crud')" just-create @created="your-method"/>
+    ```
+    
+  To load a select input with list of record, and option to create record. Use `PROP` `crud-select` and listen the event `@created`
+    
+    ```html
+      <!---Component CRUD-->
+      <crud :crud-data="import('route-file-crud')" crud-select @created="your-method"/>
     ```
     
 ## Services    

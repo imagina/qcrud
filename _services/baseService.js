@@ -1,7 +1,7 @@
 import axios from 'axios'
 import {remember} from '@imagina/qhelper/_plugins/remember'
 import {helper} from '@imagina/qhelper/_plugins/helper'
-import config from 'src/config/index'
+import config from '@imagina/qsite/_config/master/index'
 
 export default {
   /**

@@ -39,7 +39,7 @@
             <div class="table-top-right col-12 col-md-8 col-xl-9 text-right">
               <!--Button new record-->
               <q-btn icon="fas fa-edit" :label="params.create.title"
-                     :to="params.create.to ? {name : params.create.to} : {}"
+                     v-bind="params.create.to ? {to : {name : params.create.to}} : {}"
                      @click="params.create.to ? false : $emit('create')"
                      color="positive" class="q-my-xs"
                      v-if="params.create && params.hasPermission.create"/>
@@ -83,7 +83,7 @@
             <!--Edit button-->
             <q-btn color="positive" icon="fas fa-pen" size="sm"
                    v-if="permitAction(props.row).edit"
-                   :to="params.update.to ? {name : params.update.to, params : props.row} : {}"
+                   v-bind="params.update.to ? {to : {name : params.update.to, params : props.row}} : {}"
                    @click="params.update.to ? false : $emit('update', props.row)">
               <q-tooltip :delay="300">{{$tr('ui.label.edit')}}</q-tooltip>
             </q-btn>
@@ -131,16 +131,16 @@
 <script>
   export default {
     props: {
-      params: { default: false }
+      params: {default: false}
     },
     components: {},
     watch: {},
-    mounted () {
+    mounted() {
       this.$nextTick(function () {
         this.init()
       })
     },
-    data () {
+    data() {
       return {
         success: false,//Global status of component
         loading: true,//Loading
@@ -165,7 +165,7 @@
       }
     },
     computed: {
-      showSlotTable () {
+      showSlotTable() {
         let data = this.$clone(this.table.data)
         let lengData = (data && data.length) ? data.length : false
         let pagination = this.$clone(this.table.pagination)
@@ -181,13 +181,13 @@
     },
     methods: {
       //init form
-      async init () {
+      async init() {
         this.success = true
         this.orderFilters()//Order filters
         this.getDataTable()//Get data
       },
       //Order filters
-      orderFilters () {
+      orderFilters() {
         let params = this.$clone(this.params)
         //Check if there is filters
         if (params.read && params.read.filters) {
@@ -203,11 +203,11 @@
         }
       },
       //Request products with params from server table
-      getDataTable (refresh = false) {
-        this.getData({ pagination: this.table.pagination, filter: this.table.filter }, refresh)
+      getDataTable(refresh = false) {
+        this.getData({pagination: this.table.pagination, filter: this.table.filter}, refresh)
       },
       //Get products
-      getData ({ pagination, filter }, refresh = false) {
+      getData({pagination, filter}, refresh = false) {
         let propParams = this.$clone(this.params)
         this.loading = true
 
@@ -248,12 +248,12 @@
           this.loading = false
         }).catch(error => {
           console.error(error)
-          this.$alert.error({ message: this.$tr('ui.message.errorRequest'), pos: 'bottom' })
+          this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
           this.loading = false
         })
       },
       //Delete category
-      deleteItem () {
+      deleteItem() {
         this.loading = true
         let propParams = this.$clone(this.params)
         let item = this.$clone(this.itemIdToDelete)
@@ -265,29 +265,29 @@
 
           //Request
           this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
-            this.$alert.info({ message: this.$tr('ui.message.recordDeleted') })
+            this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
             this.getDataTable(true)
             this.dialogDeleteItem = false
             this.loading = false
           }).catch(error => {
-            this.$alert.error({ message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom' })
+            this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
             this.loading = false
           })
         } else {
           //Request
           this.$crud.delete(propParams.apiRoute, item.id).then(response => {
-            this.$alert.info({ message: this.$tr('ui.message.recordDeleted') })
+            this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
             this.getDataTable(true)
             this.dialogDeleteItem = false
             this.loading = false
           }).catch(error => {
-            this.$alert.error({ message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom' })
+            this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
             this.loading = false
           })
         }
       },
       //Check if permit action (delete or update)
-      permitAction (field) {
+      permitAction(field) {
         let edit = true//Default action edit
         let destroy = true//Default action destroy
         //Get options form field
@@ -309,15 +309,15 @@
         if (isMasterRecord && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.destroy')) destroy = false
 
         //Response
-        return { edit: edit, destroy: destroy }
+        return {edit: edit, destroy: destroy}
       },
       //Call custom action
-      callCustomAction (action, row) {
+      callCustomAction(action, row) {
         //Check if has action function
         if (action.action) action.action(row)
         //Check if has redirect to route
         if (action.route) {
-          this.$router.push({ name: action.route, params: row || {} })
+          this.$router.push({name: action.route, params: row || {}})
         }
       }
     }
