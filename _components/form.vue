@@ -72,33 +72,33 @@
 
   export default {
     props: {
-      value: { default: false },
-      itemId: { default: false },
-      field: { default: false },
-      params: { default: false }
+      value: {default: false},
+      itemId: {default: false},
+      field: {default: false},
+      params: {default: false}
     },
     components: {
       recursiveSelect
     },
     watch: {
-      value (newValue) {
+      value(newValue) {
         this.show = this.value
       },
-      show (newValue) {
+      show(newValue) {
         this.$emit('input', this.show)
         this.initForm()
       }
     },
-    mounted () {
+    mounted() {
       this.$nextTick(function () {
         this.initForm()
       })
     },
-    data () {
+    data() {
       return {
         success: false,//global component status
         show: false,
-        locale: { fields: { options: {} }, fieldsTranslatable: {}, validations: {} },
+        locale: {fields: {options: {}}, fieldsTranslatable: {}, validations: {}},
         loading: false,
         updatePassword: false,//Permit edit password
         dataField: []
@@ -106,7 +106,7 @@
     },
     computed: {
       //Check if exist from right
-      existFormRight () {
+      existFormRight() {
         if (this.params.formRight && Object.keys(this.params.formRight).length) {
           return true
         } else {
@@ -116,14 +116,14 @@
     },
     methods: {
       //Init form
-      async initForm () {
+      async initForm() {
         this.orderFields()//order fields to component locale
         this.show = this.value//Assign props value to show modal
         this.success = true//succesfull
         if (this.itemId || this.params.field) await this.getDataItem()//Get data item
       },
       //Order fields of parms
-      orderFields () {
+      orderFields() {
         let params = this.$clone(this.params)
         let formLeft = params.formLeft || {}
         let formRight = params.formRight || {}
@@ -157,7 +157,7 @@
         this.locale.validations = this.$clone(validations)
       },
       //Return message validation by field type
-      getValidationMessage (type) {
+      getValidationMessage(type) {
         let response = this.$tr('ui.message.fieldRequired')//Default message
 
         switch (type) {
@@ -172,7 +172,7 @@
         return response//Response
       },
       //Get data category to update
-      getDataItem () {
+      getDataItem() {
         return new Promise((resolve, reject) => {
           this.loading = true
           let propParams = this.$clone(this.params)
@@ -194,7 +194,7 @@
               resolve(true)
               this.loading = false//hide loading
             }).catch(error => {
-              this.$alert.error({ message: this.$tr('ui.message.errorRequest'), pos: 'bottom' })
+              this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
               reject(false)
               this.loading = false//hide loading
             })
@@ -217,7 +217,7 @@
               resolve(true)
               this.loading = false//hide loading
             }).catch(error => {
-              this.$alert.error({ message: this.$tr('ui.message.errorRequest'), pos: 'bottom' })
+              this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
               reject(false)
               this.loading = false//hide loading
             })
@@ -225,7 +225,7 @@
         })
       },
       //Create Category
-      async createItem () {
+      async createItem() {
         if (await this.$refs.localeComponent.validateForm()) {
           this.loading = true
           let propParams = this.$clone(this.params)
@@ -233,13 +233,13 @@
           //Request
           this.$crud.create(propParams.apiRoute, this.getDataForm()).then(response => {
             this.$root.$emit(`crudForm${propParams.apiRoute}Created`)//emmit event
-            this.$alert.info({ message: `${this.$tr('ui.message.recordCreated')}` })
+            this.$alert.info({message: `${this.$tr('ui.message.recordCreated')}`})
             this.initForm()
             this.loading = false
             this.show = false
             this.$emit('created', response.data)
           }).catch(error => {
-            this.$alert.error({ message: `${this.$tr('ui.message.recordNoCreated')}` })
+            this.$alert.error({message: `${this.$tr('ui.message.recordNoCreated')}`})
             this.loading = false//login hide
             if (error) {//Message Validate
               let errorMsg = JSON.parse(error)
@@ -249,14 +249,14 @@
                   pos: 'bottom', timeOut: 4000
                 })
               } else {
-                this.$alert.error({ message: `${this.$tr('ui.message.recordNoCreated')}` })
+                this.$alert.error({message: `${this.$tr('ui.message.recordNoCreated')}`})
               }
             }
           })
         }
       },
       //Update Category
-      async updateItem () {
+      async updateItem() {
         if (await this.$refs.localeComponent.validateForm()) {
           this.loading = true
           let propParams = this.$clone(this.params)
@@ -267,19 +267,19 @@
 
           this.$crud.update(propParams.apiRoute, criteria, this.getDataForm()).then(response => {
             this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
-            this.$alert.info({ message: this.$tr('ui.message.recordUpdated') })
+            this.$alert.info({message: this.$tr('ui.message.recordUpdated')})
             this.initForm()
             this.loading = false
             this.show = false
             this.$emit('updated', response.data)
           }).catch(error => {
             this.loading = false
-            this.$alert.error({ message: this.$tr('ui.message.recordNoUpdated') })
+            this.$alert.error({message: this.$tr('ui.message.recordNoUpdated')})
           })
         }
       },
       //Return data of form
-      getDataForm () {
+      getDataForm() {
         //Clone data form
         let data = this.$clone(this.locale.form)
 
@@ -289,7 +289,7 @@
         }
 
         //Validate options
-        if(data.options && !Object.keys(data.options).length) delete data.options
+        if (data.options && !Object.keys(data.options).length) delete data.options
 
         //order if is field
         if (this.params.field) {
@@ -310,27 +310,27 @@
 
         return data//Response
       },
-      //Complete slug Only when is creation
-      setSlug (field) {
-        if ((['title', 'name'].indexOf(field) != -1) && !this.itemId) {
+      //format slug
+      setSlug(field) {
+        setTimeout(() => {
+          let slug = false
           let formTemplate = this.$clone(this.locale.formTemplate)//Get form template
-          let keys = Object.keys(this.locale.formTemplate)//Get field keys
 
-          //Get title or name, if exist field slug
-          if (keys.indexOf('slug') != -1) {
-            let title = ''
-            //Get title or name
-            if ((keys.indexOf('name') != -1) && formTemplate.name) title = formTemplate.name.trim()
-            if ((keys.indexOf('title') != -1) && formTemplate.title) title = formTemplate.title.trim()
-            //Get slug
-            let slug = this.$clone(title.split(' ').join('-').toLowerCase())
-            //Set slug as title
-            this.locale.formTemplate.slug = slug.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          //If is creation and field is title or name
+          if ((['title', 'name'].indexOf(field) != -1) && !this.itemId) {
+            slug = formTemplate.name || formTemplate.title || false
           }
-        }
+
+          //Format field slug
+          if ((field == 'slug') && formTemplate.slug) slug = formTemplate.slug.replace(/-/g, ' ')
+
+          //Set slug
+          if (slug && (this.locale.formTemplate.slug != undefined))
+            this.locale.formTemplate.slug = this.$clone(this.$helper.getSlug(slug))
+        },100)
       },
       //validate if should show field
-      showField (field, fieldName) {
+      showField(field, fieldName) {
         let response = true//Default response
 
         //Check if is password type and is updated record
@@ -355,7 +355,7 @@
         return response
       },
       //Validate password
-      validateField (field) {
+      validateField(field) {
 
       }
     }

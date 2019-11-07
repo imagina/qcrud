@@ -1,10 +1,10 @@
 <template>
-  <div class="crudContentPage">
+  <div id="crudContentPage">
     <!--=== Dynamic component to get crud data ===-->
     <div v-if="componentCrudData" :is="componentCrudData" ref="componentCrudData"></div>
 
     <!--=== Button to Create ===-->
-    <q-btn class="btnCreateCrud" icon="fas fa-plus" color="positive" :label="`${params.create.title || ''}`"
+    <q-btn class="btnJustCreate btn-small" icon="fas fa-plus" color="positive" :label="`${params.create.title || ''}`"
            @click="indexEmmitCreate" v-if="justCreate && params.create && hasPermission.create" size="sm"/>
 
     <!--=== Select to List and Create ===-->
@@ -15,7 +15,7 @@
               outlined dense use-input map-options>
       <!--Before options slot-->
       <template v-slot:before-options>
-        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="positive"
+        <q-btn class="btnCreateCrud full-width btn-small" flat icon="fas fa-plus" color="positive"
                :label="`${params.create.title || ''}`" @click="indexEmmitCreate"/>
       </template>
       <!--No options slot-->
@@ -52,10 +52,13 @@
       crudData: {default: false},//import of vue with computed
       justCreate: {type: Boolean, default: false},
       crudSelect: {type: Boolean, default: false},
+      configOptions : {default : () => {return {label : 'title', value : 'id'}}},
       label: {default: false},
     },
     components: {crudIndex, crudForm},
-    watch: {},
+    watch: {
+
+    },
     validations() {
       return {}
     },
@@ -134,7 +137,10 @@
         this.$crud.index(params.apiRoute, requestParams).then(response => {
           //Set all items to response
           response.data.forEach(item => {
-            responseOptions.push({label: item.fullName, value: item.id})
+            responseOptions.push({
+              label: item[this.configOptions.label],
+              value: item[this.configOptions.value]
+            })
           })
           this.dataCrudSelect.loading = false
         }).catch(error => this.dataCrudSelect.loading = false)
@@ -184,13 +190,14 @@
   }
 </script>
 <style lang="stylus">
-  .btnCreateCrud
-    padding 3px 8px
+  #crudContentPage
+    .btnCreateCrud, .btnCreate
+      padding 3px 8px
 
-    .q-icon
-      margin-right 5px
-      font-size 12px
+      .q-icon
+        margin-right 5px
+        font-size 12px
 
-    .q-btn__content
-      font-size 12px
+      .q-btn__content
+        font-size 12px
 </style>
