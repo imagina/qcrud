@@ -39,7 +39,7 @@
             <div class="table-top-right col-12 col-md-8 col-xl-9 text-right">
               <!--Button new record-->
               <q-btn icon="fas fa-edit" :label="params.create.title"
-                     v-bind="params.create.to ? {to : {name : params.create.to}} : {}"
+                     v-bind="params.create.to ? {to : {name : params.create.to,params:params.create.params !== undefined ? params.create.params : null}} : {}"
                      @click="params.create.to ? false : $emit('create')"
                      color="positive" class="q-my-xs"
                      v-if="params.create && params.hasPermission.create"/>
