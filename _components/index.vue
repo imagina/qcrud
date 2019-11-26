@@ -70,7 +70,7 @@
                   <!--Content-->
                   <q-card-section>
                     <!--load dynamic fields-->
-                    <dynamic-field v-model="table.filter[field.name || key]" :key="field.name || key" class="q-mb-sm"
+                    <dynamic-field v-model="table.filter[field.name || key]" :key="field.name || key"
                                    @input="getDataTable" :field="field" v-for="(field, key) in params.read.filters"/>
                   </q-card-section>
                 </q-card>
@@ -81,9 +81,10 @@
           <!--= Custom Columns =-->
           <q-td slot="body-cell-actions" slot-scope="props" :props="props">
             <!--Edit button-->
-            <q-btn color="positive" icon="fas fa-pen" size="sm" v-if="permitAction(props.row).edit"
+            <q-btn color="positive" icon="fas fa-pen" size="sm"
+                   v-if="permitAction(props.row).edit"
                    v-bind="params.update.to ? {to : {name : params.update.to, params : props.row}} : {}"
-                   @click="params.update.to ? false : $emit('update', (params.field ? {field : props.row} : props.row.id))">
+                   @click="params.update.to ? false : $emit('update', props.row)">
               <q-tooltip :delay="300">{{$tr('ui.label.edit')}}</q-tooltip>
             </q-btn>
             <!--Delete button-->
