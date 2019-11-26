@@ -1,22 +1,21 @@
 <template>
   <!--Modal with form to category-->
-  <q-dialog id="modalFormCrud" v-model="show" v-if="show"
-            no-esc-dismiss no-backdrop-dismiss>
+  <q-dialog id="modalFormCrud" v-model="show" v-if="show" no-esc-dismiss no-backdrop-dismiss>
     <q-card :class="`bg-grey-1 backend-page row ${existFormRight ? 'col-2' : 'col-1'}`">
       <!--Header-->
       <q-toolbar class="bg-primary text-white">
         <q-toolbar-title>
-          <label v-if="!itemId && !field">{{params.create.title}}</label>
+          <label v-if="!isUpdate && !field">{{params.create.title}}</label>
           <label v-else>{{params.update.title}} <span v-if="!field">ID: {{itemId}}</span></label>
         </q-toolbar-title>
-        <q-btn flat v-close-popup icon="fas fa-times"/>
+        <q-btn flat @click="componentStore.remove()" v-close-popup icon="fas fa-times"/>
       </q-toolbar>
 
       <!--Content-->
       <q-card-section class="relative-position col-12" v-if="success">
         <!--Forms-->
         <q-form autocorrect="off" autocomplete="off" ref="formContent" class="row q-col-gutter-x-md col-12"
-                @submit="(!itemId && !field) ?  createItem() : updateItem()"
+                @submit="(!isUpdate && !field) ?  createItem() : updateItem()"
                 @validation-error="$alert.error($tr('ui.message.formInvalid'))">
           <!--Language-->
           <div class="col-12 q-mb-md"
@@ -25,14 +24,10 @@
           </div>
 
           <!--Form-->
-          <div v-for="(pos,key) in ['formLeft','formRight']" :key="pos"
-               :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`"
-               v-if="locale.success">
+          <div v-for="(pos,key) in ['formLeft','formRight']" :key="pos" v-if="locale.success"
+               :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`">
             <!--Fields-->
             <div v-for="(field, key) in  params[pos]" :key="key" :ref="key">
-              <!--Toogle password-->
-              <q-checkbox v-if="itemId && (field.type == 'password')" class="q-mt-sm"
-                          v-model="updatePassword" :label="$tr('ui.message.updatePassword')"/>
               <!--Dynamic field to options-->
               <dynamic-field v-model="locale.formTemplate.options[field.name || key]" :key="key"
                              @input="setSlug(field.name || key)" :field="field"
@@ -57,7 +52,7 @@
         <q-toolbar-title></q-toolbar-title>
         <!--Button Save-->
         <q-btn icon="fas fa-save" color="positive"
-               v-if="!itemId && !field" :label="$tr('ui.label.save')"
+               v-if="!isUpdate && !field" :label="$tr('ui.label.save')"
                :loading="loading" @click="$refs.formContent.submit()"/>
         <!--Button Update-->
         <q-btn :label="$tr('ui.label.update')" icon="fas fa-pen" color="positive"
@@ -68,8 +63,6 @@
 </template>
 
 <script>
-  import recursiveSelect from '@imagina/qsite/_components/master/recursiveListSelect'
-
   export default {
     props: {
       value: {default: false},
@@ -77,30 +70,33 @@
       field: {default: false},
       params: {default: false}
     },
-    components: {
-      recursiveSelect
-    },
+    components: {},
     watch: {
       value(newValue) {
         this.show = this.value
       },
       show(newValue) {
         this.$emit('input', this.show)
-        this.initForm()
+        if (newValue) this.initForm()
+      },
+      'locale.formTemplate': {
+        deep: true,
+        handler: function (newValue) {
+          this.componentStore.update()
+        }
       }
     },
     mounted() {
       this.$nextTick(function () {
-        this.initForm()
+        this.show = this.value
       })
     },
     data() {
       return {
         success: false,//global component status
         show: false,
-        locale: {fields: {options: {}}, fieldsTranslatable: {}, validations: {}},
+        locale: {fields: {options: {}}, fieldsTranslatable: {}},
         loading: false,
-        updatePassword: false,//Permit edit password
         dataField: []
       }
     },
@@ -113,6 +109,39 @@
           return false
         }
       },
+      //Validate if form is update
+      isUpdate() {
+        if (parseInt(this.itemId) >= 0) return true
+        return false
+      },
+      //Actions to store component
+      componentStore() {
+        return {
+          create: () => {
+            if (this.show && !this.params.field) {
+              setTimeout(() => {
+                //Get form data
+                let componentData = this.$clone(this.locale.formTemplate)
+                componentData.typeForm = this.isUpdate ? 'update' : 'create'
+                //Create in store
+                this.$store.dispatch('qcrudComponent/SET_COMPONENT', {
+                  id: this.params.crudId, data: componentData
+                })
+              }, 500)
+            }
+          },
+          update: () => {
+            if (!this.params.field)
+              this.$store.dispatch('qcrudComponent/SET_DATA_COMPONENT', {
+                id: this.params.crudId, data: this.locale.formTemplate
+              })
+          },
+          remove: () => {
+            if (!this.params.field)
+              this.$store.dispatch('qcrudComponent/DELETE_COMPONENT', this.params.crudId)
+          },
+        }
+      }
     },
     methods: {
       //Init form
@@ -120,7 +149,8 @@
         this.orderFields()//order fields to component locale
         this.show = this.value//Assign props value to show modal
         this.success = true//succesfull
-        if (this.itemId || this.params.field) await this.getDataItem()//Get data item
+        if (this.isUpdate || this.params.field) await this.getDataItem()//Get data item
+        this.componentStore.create()//Create component in store
       },
       //Order fields of parms
       orderFields() {
@@ -132,7 +162,6 @@
         //Init fields and validations to locales
         let fields = this.$clone(this.locale.fields)
         let fieldsTranslatables = this.$clone(this.locale.fieldsTranslatable)
-        let validations = this.$clone(this.locale.validations)
 
         //Assign each field by type (translatable, fake field, just field) and validation
         Object.keys(form).forEach((key) => {
@@ -145,31 +174,11 @@
           } else {
             fields[field.name || key] = field.value
           }
-          //Create validations
-          if (field.isRequired) {
-            //validations[field.name || key] = this.getValidationByFieldType(field.type)
-          }//Set validations
         })
 
         //Assign fields and valitadions to locale
         this.locale.fields = this.$clone(fields)
         this.locale.fieldsTranslatable = this.$clone(fieldsTranslatables)
-        this.locale.validations = this.$clone(validations)
-      },
-      //Return message validation by field type
-      getValidationMessage(type) {
-        let response = this.$tr('ui.message.fieldRequired')//Default message
-
-        switch (type) {
-          case 'email'://=== Check Password
-            response = this.$tr('ui.message.fieldEmail')
-            break
-          case 'checkPassword'://=== Check Password
-            response = this.$tr('ui.message.fieldCheckPassword')
-            break
-        }
-
-        return response//Response
       },
       //Get data category to update
       getDataItem() {
@@ -187,21 +196,18 @@
           params.params.filter.allTranslations = true
 
           //Request if exist item ID
-          if (this.itemId) {
+          if (!this.params.field) {
             //Request
             this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
               this.locale.form = this.$clone(response.data)
-              resolve(true)
               this.loading = false//hide loading
+              resolve(true)
             }).catch(error => {
               this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
-              reject(false)
               this.loading = false//hide loading
+              reject(false)
             })
-          }
-
-          //Request if exist field
-          if (this.params.field) {
+          } else { //Request if exist field
             //Request
             this.$crud.index(propParams.apiRoute, params).then(response => {
               //Save data field
@@ -214,12 +220,12 @@
               //Set data item if is update
               if (this.field) this.locale.form = this.$clone(this.field)
 
+              this.loading = false//hide loading
               resolve(true)
-              this.loading = false//hide loading
             }).catch(error => {
-              this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
-              reject(false)
+              this.$alert.error(this.$tr('ui.message.errorRequest'))
               this.loading = false//hide loading
+              reject(false)
             })
           }
         })
@@ -232,7 +238,7 @@
 
           //Request
           this.$crud.create(propParams.apiRoute, this.getDataForm()).then(response => {
-            this.$root.$emit(`crudForm${propParams.apiRoute}Created`)//emmit event
+            this.$root.$emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
             this.$alert.info({message: `${this.$tr('ui.message.recordCreated')}`})
             this.initForm()
             this.loading = false
@@ -282,12 +288,7 @@
       getDataForm() {
         //Clone data form
         let data = this.$clone(this.locale.form)
-
-        //Remove password if not allow update and is update
-        if (this.itemId && !this.updatePassword) {
-          delete data.password
-        }
-
+        let crudFields = {...(this.params.formLeft || {}), ...(this.params.formRight || {})}
         //Validate options
         if (data.options && !Object.keys(data.options).length) delete data.options
 
@@ -308,6 +309,11 @@
           }
         }
 
+        //Delete fields no crud
+        for (var fieldname in crudFields) {
+          if (crudFields[fieldname].noCrud) delete data[fieldname]
+        }
+
         return data//Response
       },
       //format slug
@@ -317,7 +323,7 @@
           let formTemplate = this.$clone(this.locale.formTemplate)//Get form template
 
           //If is creation and field is title or name
-          if ((['title', 'name'].indexOf(field) != -1) && !this.itemId) {
+          if ((['title', 'name'].indexOf(field) != -1) && !this.isUpdate) {
             slug = formTemplate.name || formTemplate.title || false
           }
 
@@ -327,26 +333,21 @@
           //Set slug
           if (slug && (this.locale.formTemplate.slug != undefined))
             this.locale.formTemplate.slug = this.$clone(this.$helper.getSlug(slug))
-        },100)
+        }, 100)
       },
       //validate if should show field
       showField(field, fieldName) {
         let response = true//Default response
 
-        //Check if is password type and is updated record
-        if (['password', 'checkPassword'].indexOf(field.type) != -1) {
-          if (this.itemId && !this.updatePassword) response = false
-        }
-
         //Check if is field "masterRecord" and check permission
         if (field.isFakeField && (fieldName == 'masterRecord')) {
           //Validate permission to create
-          if (!this.itemId && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.create')) {
+          if (!this.isUpdate && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.create')) {
             response = false
           }
 
           //Validate permission to update
-          if (this.itemId && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.edit')) {
+          if (this.isUpdate && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.edit')) {
             response = false
           }
         }
@@ -354,10 +355,6 @@
         //Response
         return response
       },
-      //Validate password
-      validateField(field) {
-
-      }
     }
   }
 </script>
@@ -365,6 +362,7 @@
 <style lang="stylus">
   #modalFormCrud
     .q-card
+      max-height calc(100vh - 48px) !important
       .q-card__section
         max-height calc(100vh - 148px) !important
         overflow-y scroll
