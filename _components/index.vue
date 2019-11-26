@@ -20,10 +20,15 @@
             <!--Table slot left-->
             <div class="table-top-left col-12 col-md-4 col-xl-3">
               <!--Search-->
-              <q-search hide-underline clearable v-model="table.filter.search"
-                        @input="getDataTable" class="q-my-xs" v-if="params.read.search !== false"/>
+              <q-input clearable v-model="table.filter.search" dense outlined debounce="800"
+                       :placeholder="`${$tr('ui.label.search',{capitalize : true})}...`"
+                       @input="getDataTable" v-if="params.read.search !== false">
+                <template v-slot:append>
+                  <q-icon name="search"/>
+                </template>
+              </q-input>
               <!--Title-->
-              <div class="q-title text-primary ellipsis" v-if="params.read.title || params.read.icon">
+              <div class="text-h6 text-primary ellipsis" v-if="params.read.title || params.read.icon">
                 <q-icon v-if="params.read.icon" class="q-mr-sm" :name="params.read.icon"/>
                 <span v-if="params.read.title" :title="params.read.title">
                   {{params.read.title}}
@@ -34,14 +39,15 @@
             <div class="table-top-right col-12 col-md-8 col-xl-9 text-right">
               <!--Button new record-->
               <q-btn icon="fas fa-edit" :label="params.create.title"
-                     :to="params.create.to ? {name : params.create.to} : {}"
+                     v-bind="params.create.to ? {to : params.create.to} : {}"
                      @click="params.create.to ? false : $emit('create')"
                      color="positive" class="q-my-xs"
                      v-if="params.create && params.hasPermission.create"/>
               <!--Button toggle filters-->
-              <q-btn icon="fas fa-filter" color="primary" :label="$trp('ui.label.filter')"
-                     :icon-right="`fas fa-${filter.show ? 'caret-up' : 'caret-down'}`"
-                     @click="filter.show = !filter.show" class="q-ml-xs" v-if="filter.available"/>
+              <q-btn icon="fas fa-filter" color="primary" class="q-ml-xs"
+                     @click="filter.show = !filter.show" v-if="filter.available">
+                <q-tooltip>{{$trp('ui.label.filter')}}</q-tooltip>
+              </q-btn>
               <!--Button refresh data-->
               <q-btn icon="fas fa-sync-alt" color="info" class="q-ml-xs"
                      @click="getDataTable(true)">
@@ -49,54 +55,35 @@
               </q-btn>
             </div>
             <!--Filters-->
-            <div v-if="filter.available" class="table-top-filters col-12 q-my-xs">
-              <!--Collapsible with filters (desktop)-->
-              <q-collapsible v-model="filter.show" class="q-hide q-sm-show"
-                             header-style="display: none">
-                <!--Product Option-->
-                <div :class="`q-mr-xs ${field.type == 'select' ? 'cont-vue-tree' : ''}`"
-                     v-for="(field, key) in params.read.filters">
-                  <dynamic-field v-model="table.filter[field.name || key]" :key="field.name || key"
-                                 @input="getDataTable" :field="field"/>
-                </div>
-              </q-collapsible>
-              <!--Modal with filters (Movile)-->
-              <q-modal v-model="filter.show" class="q-sm-hide backend-page">
-                <q-modal-layout>
+            <div v-if="filter.available" class="table-top-filters col-12 q-mt-xs">
+              <q-dialog id="dialogFilters" v-model="filter.show">
+                <q-card>
                   <!--Header-->
-                  <q-toolbar slot="header">
+                  <q-toolbar class="bg-primary text-white">
                     <q-toolbar-title class="capitalize">
                       <q-icon name="fas fa-filter" class="q-mr-sm"/>
                       {{$trp('ui.label.filter')}}
                     </q-toolbar-title>
-                    <q-btn flat v-close-overlay icon="fas fa-times"/>
-                  </q-toolbar>
-
-                  <!--Footer-->
-                  <q-toolbar slot="footer" color="white">
-                    <q-toolbar-title></q-toolbar-title>
-                    <!--Button Save-->
-                    <q-btn icon="fas fa-times" color="positive" :label="$tr('ui.label.close')"
-                           :loading="loading" @click="filter.show = false"/>
+                    <q-btn v-close-popup flat icon="fas fa-times"/>
                   </q-toolbar>
 
                   <!--Content-->
-                  <div class="layout-padding relative-position">
+                  <q-card-section>
                     <!--load dynamic fields-->
-                    <dynamic-field v-for="(field, key) in params.read.filters"
-                                   v-model="table.filter[field.name || key]" :key="field.name || key"
-                                   @input="getDataTable" :field="field"/>
-                  </div>
-                </q-modal-layout>
-              </q-modal>
+                    <dynamic-field v-model="table.filter[field.name || key]" :key="field.name || key"
+                                   @input="getDataTable" :field="field" v-for="(field, key) in params.read.filters"/>
+                  </q-card-section>
+                </q-card>
+              </q-dialog>
             </div>
           </template>
+
           <!--= Custom Columns =-->
           <q-td slot="body-cell-actions" slot-scope="props" :props="props">
             <!--Edit button-->
             <q-btn color="positive" icon="fas fa-pen" size="sm"
                    v-if="permitAction(props.row).edit"
-                   :to="params.update.to ? {name : params.update.to, params : {id : props.row.id}} : {}"
+                   v-bind="params.update.to ? {to : {name : params.update.to, params : props.row}} : {}"
                    @click="params.update.to ? false : $emit('update', props.row)">
               <q-tooltip :delay="300">{{$tr('ui.label.edit')}}</q-tooltip>
             </q-btn>
@@ -117,21 +104,21 @@
         </q-table>
 
         <!--Dialog to delete-->
-        <q-dialog v-model="dialogDeleteItem" class="backend-page" prevent-close>
-          <!-- Message -->
-          <div slot="message">
-            <h1 class="q-title text-negative">{{itemIdToDelete.title}}</h1>
-            {{$tr('ui.message.deleteRecord')}}
-          </div>
+        <q-dialog v-model="dialogDeleteItem">
+          <q-card class="backend-page">
+            <q-card-section>
+              <h5 class="q-ma-none text-negative">{{itemIdToDelete.title}}</h5>
+              {{$tr('ui.message.deleteRecord')}}
+            </q-card-section>
 
-          <!--Buttons-->
-          <div slot="buttons" slot-scope="props">
-            <!--Button cancel-->
-            <q-btn color="blue-grey" label="Cancel" @click="dialogDeleteItem = false"/>
-            <!--Button confirm delete category-->
-            <q-btn color="negative" icon="fas fa-trash-alt" :loading="loading"
-                   label="Delete" @click="deleteItem()"/>
-          </div>
+            <q-card-actions align="right">
+              <!--Button cancel-->
+              <q-btn color="blue-grey" label="Cancel" @click="dialogDeleteItem = false"/>
+              <!--Button confirm delete category-->
+              <q-btn color="negative" icon="fas fa-trash-alt" :loading="loading"
+                     label="Delete" @click="deleteItem()"/>
+            </q-card-actions>
+          </q-card>
         </q-dialog>
 
         <!--Loading-->
@@ -178,15 +165,15 @@
       }
     },
     computed: {
-      showSlotTable(){
+      showSlotTable() {
         let data = this.$clone(this.table.data)
         let lengData = (data && data.length) ? data.length : false
         let pagination = this.$clone(this.table.pagination)
 
         //Order response
         let response = {
-          header : lengData ? true : false,
-          bottom : (pagination.rowsNumber >= pagination.rowsPerPage) ? true : (!lengData ? true : false)
+          header: lengData ? true : false,
+          bottom: (pagination.rowsNumber >= pagination.rowsPerPage) ? true : (!lengData ? true : false)
         }
 
         return response //Response
@@ -237,17 +224,18 @@
         params.params.take = pagination.rowsPerPage
 
         //Merge with params from prop
-        if (propParams.read.params && Object.keys(propParams.read.params).length)
+        if (propParams.read.params && Object.keys(propParams.read.params).length) {
           Object.keys(propParams.read.params).forEach(key => {
             params.params[key] = Object.assign({}, params.params[key], propParams.read.params[key])
           })
+        }
 
         //Request
         this.$crud.index(propParams.apiRoute, params).then(response => {
           let dataTable = response.data
 
           //If is field change format
-          if (this.params.field){
+          if (this.params.field) {
             dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
             this.dataField = response.data[0]
           }
@@ -277,7 +265,7 @@
 
           //Request
           this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
-            this.$alert.success({message: this.$tr('ui.message.recordDeleted')})
+            this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
             this.getDataTable(true)
             this.dialogDeleteItem = false
             this.loading = false
@@ -288,7 +276,7 @@
         } else {
           //Request
           this.$crud.delete(propParams.apiRoute, item.id).then(response => {
-            this.$alert.success({message: this.$tr('ui.message.recordDeleted')})
+            this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
             this.getDataTable(true)
             this.dialogDeleteItem = false
             this.loading = false
@@ -312,31 +300,31 @@
         if (!this.params.hasPermission.edit) edit = false//Validate entity permissions
         if (!this.params.update) edit = false//Validate if crud require update
         //Validate if record id "Master Record"
-        if (isMasterRecord && !this.$auth.hasAccess('isite.master.records.edit')) edit = false
+        if (isMasterRecord && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.edit')) edit = false
 
         //Check to permit action destroy
         if (!this.params.hasPermission.destroy) destroy = false//Validate entity permissions
         if (!this.params.delete) destroy = false//Validate if crud require update
         //Validate if record id "Master Record"
-        if (isMasterRecord && !this.$auth.hasAccess('isite.master.records.destroy')) destroy = false
+        if (isMasterRecord && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.destroy')) destroy = false
 
         //Response
         return {edit: edit, destroy: destroy}
       },
       //Call custom action
-      callCustomAction(action, row){
+      callCustomAction(action, row) {
         //Check if has action function
-        if(action.action) action.action(row)
+        if (action.action) action.action(row)
         //Check if has redirect to route
-        if(action.route)
-          this.$router.push({name : action.route, params : row || {}})
+        if (action.route) {
+          this.$router.push({name: action.route, params: row || {}})
+        }
       }
     }
   }
 </script>
 
 <style lang="stylus">
-  @import "~variables";
   #componentCrudIndex
     .q-table-container
       @media screen and (max-width: $breakpoint-sm)
@@ -349,7 +337,6 @@
         .table-top-filters
           order 3
 
-    .q-collapsible
-      .q-collapsible-sub-item
-        padding 0px !important
+  #dialogFilters
+    min-height max-content !important
 </style>
