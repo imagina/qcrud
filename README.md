@@ -1,10 +1,10 @@
-## QCRUD  | 2.1.0
+## QCRUD  | 2.1.1
 
 This package has a components to make a CRUD in the best and fast way
 
 ## Installation
 
-`` npm i @imagina/qcrud@2.1.0 ``
+`` npm i @imagina/qcrud@2.1.1 ``
 
 ## Usage
 
