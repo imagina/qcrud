@@ -7,7 +7,7 @@ export function SET_COMPONENT(state, params) {
 export function SET_DATA_COMPONENT(state, params) {
   let component = state.component//Get current components
   component[params.id] = {...component[params.id], ...params.data}//Merge data component
-  state.component = component//Set in state data
+  state.component = JSON.parse(JSON.stringify(component))//Set in state data
 }
 
 export function DELETE_COMPONENT(state, componentId) {
