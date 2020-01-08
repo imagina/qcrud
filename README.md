@@ -1,10 +1,10 @@
-## QCRUD  | 2.1.2
+## QCRUD  | 2.1.3
 
 This package has a components to make a CRUD in the best and fast way
 
 ## Installation
 
-`` npm i @imagina/qcrud@2.1.2 ``
+`` npm i @imagina/qcrud@2.1.3 ``
 
 ## Usage
 
@@ -21,6 +21,7 @@ to config your CRUD. with next format:
         crudData() {
           return {
             crudId : this.crudId,//Required
+            modalId : 'modal-id',//Set custom id to crud modal 
             apiRoute: 'api-route-name',//Required
             permission: 'prefix-permissions (ejm: iblog.posts)',
             create: {
@@ -71,7 +72,7 @@ to config your CRUD. with next format:
       let configField = {
         value: 'value',//Default Value to field
         name: '',//Set field name [options, by default set name of field]
-        type: [input,select,date,html,multiSelect,checkbox,media],
+        type: [input,select,date,hour,html,multiSelect,checkbox,media],
         isTranslatable : Booblean, //Set field as translatable
         isFakeField: true,//Define if field is a fake field
         noCrud: true,//If is true, this field will no send as form
@@ -116,8 +117,8 @@ to config your CRUD. with next format:
   
   | Method | Description |
   | --------- | ---------- |
-  | `create()` | You can set prop `type` as `none` to hiden component, and call this method to open modal with creation form |
-  | `update(itemId)` | You can set prop `type` as `none` to hiden component, and call this method to open modal with edition form |
+  | `create({})` | You can set prop `type` as `none` to hide component, and call this method to open modal with creation form, extra you can set a Object with data to change form data |
+  | `update(itemId)` | You can set prop `type` as `none` to hide component, and call this method to open modal with edition form |
     
 ## Services    
 

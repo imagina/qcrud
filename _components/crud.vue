@@ -45,7 +45,8 @@
       <!--Modal create/update component-->
       <crud-form v-model="showModal" v-if="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
-                 @created="formEmmit()" @updated="formEmmit('updated')"/>
+                 @created="(response) => formEmmit('created', response)"
+                 @updated="formEmmit('updated')"/>
     </div>
 
     <!--=== Dialog permission deny ===-->
@@ -92,7 +93,7 @@
     components: {crudIndex, crudForm},
     watch: {
       value(newValue, oldValue) {
-        if(JSON.stringify(newValue) != JSON.stringify(oldValue)){
+        if (JSON.stringify(newValue) != JSON.stringify(oldValue)) {
           if (newValue && (typeof newValue == 'object')) {
             let responseSelected = []
             newValue.forEach(item => responseSelected.push(item.toString()))
@@ -124,7 +125,8 @@
           itemSelected: null,//Item to emmit if is crudSelect
           options: [],//options to show in select
           rootOptions: [],//Save all options
-        }
+        },
+        dataFieldsCustom: {}
       }
     },
     computed: {
@@ -190,6 +192,15 @@
       paramsProps() {
         let crudData = this.$refs.componentCrudData.crudData || {}//
         crudData.hasPermission = this.hasPermission//Add permission validated
+
+        //Merge fields with dataFieldsCustom
+        for (var fieldName in this.dataFieldsCustom) {
+          if (crudData.formLeft && crudData.formLeft[fieldName])
+            crudData.formLeft[fieldName].value = this.dataFieldsCustom[fieldName]
+          if (crudData.formRight && crudData.formRight[fieldName])
+            crudData.formRight[fieldName].value = this.dataFieldsCustom[fieldName]
+        }
+
         return crudData
       },
       //Emit value
@@ -264,8 +275,9 @@
         })
       },
       //watch emit create from index component
-      create() {
+      create(dataCustom = {}) {
         if (this.hasPermission.create) {
+          this.dataFieldsCustom = dataCustom
           this.itemIdToEdit = false
           this.fieldData = false
           this.showModal = true
@@ -280,11 +292,11 @@
         } else this.dialogPermissions.show = true
       },
       //watch emit update from form component
-      formEmmit(type = 'created') {
+      formEmmit(type = 'created', response = false) {
         if (this.type == 'full') {
           this.$refs.crudIndex.getDataTable(true)
         } else this.getIndexOptions()
-        this.$emit(type)
+        this.$emit(type, response)
       },
       //Validate type to show
       showType(type) {

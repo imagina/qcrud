@@ -1,6 +1,7 @@
 <template>
   <!--Modal with form to category-->
-  <q-dialog id="modalFormCrud" v-model="show" v-if="show" no-esc-dismiss no-backdrop-dismiss>
+  <q-dialog :id="params.modalId || 'modalFormCrud'" content-class="modal-form-crud"
+            v-model="show" v-if="show" no-esc-dismiss no-backdrop-dismiss>
     <q-card :class="`bg-grey-1 backend-page row ${existFormRight ? 'col-2' : 'col-1'}`">
       <!--Header-->
       <q-toolbar class="bg-primary text-white">
@@ -243,7 +244,7 @@
             this.initForm()
             this.loading = false
             this.show = false
-            this.$emit('created', response.data)
+            this.$emit('created', this.getDataForm())
           }).catch(error => {
             this.$alert.error({message: `${this.$tr('ui.message.recordNoCreated')}`})
             this.loading = false//login hide
@@ -360,9 +361,10 @@
 </script>
 
 <style lang="stylus">
-  #modalFormCrud
+  .modal-form-crud
     .q-card
       max-height calc(100vh - 48px) !important
+
       .q-card__section
         max-height calc(100vh - 148px) !important
         overflow-y scroll
