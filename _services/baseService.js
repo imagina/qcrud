@@ -3,6 +3,13 @@ import {remember} from '@imagina/qhelper/_plugins/remember'
 import {helper} from '@imagina/qhelper/_plugins/helper'
 import config from '@imagina/qsite/_config/master/index'
 
+//Replace params in apiRoute
+function replaceParamsApiRoute(apiRoute, params) {
+  for (var paramName in params) apiRoute = apiRoute.replace(`{${paramName}}`, params[paramName].toString())
+  return apiRoute
+}
+
+
 export default {
   /**
    * Create a item
@@ -169,7 +176,7 @@ export default {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!data) return reject('Data is required')
-      let urlApi = config(configName)//Get url from config
+      let urlApi = replaceParamsApiRoute(config(configName), data || {})//Get url from config
 
       //Request
       axios.post(urlApi, data).then(response => {
@@ -189,7 +196,7 @@ export default {
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
-      let urlApi = config(configName)//Get url from config
+      let urlApi = replaceParamsApiRoute(config(configName), data || {})//Get url from config
 
       //Request
       axios.get(urlApi, {params: params}).then(response => {

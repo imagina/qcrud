@@ -88,7 +88,12 @@
           return {}
         }
       },
-      value: {default: undefined}
+      value: {default: undefined},
+      customData: {
+        default: () => {
+          return {}
+        }
+      }
     },
     components: {crudIndex, crudForm},
     watch: {
@@ -200,6 +205,13 @@
           if (crudData.formRight && crudData.formRight[fieldName])
             crudData.formRight[fieldName].value = this.dataFieldsCustom[fieldName]
         }
+
+        //Merge with custom data
+        if (this.customData && (typeof this.customData == 'object'))
+          for(var itemName in this.customData){
+            let itemValue = this.$clone(this.customData[itemName])
+            if(crudData[itemName]) crudData[itemName] = {...crudData[itemName], ...itemValue}
+          }
 
         return crudData
       },

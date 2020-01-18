@@ -1,10 +1,10 @@
-## QCRUD  | 2.1.3
+## QCRUD  | 2.1.4
 
 This package has a components to make a CRUD in the best and fast way
 
 ## Installation
 
-`` npm i @imagina/qcrud@2.1.3 ``
+`` npm i @imagina/qcrud@2.1.4 ``
 
 ## Usage
 
@@ -99,7 +99,7 @@ to config your CRUD. with next format:
       }
     ```      
     
-  When the `cud.vue` file has been created, you just use the `<crud>` component (this component is registered globally 
+  When the `crud.vue` file has been created, you just use the `<crud>` component (this component is registered globally 
   for use) and set the necesary props.
   
 - #### API  
@@ -108,7 +108,8 @@ to config your CRUD. with next format:
   | `type` | `String` | Define load type to component between [select, button-create, full]. "full" type it's default |
   | `crud-data` | `import('path')` | Import with config to CRUD |
   | `crud-props` | `Object` | Object with props to component |
-  | `crud-config` | `Object` | Onject with config to component like [requestParams, options] |
+  | `config` | `Object` | Object with config to component like [requestParams, options] |
+  | `custom-data` | `Object` | Replace information from `crud.vue` file |
   
   | Event | Description |
   | --------- | ---------- |
