@@ -7,6 +7,6 @@ export const getField = (state) => (params) => {
   if(!params.fieldName) return 'Field "fieldName" is required'
 
   let component = state.component[params.id] || {}//Get component
-  console.warn(params, component[params.fieldName])
+  
   return component[params.fieldName]//Return response
 }

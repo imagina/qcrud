@@ -1,7 +1,8 @@
 import axios from 'axios'
-import {remember} from '@imagina/qhelper/_plugins/remember'
-import {helper} from '@imagina/qhelper/_plugins/helper'
+import {remember} from '@imagina/qsite/_plugins/remember'
+import {helper} from '@imagina/qsite/_plugins/helper'
 import config from '@imagina/qsite/_config/master/index'
+import {req} from "vuelidate/lib/validators/common";
 
 //Replace params in apiRoute
 function replaceParamsApiRoute(apiRoute, params) {
@@ -42,35 +43,29 @@ export default {
    */
   index(configName, params = {}) {
     return new Promise((resolve, reject) => {
-      //Calidate if exist config name
-      if (!configName) return reject('Config name is required')
-      //Default params
-      let defaultParams = {params: {}, refresh: false, remember: true, cacheTime: (3600 * 3)}
-      params = Object.assign({}, defaultParams, params)//Merge params
-
+      params = {params: {}, refresh: false, cacheTime: (3600 * 3), ...params}//Validate params params
+      if (!configName) return reject('Config name is required')//Validate config name
       let urlApi = config(configName)//Get url from config
-      let requestParams = (params && params.params) ? params.params : false//Get request params
+      let key = `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
 
-      //Remember request
-      if (params && params.remember) {
-        let key = !requestParams ? configName : configName + JSON.stringify(requestParams)//Key for rememeber
-        remember.async(//Call method remember
-          key, params.cacheTime,
-          () => {
-            return axios.get(urlApi, {params: requestParams})
-          }, params.refresh
-        ).then(response => {
-          resolve(response)//Successful response
-        }).catch(error => {
-          reject(error)//Failed response
-        })
-      } else {//Request without remember
-        axios.get(urlApi, {params: requestParams}).then(response => {
-          resolve(response.data)//Successful response
-        }).catch(error => {
-          reject(error.response.data.errors)//Failed Response
-        })
-      }
+      remember.async({
+        key: key,
+        seconds: params.cacheTime,
+        refresh: params.refresh,
+        callBack: () => {
+          return new Promise(async (resolve, reject) => {
+            await axios.get(urlApi, {params: params.params}).then(response => {
+              resolve(response)//Response
+            }).catch(error => {
+              console.error('[base-service-index-callback]Error::', error)
+              reject(error.response)//Response
+            })
+          })
+        }
+      }).then(response => resolve(response)).catch(error => {
+        console.error('[base-service-index]Error::', error)
+        reject(error)
+      })
     })
   },
 
@@ -83,35 +78,23 @@ export default {
    */
   show(configName, criteria, params = {}) {
     return new Promise((resolve, reject) => {
-      //Validations
-      if (!configName) return reject('Config name is required')
-      if (!criteria) return reject('Criteria is required')
-      //Default params
-      let defaultParams = {params: {}, refresh: false, remember: true, cacheTime: (3600 * 3)}
-      params = Object.assign({}, defaultParams, params)//Merge params
-
+      params = {params: {}, refresh: false, cacheTime: (3600 * 3), ...params}//Validate params params
+      if (!configName) return reject('Config name is required')//Validate Config name
+      if (!criteria) return reject('Criteria is required')//Validate criteria
       let urlApi = config(configName) + '/' + criteria//Get url from config
-      let requestParams = (Object.keys(params.params).length) ? params.params : {}//Get request params
+      let key = `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
 
-      if (params && params.remember) {//Remember request
-        let key = !requestParams ? configName : configName + JSON.stringify(requestParams)//Key for rememeber
-        remember.async(//Call method remember
-          key, (params.cacheTime),
-          () => {
-            return axios.get(urlApi, {params: requestParams})
-          }, params.refresh
-        ).then(response => {
-          resolve(response)//Successful response
-        }).catch(error => {
-          reject(error)//Failed response
-        })
-      } else {//Request without remember
-        axios.get(urlApi, {params: requestParams}).then(response => {
-          resolve(response.data)//Successful response
-        }).catch(error => {
-          reject(error.response.data.errors)//Failed Response
-        })
-      }
+      remember.async({
+        key: key,
+        seconds: params.cacheTime,
+        refresh: params.refresh,
+        callBack: () => {
+          return new Promise(async (resolve, reject) => {
+            let response = await axios.get(urlApi, {params: params.params}).catch(error => reject(error.response))
+            resolve(response)//Response
+          })
+        }
+      }).then(response => resolve(response)).catch(error => reject(error))
     })
   },
 
@@ -157,7 +140,8 @@ export default {
       let urlApi = config(configName) + '/' + criteria//Get url from config
       let requestParams = (params && params.params) ? params.params : false//Get request params
       //Request
-      axios.delete(urlApi, requestParams).then(response => {
+
+      axios.delete(urlApi, {params : requestParams}).then(response => {
         resolve(response.data)//Successful response
       }).catch(error => {
         reject(error.response.data.errors)//Failed response
@@ -192,7 +176,7 @@ export default {
    * @param configName
    * @param params
    */
-  get(configName, params = {}) {
+  get(configName, params = {}, data) {
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')

@@ -31,14 +31,16 @@
             <div v-for="(field, key) in  params[pos]" :key="key" :ref="key">
               <!--Dynamic field to options-->
               <dynamic-field v-model="locale.formTemplate.options[field.name || key]" :key="key"
-                             @input="setSlug(field.name || key)" :field="field"
-                             :language="locale.language" :item-id="itemId"
+                             @input="setDynamicValues(field.name || key, field)"
+                             :field="{...field, testId : (field.testId || field.name || key)}"
+                             :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
                              v-if="showField(field, (field.name || key)) && field.isFakeField"
                              @enter="$refs.formContent.submit()"/>
               <!--Dynamic field-->
-              <dynamic-field v-model="locale.formTemplate[field.name || key]" :key="key"
-                             @input="setSlug(field.name || key)" :field="field"
-                             :language="locale.language" :item-id="itemId"
+              <dynamic-field v-model="locale.formTemplate[field.testId || field.name || key]" :key="key"
+                             @input="setDynamicValues(field.name || key, field)"
+                             :field="{...field, testId : (field.testId  || field.name || key)}"
+                             :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
                              v-if="showField(field, (field.name || key)) && !field.isFakeField"
                              @enter="$refs.formContent.submit()"/>
             </div>
@@ -49,14 +51,14 @@
       </q-card-section>
 
       <!--Footer-->
-      <q-toolbar>
+      <q-toolbar class="q-pa-md">
         <q-toolbar-title></q-toolbar-title>
         <!--Button Save-->
-        <q-btn icon="fas fa-save" color="positive"
+        <q-btn icon="fas fa-save" color="positive" rounded unelevated
                v-if="!isUpdate && !field" :label="$tr('ui.label.save')"
                :loading="loading" @click="$refs.formContent.submit()"/>
         <!--Button Update-->
-        <q-btn :label="$tr('ui.label.update')" icon="fas fa-pen" color="positive"
+        <q-btn :label="$tr('ui.label.update')" icon="fas fa-pen" color="positive" rounded unelevated
                :loading="loading" @click="$refs.formContent.submit()" v-else/>
       </q-toolbar>
     </q-card>
@@ -132,10 +134,23 @@
             }
           },
           update: () => {
-            if (!this.params.field)
-              this.$store.dispatch('qcrudComponent/SET_DATA_COMPONENT', {
-                id: this.params.crudId, data: this.locale.formTemplate
-              })
+            if (!this.params.field) {
+              let formDataStore = this.$clone(this.$store.state.qcrudComponent.component[this.params.crudId])
+              let formData = this.$clone(this.locale.formTemplate)
+              let emiteForm = formDataStore ? false : true
+
+              //Vlaidate if change some item from form
+              if (!emiteForm)
+                for (var itemName in formData)
+                  if (JSON.stringify(formDataStore[itemName]) !== JSON.stringify(formData[itemName]))
+                    emiteForm = true
+
+              //Emit form data
+              if (emiteForm)
+                this.$store.dispatch('qcrudComponent/SET_DATA_COMPONENT', {
+                  id: this.params.crudId, data: this.locale.formTemplate
+                })
+            }
           },
           remove: () => {
             if (!this.params.field)
@@ -267,7 +282,7 @@
         if (await this.$refs.localeComponent.validateForm()) {
           this.loading = true
           let propParams = this.$clone(this.params)
-          let criteria = this.itemId
+          let criteria = this.$clone(this.itemId)
 
           //If is field update criteria
           if (this.params.field && this.dataField.id) criteria = this.dataField.id
@@ -318,22 +333,43 @@
         return data//Response
       },
       //format slug
-      setSlug(field) {
+      setDynamicValues(fieldName, field) {
         setTimeout(() => {
-          let slug = false
           let formTemplate = this.$clone(this.locale.formTemplate)//Get form template
 
-          //If is creation and field is title or name
-          if ((['title', 'name'].indexOf(field) != -1) && !this.isUpdate) {
-            slug = formTemplate.name || formTemplate.title || false
+          //Format Slug
+          if ((['title', 'name', 'slug'].indexOf(fieldName) != -1) && (this.locale.formTemplate.slug != undefined)) {
+            let slug = this.isUpdate ? false : (formTemplate.name || formTemplate.title || false)//Default data to slug
+            if ((fieldName == 'slug') && formTemplate.slug) slug = formTemplate.slug.replace(/-/g, ' ')//Format slug
+            if (slug) this.locale.formTemplate.slug = this.$clone(this.$helper.getSlug(slug))
           }
 
-          //Format field slug
-          if ((field == 'slug') && formTemplate.slug) slug = formTemplate.slug.replace(/-/g, ' ')
-
-          //Set slug
-          if (slug && (this.locale.formTemplate.slug != undefined))
-            this.locale.formTemplate.slug = this.$clone(this.$helper.getSlug(slug))
+          //Add categories
+          if ((fieldName == 'categoryId') && (this.locale.formTemplate.categories != undefined)) {
+            //Get component
+            let component = this.$refs[`field-categoryId`]
+            if (component) component = component[0]
+            //Get categories from component
+            let options = this.$clone(component ? (component.rootOptions || false) : false)
+            //Set categories
+            if (options && options.length) {
+              //Get parents of category
+              let parents = this.$array.parents(
+                this.$array.destroyTree(options),
+                this.locale.formTemplate.categoryId
+              )
+              //Add categories values
+              if (parents && parents.id && parents.id.length) {
+                let categoriesId = parents.id.map(String)//Parse Id's
+                //Merge categories
+                this.locale.formTemplate.categories.forEach(item => {
+                  if (categoriesId.indexOf(item) == -1) categoriesId.push(item)
+                })
+                //Set to categories
+                this.locale.formTemplate.categories = this.$clone(categoriesId)
+              }
+            }
+          }
         }, 100)
       },
       //validate if should show field
@@ -366,10 +402,11 @@
       max-height calc(100vh - 48px) !important
 
       .q-card__section
-        max-height calc(100vh - 148px) !important
+        min-height 250px
+        max-height calc(100vh - 176px) !important
         overflow-y scroll
 
-    .modal-content
+    .q-modal-content
       max-height 70vh !important
       @media screen and (max-width: $breakpoint-sm)
         max-height 100vh !important

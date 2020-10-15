@@ -42,6 +42,7 @@ to config your CRUD. with next format:
                 }
               ],
               filters : {'... Object with format fields'}, //Field to filter data
+              filterName : 'filter-name'//Load master filter from app.filters
             },
             update: {
               title: 'title'
@@ -72,7 +73,7 @@ to config your CRUD. with next format:
       let configField = {
         value: 'value',//Default Value to field
         name: '',//Set field name [options, by default set name of field]
-        type: [input,select,date,hour,html,multiSelect,checkbox,media],
+        type: `[crud,input,search,date,hour,select,html,multiSelect,checkbox,image,media,permissions,settings]`,
         isTranslatable : Booblean, //Set field as translatable
         isFakeField: true,//Define if field is a fake field
         noCrud: true,//If is true, this field will no send as form
@@ -96,6 +97,11 @@ to config your CRUD. with next format:
           select: {label: 'name', id: 'id'}, //Define fields to config select
           delayed : () => {} //Load async options
         },
+        validateField : {//Validate if value of field exist [tested only in `input` type]
+          apiRoute: 'api-route-name',//Required
+          requestParams : {},//Request params
+          crudId : this.crudId//<int> Default rule to validate when is with crud
+        }     
       }
     ```      
     

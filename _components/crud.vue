@@ -8,18 +8,20 @@
            @click="create" v-if="showType('button-create')"/>
 
     <!--=== Select to List and Create ===-->
-    <q-select v-model="dataCrudSelect.itemSelected" :options="dataCrudSelect.options"
+    <q-select v-model="dataCrudSelect.itemSelected" :options="dataCrudSelect.options || []"
               :loading="dataCrudSelect.loading" style="width: 100%;" v-if="showType('select')"
-              @filter="filterOptions" @input="emitValue" v-bind="defaultProps">
+              @filter="filterOptions" @input="emitValue" v-bind="defaultProps"
+              :readonly="dataCrudSelect.loading" :rules="rules">
       <!--Before options slot-->
       <template v-slot:before-options>
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="positive"
-               :label="`${params.create.title || ''}`" @click="create"/>
+               :label="`${params.create.title || ''}`" @click="create" v-if="params.create"/>
+        <div v-else></div>
       </template>
       <!--No options slot-->
       <template v-slot:no-option>
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="positive"
-               :label="`${params.create.title || ''}`" @click="create"/>
+               :label="`${params.create.title || ''}`" @click="create" v-if="params.create"/>
         <q-item>
           <q-item-section class="text-grey">
             {{$tr('ui.message.notFound')}}
@@ -88,23 +90,23 @@
           return {}
         }
       },
-      value: {default: undefined},
+      value: {default: null},
       customData: {
         default: () => {
           return {}
+        }
+      },
+      rules: {
+        default: () => {
+          return []
         }
       }
     },
     components: {crudIndex, crudForm},
     watch: {
       value(newValue, oldValue) {
-        if (JSON.stringify(newValue) != JSON.stringify(oldValue)) {
-          if (newValue && (typeof newValue == 'object')) {
-            let responseSelected = []
-            newValue.forEach(item => responseSelected.push(item.toString()))
-            this.dataCrudSelect.itemSelected = this.$clone(responseSelected)
-          } else
-            this.dataCrudSelect.itemSelected = newValue ? newValue.toString() : newValue
+        if (!newValue || (JSON.stringify(newValue) != JSON.stringify(oldValue))) {
+          this.setValueSelect()
         }
       }
     },
@@ -138,12 +140,22 @@
       //Return has permission
       hasPermission() {
         let params = this.$clone(this.params)
-        return {
+
+        //Default permission
+        let permissions = {
           create: params.permission ? this.$auth.hasAccess(`${params.permission}.create`) : true,
           index: params.permission ? this.$auth.hasAccess(`${params.permission}.index`) : true,
           edit: params.permission ? this.$auth.hasAccess(`${params.permission}.edit`) : true,
           destroy: params.permission ? this.$auth.hasAccess(`${params.permission}.destroy`) : true,
         }
+
+        //Custom permissions
+        if (params.customPermissions)
+          for (var name in params.customPermissions)
+            permissions[name] = this.$auth.hasAccess(params.customPermissions[name])
+
+        //Repsonse
+        return permissions
       },
       //Default props
       defaultProps() {
@@ -155,7 +167,6 @@
               outlined: true,
               dense: true,
               emitValue: true,
-              mapOptions: true,
               'use-input': true,
               'map-options': true,
               ...defaultProps,
@@ -207,11 +218,12 @@
         }
 
         //Merge with custom data
-        if (this.customData && (typeof this.customData == 'object'))
-          for(var itemName in this.customData){
+        if (this.customData && (typeof this.customData == 'object')) {
+          for (var itemName in this.customData) {
             let itemValue = this.$clone(this.customData[itemName])
-            if(crudData[itemName]) crudData[itemName] = {...crudData[itemName], ...itemValue}
+            crudData[itemName] = (typeof itemValue == 'object') ? {...crudData[itemName], ...itemValue} : itemValue
           }
+        }
 
         return crudData
       },
@@ -237,6 +249,8 @@
                 this.getIndexOptions()//Get indexOptions if is crudSelect
                 //Listen event to created
                 this.$root.$on(`${this.paramsProps.apiRoute}.crud.event.created`, this.getIndexOptions)
+                //Set value select
+                this.setValueSelect()
               }
             }, 300)
           }).catch(error => {
@@ -265,6 +279,7 @@
           //Set all items to response
           response.data.forEach(item => {
             responseOptions.push({
+              ...item,
               label: item[this.defaultConfig.options.label],
               value: item[this.defaultConfig.options.value].toString()
             })
@@ -321,7 +336,7 @@
             if (this.type != 'full') response = false
             break;
           case 'select':
-            if (!this.hasPermission.create) response = false
+            if (!this.hasPermission.index) response = false
             if (this.type != 'select') response = false
             break;
           case 'button-create':
@@ -332,6 +347,18 @@
 
         return response
       },
+      //Set value to select
+      setValueSelect() {
+        let newValue = this.$clone(this.value)
+        if (Array.isArray(newValue)) {
+          let responseSelected = []
+          newValue.forEach(item => responseSelected.push(item.toString()))
+          this.dataCrudSelect.itemSelected = this.$clone(responseSelected)
+        } else if (typeof newValue == 'object')
+          this.dataCrudSelect.itemSelected = newValue ? newValue : newValue
+        else
+          this.dataCrudSelect.itemSelected = newValue ? newValue.toString() : newValue
+      }
     }
   }
 </script>

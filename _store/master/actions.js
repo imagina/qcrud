@@ -11,7 +11,7 @@ export function INDEX({commit, state}, params) {
     //Request
     crud.index(params.apiRoute, params.requestParams || {}).then(response => {
       let dataIndex = Object.assign({}, state.index) //Get current dataIndex
-      dataIndex[params.indexName] = response //Set to data index the result
+      dataIndex[params.indexName] = {...params, ...response} //Set to data index the result
       commit('SET_INDEX_DATA', dataIndex)//Commit data index
       resolve(response)//Return response
     }).catch(error => {
@@ -38,7 +38,7 @@ export function SHOW({commit, state}, params) {
 
     crud.show(params.apiRoute, params.criteria, params.requestParams).then(response => {
       let dataShow = Object.assign({}, state.show) //Get current dataIndex
-      dataShow[params.indexName] = response //Set to data index the result
+      dataShow[params.indexName] = {...params, ...response} //Set to data index the result
       commit('SET_SHOW_DATA', dataShow)//Commit data index
       resolve(response)//Return response
     }).catch(error => {
