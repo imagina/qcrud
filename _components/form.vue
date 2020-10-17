@@ -37,7 +37,7 @@
                              v-if="showField(field, (field.name || key)) && field.isFakeField"
                              @enter="$refs.formContent.submit()"/>
               <!--Dynamic field-->
-              <dynamic-field v-model="locale.formTemplate[field.testId || field.name || key]" :key="key"
+              <dynamic-field v-model="locale.formTemplate[field.name || key]" :key="key"
                              @input="setDynamicValues(field.name || key, field)"
                              :field="{...field, testId : (field.testId  || field.name || key)}"
                              :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
