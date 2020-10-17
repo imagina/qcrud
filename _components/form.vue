@@ -1,13 +1,13 @@
 <template>
   <!--Modal with form to category-->
-  <q-dialog :id="params.modalId || 'modalFormCrud'" content-class="modal-form-crud"
+  <q-dialog :id="paramsProps.modalId || 'modalFormCrud'" content-class="modal-form-crud"
             v-model="show" v-if="show" no-esc-dismiss no-backdrop-dismiss>
     <q-card :class="`bg-grey-1 backend-page row ${existFormRight ? 'col-2' : 'col-1'}`">
       <!--Header-->
       <q-toolbar class="bg-primary text-white">
         <q-toolbar-title>
-          <label v-if="!isUpdate && !field">{{params.create.title}}</label>
-          <label v-else>{{params.update.title}} <span v-if="!field">ID: {{itemId}}</span></label>
+          <label v-if="!isUpdate && !field">{{paramsProps.create.title}}</label>
+          <label v-else>{{paramsProps.update.title}} <span v-if="!field">ID: {{itemId}}</span></label>
         </q-toolbar-title>
         <q-btn flat @click="componentStore.remove()" v-close-popup icon="fas fa-times"/>
       </q-toolbar>
@@ -28,7 +28,7 @@
           <div v-for="(pos,key) in ['formLeft','formRight']" :key="pos" v-if="locale.success"
                :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`">
             <!--Fields-->
-            <div v-for="(field, key) in  params[pos]" :key="key" :ref="key">
+            <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
               <!--Dynamic field to options-->
               <dynamic-field v-model="locale.formTemplate.options[field.name || key]" :key="key"
                              @input="setDynamicValues(field.name || key, field)"
@@ -87,6 +87,12 @@
         handler: function (newValue) {
           this.componentStore.update()
         }
+      },
+      params: {
+        deep: true,
+        handler: function (newValue) {
+          this.paramsProps = this.$clone(this.params)
+        }
       }
     },
     mounted() {
@@ -99,14 +105,15 @@
         success: false,//global component status
         show: false,
         locale: {fields: {options: {}}, fieldsTranslatable: {}},
-        loading: false,
-        dataField: []
+        loading: true,
+        dataField: [],
+        paramsProps: false
       }
     },
     computed: {
       //Check if exist from right
       existFormRight() {
-        if (this.params.formRight && Object.keys(this.params.formRight).length) {
+        if (this.paramsProps.formRight && Object.keys(this.paramsProps.formRight).length) {
           return true
         } else {
           return false
@@ -121,21 +128,21 @@
       componentStore() {
         return {
           create: () => {
-            if (this.show && !this.params.field) {
+            if (this.show && !this.paramsProps.field) {
               setTimeout(() => {
                 //Get form data
                 let componentData = this.$clone(this.locale.formTemplate)
                 componentData.typeForm = this.isUpdate ? 'update' : 'create'
                 //Create in store
                 this.$store.dispatch('qcrudComponent/SET_COMPONENT', {
-                  id: this.params.crudId, data: componentData
+                  id: this.paramsProps.crudId, data: componentData
                 })
               }, 500)
             }
           },
           update: () => {
-            if (!this.params.field) {
-              let formDataStore = this.$clone(this.$store.state.qcrudComponent.component[this.params.crudId])
+            if (!this.paramsProps.field) {
+              let formDataStore = this.$clone(this.$store.state.qcrudComponent.component[this.paramsProps.crudId])
               let formData = this.$clone(this.locale.formTemplate)
               let emiteForm = formDataStore ? false : true
 
@@ -148,13 +155,13 @@
               //Emit form data
               if (emiteForm)
                 this.$store.dispatch('qcrudComponent/SET_DATA_COMPONENT', {
-                  id: this.params.crudId, data: this.locale.formTemplate
+                  id: this.paramsProps.crudId, data: this.locale.formTemplate
                 })
             }
           },
           remove: () => {
-            if (!this.params.field)
-              this.$store.dispatch('qcrudComponent/DELETE_COMPONENT', this.params.crudId)
+            if (!this.paramsProps.field)
+              this.$store.dispatch('qcrudComponent/DELETE_COMPONENT', this.paramsProps.crudId)
           },
         }
       }
@@ -162,15 +169,40 @@
     methods: {
       //Init form
       async initForm() {
+        this.paramsProps = this.$clone(this.params)
+        await this.getExtraFields()//Get extra fields to backend
         this.orderFields()//order fields to component locale
         this.show = this.value//Assign props value to show modal
         this.success = true//succesfull
-        if (this.isUpdate || this.params.field) await this.getDataItem()//Get data item
+        if (this.isUpdate || this.paramsProps.field) await this.getDataItem()//Get data item
         this.componentStore.create()//Create component in store
+        this.loading = false
+      },
+      //Get extra fields
+      getExtraFields() {
+        return new Promise((resolve, reject) => {
+          if (!this.paramsProps.extraFormFields) resolve(true)
+          //Request params
+          let requestParams = {
+            refresh : true,
+            params: {filter: {configFieldName: this.paramsProps.extraFormFields}}
+          }
+          //Request
+          this.$crud.index('apiRoutes.qsite.configFields', requestParams).then(response => {
+            //Add response to form
+            if (response.data && Object.keys(response.data)) {
+              if (this.paramsProps.formRight && Object.keys(this.paramsProps.formRight))
+                this.paramsProps.formRight = {...this.paramsProps.formRight, ...response.data}
+              else if (this.paramsProps.formLeft && Object.keys(this.paramsProps.formLeft))
+                this.paramsProps.formLeft = {...this.paramsProps.formLeft, ...response.data}
+            }
+            resolve(response.data)
+          }).catch(error => resolve(false))
+        })
       },
       //Order fields of parms
       orderFields() {
-        let params = this.$clone(this.params)
+        let params = this.$clone(this.paramsProps)
         let formLeft = params.formLeft || {}
         let formRight = params.formRight || {}
         let form = Object.assign({}, formLeft, formRight)
@@ -200,7 +232,7 @@
       getDataItem() {
         return new Promise((resolve, reject) => {
           this.loading = true
-          let propParams = this.$clone(this.params)
+          let propParams = this.$clone(this.paramsProps)
 
           let params = {//Params to request
             refresh: true,
@@ -212,7 +244,7 @@
           params.params.filter.allTranslations = true
 
           //Request if exist item ID
-          if (!this.params.field) {
+          if (!this.paramsProps.field) {
             //Request
             this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
               this.locale.form = this.$clone(response.data)
@@ -229,7 +261,7 @@
               //Save data field
               this.dataField = {
                 id: (response.data[0] && response.data[0].id) ? this.$clone(response.data[0].id) : null,
-                name: this.params.field,
+                name: this.paramsProps.field,
                 value: (response.data[0] && response.data[0].value) ? this.$clone(response.data[0].value) : []
               }
 
@@ -250,7 +282,7 @@
       async createItem() {
         if (await this.$refs.localeComponent.validateForm()) {
           this.loading = true
-          let propParams = this.$clone(this.params)
+          let propParams = this.$clone(this.paramsProps)
 
           //Request
           this.$crud.create(propParams.apiRoute, this.getDataForm()).then(response => {
@@ -281,11 +313,11 @@
       async updateItem() {
         if (await this.$refs.localeComponent.validateForm()) {
           this.loading = true
-          let propParams = this.$clone(this.params)
+          let propParams = this.$clone(this.paramsProps)
           let criteria = this.$clone(this.itemId)
 
           //If is field update criteria
-          if (this.params.field && this.dataField.id) criteria = this.dataField.id
+          if (this.paramsProps.field && this.dataField.id) criteria = this.dataField.id
 
           this.$crud.update(propParams.apiRoute, criteria, this.getDataForm()).then(response => {
             this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
@@ -304,12 +336,12 @@
       getDataForm() {
         //Clone data form
         let data = this.$clone(this.locale.form)
-        let crudFields = {...(this.params.formLeft || {}), ...(this.params.formRight || {})}
+        let crudFields = {...(this.paramsProps.formLeft || {}), ...(this.paramsProps.formRight || {})}
         //Validate options
         if (data.options && !Object.keys(data.options).length) delete data.options
 
         //order if is field
-        if (this.params.field) {
+        if (this.paramsProps.field) {
           if (this.field) {
             this.dataField.value[this.field.__index] = data
           }//Update field
@@ -320,7 +352,7 @@
           //Format data field
           data = {
             userId: data.userId,
-            name: this.params.field,
+            name: this.paramsProps.field,
             value: this.dataField.value
           }
         }

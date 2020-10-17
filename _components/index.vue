@@ -7,11 +7,11 @@
         <!--Table-->
         <q-table
           :data="table.data"
-          :columns="params.read.columns"
+          :columns="tablecolumns"
           :pagination.sync="table.pagination"
           :rows-per-page-options="rowsPerPageOption"
           @request="getData"
-          class="box-table"
+          class="box-table stick-table"
           :hide-header="!showSlotTable.header"
         >
           <!--Slot Top-->
@@ -87,7 +87,7 @@
               </q-btn>
             </q-td>
             <!-- status columns -->
-            <q-td v-if="(['status','active'].indexOf(props.col.name) != -1) || props.col.asStatus"
+            <q-td v-else-if="(['status','active'].indexOf(props.col.name) != -1) || props.col.asStatus"
                   :props="props" class="text-left">
               <q-btn-dropdown :color="props.value ? 'positive' : 'negative'" flat padding="sm none" class="text-caption"
                               :label="props.value ? $tr('ui.label.enabled') : $tr('ui.label.disabled')" no-caps>
@@ -188,8 +188,17 @@
         return response //Response
       },
       //Options rows per page
-      rowsPerPageOption(){
-        return this.params.read.rowsPerPageOptions || [5,10,20,50,100]
+      rowsPerPageOption() {
+        return this.params.read.rowsPerPageOptions || [5, 10, 20, 50, 100]
+      },
+      //return table columns
+      tablecolumns() {
+        let columns = this.$clone(this.params.read.columns)
+        //Validate column actions
+        columns.forEach(item => {
+          if (item.name == 'actions') item.align = 'right'
+        })
+        return columns
       }
     },
     methods: {
@@ -386,7 +395,7 @@
       updateStatus(item) {
         this.loading = true
         //Request Data
-        let requestData = {id : item.row.id}
+        let requestData = {id: item.row.id}
         requestData[item.col.name] = item.row[item.col.name] ? 0 : 1
 
         //Request
@@ -420,6 +429,19 @@
 
         .table-top-filters
           order 3
+
+    .stick-table
+      th:last-child, td:last-child
+        background-color white
+        position: sticky
+        right: 0
+        z-index: 1
+
+      th:first-child, td:first-child
+        background-color white
+        position: sticky
+        left: 0
+        z-index: 1
 
   #dialogFilters
     min-height max-content !important
