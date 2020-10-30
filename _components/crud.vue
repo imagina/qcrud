@@ -11,7 +11,7 @@
     <q-select v-model="dataCrudSelect.itemSelected" :options="dataCrudSelect.options || []"
               :loading="dataCrudSelect.loading" style="width: 100%;" v-if="showType('select')"
               @filter="filterOptions" @input="emitValue" v-bind="defaultProps"
-              :readonly="dataCrudSelect.loading" :rules="rules">
+              :readonly="dataCrudSelect.loading" >
       <!--Before options slot-->
       <template v-slot:before-options>
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="positive"
