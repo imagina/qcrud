@@ -4,7 +4,7 @@
     <div v-if="componentCrudData" :is="componentCrudData" ref="componentCrudData"></div>
 
     <!--=== Button to Create ===-->
-    <q-btn class="btnJustCreate btn-small" v-bind="defaultProps"
+    <q-btn class="btnJustCreate btn-small" v-bind="defaultProps" rounded unelevated
            @click="create" v-if="showType('button-create')"/>
 
     <!--=== Select to List and Create ===-->

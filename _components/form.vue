@@ -181,10 +181,10 @@
       //Get extra fields
       getExtraFields() {
         return new Promise((resolve, reject) => {
-          if (!this.paramsProps.extraFormFields) resolve(true)
+          if (!this.paramsProps.extraFormFields) return resolve(true)
           //Request params
           let requestParams = {
-            refresh : true,
+            refresh: true,
             params: {filter: {configFieldName: this.paramsProps.extraFormFields}}
           }
           //Request
