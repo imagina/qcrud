@@ -5,13 +5,13 @@
 
     <!--=== Button to Create ===-->
     <q-btn class="btnJustCreate btn-small" v-bind="defaultProps" rounded unelevated
-           @click="create" v-if="showType('button-create')"/>
+           @click="create()" v-if="showType('button-create')"/>
 
     <!--=== Select to List and Create ===-->
     <q-select v-model="dataCrudSelect.itemSelected" :options="dataCrudSelect.options || []"
               :loading="dataCrudSelect.loading" style="width: 100%;" v-if="showType('select')"
               @filter="filterOptions" @input="emitValue" v-bind="defaultProps"
-              :readonly="dataCrudSelect.loading" >
+              :readonly="dataCrudSelect.loading">
       <!--Before options slot-->
       <template v-slot:before-options>
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="positive"
