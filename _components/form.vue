@@ -29,19 +29,19 @@
                :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`">
             <!--Fields-->
             <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
-              <!--Dynamic field to options-->
-              <dynamic-field v-model="locale.formTemplate.options[field.name || key]" :key="key"
-                             @input="setDynamicValues(field.name || key, field)"
+              <!--Dynamic fake field-->
+              <dynamic-field v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
+                             @input="setDynamicValues(field.name || key, field)" :key="key"
                              :field="{...field, testId : (field.testId || field.name || key)}"
                              :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                             v-if="showField(field, (field.name || key)) && field.isFakeField"
+                             v-if="showField(field, (field.name || key)) && (field.isFakeField || field.fakeFieldName)"
                              @enter="$refs.formContent.submit()"/>
               <!--Dynamic field-->
               <dynamic-field v-model="locale.formTemplate[field.name || key]" :key="key"
                              @input="setDynamicValues(field.name || key, field)"
                              :field="{...field, testId : (field.testId  || field.name || key)}"
                              :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                             v-if="showField(field, (field.name || key)) && !field.isFakeField"
+                             v-if="showField(field, (field.name || key)) && !field.isFakeField && !field.fakeFieldName"
                              @enter="$refs.formContent.submit()"/>
             </div>
           </div>
@@ -91,7 +91,12 @@
       params: {
         deep: true,
         handler: function (newValue) {
-          this.paramsProps = this.$clone(this.params)
+          //Merge params
+          this.paramsProps = this.$clone({
+            ...this.params,
+            formRight: {...(this.paramsProps.formRight || {}), ...(this.params.formRight || {})},
+            formLeft: {...(this.paramsProps.formLeft || {}), ...(this.params.formLeft || {})},
+          })
         }
       }
     },
@@ -192,10 +197,11 @@
             //Add response to form
             if (response.data && Object.keys(response.data)) {
               if (this.paramsProps.formRight && Object.keys(this.paramsProps.formRight))
-                this.paramsProps.formRight = {...this.paramsProps.formRight, ...response.data}
+                this.paramsProps.formRight = this.$clone({...this.paramsProps.formRight, ...response.data})
               else if (this.paramsProps.formLeft && Object.keys(this.paramsProps.formLeft))
-                this.paramsProps.formLeft = {...this.paramsProps.formLeft, ...response.data}
+                this.paramsProps.formLeft = this.$clone({...this.paramsProps.formLeft, ...response.data})
             }
+            //Response
             resolve(response.data)
           }).catch(error => resolve(false))
         })
@@ -219,6 +225,9 @@
             fieldsTranslatables[field.name || key] = field.value
           } else if (field.isFakeField) {
             fields.options[field.name || key] = field.value
+          } else if (field.fakeFieldName) {
+            if (!fields[field.fakeFieldName]) fields[field.fakeFieldName] = {}
+            fields[field.fakeFieldName][field.name || key] = field.value
           } else {
             fields[field.name || key] = field.value
           }

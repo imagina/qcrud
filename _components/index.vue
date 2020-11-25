@@ -56,6 +56,14 @@
                      @click="getDataTable(true)" round unelevated style="font-size: 10px; padding: 6px">
                 <q-tooltip :delay="300">{{$tr('ui.label.refresh')}}</q-tooltip>
               </q-btn>
+              <!-- Custom Actions -->
+              <q-btn v-for="(action, key) in (params.read.globalActions || {})" :key="key"
+                     v-if="action.vIf ? action.vIf : true" size="sm" class="q-ml-xs"
+                     :icon="action.icon || ''" :color="action.color || ''"
+                     style="font-size: 8px; padding: 6px" round unelevated
+                     @click="callCustomAction(action,false,key)">
+                <q-tooltip v-if="action.tooltip">{{action.tooltip}}</q-tooltip>
+              </q-btn>
             </div>
           </template>
 
@@ -78,11 +86,11 @@
                 <q-tooltip :delay="300">{{$tr('ui.label.delete')}}</q-tooltip>
               </q-btn>
               <!-- Custom Actions -->
-              <q-btn v-for="(action, key) in params.read.actions" size="sm"
-                     v-if="params.read.actions" :key="key" class="q-ml-xs"
+              <q-btn v-for="(action, key) in (params.read.actions || {})" size="sm"
+                     v-if="action.vIf ? action.vIf : true" :key="key" class="q-ml-xs"
                      :icon="action.icon || ''" :color="action.color || ''"
                      style="font-size: 8px; padding: 6px" round unelevated
-                     @click="callCustomAction(action,props.row)">
+                     @click="callCustomAction(action,props.row,key)">
                 <q-tooltip v-if="action.tooltip">{{action.tooltip}}</q-tooltip>
               </q-btn>
             </q-td>
@@ -274,8 +282,10 @@
 
         //Set order by
         if (pagination.sortBy) {
-          params.params.filter.order.field = pagination.sortBy
-          params.params.filter.order.way = pagination.descending ? 'desc' : 'asc'
+          params.params.filter.order = {
+            field: pagination.sortBy,
+            way: pagination.descending ? 'desc' : 'asc'
+          }
         }
 
         //Merge with params from prop
@@ -383,9 +393,13 @@
         return {edit: edit, destroy: destroy}
       },
       //Call custom action
-      callCustomAction(action, row) {
+      async callCustomAction(action, row, key = false) {
         //Check if has action function
-        if (action.action) action.action(row)
+        if (action.action) {
+          this.loading = true
+          await action.action(row)
+          this.loading = false
+        }
         //Check if has redirect to route
         if (action.route) {
           this.$router.push({name: action.route, params: row || {}})
