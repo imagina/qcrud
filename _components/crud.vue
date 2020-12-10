@@ -45,7 +45,7 @@
       <crud-index v-if="showType('full')" :params="$clone(paramsProps)" ref="crudIndex"
                   @create="create" @update="update"/>
       <!--Modal create/update component-->
-      <crud-form v-model="showModal" v-if="(params.create || params.update) && showModal"
+      <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
                  @created="(response) => formEmmit('created', response)"
                  @updated="formEmmit('updated')"/>
