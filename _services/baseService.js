@@ -155,7 +155,7 @@ export default {
    * @param data
    * @returns {Promise<any>}
    */
-  post(configName, data) {
+  post(configName, data = {}) {
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
