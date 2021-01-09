@@ -115,7 +115,7 @@ export default {
     return {
       success: false,//global component status
       show: false,
-      locale: {fields: {options: {}}, fieldsTranslatable: {}, form : {}},
+      locale: {fields: {options: {}}, fieldsTranslatable: {}, form: {}},
       loading: true,
       dataField: [],
       paramsProps: false
@@ -139,8 +139,8 @@ export default {
     componentStore() {
       return {
         create: () => {
-          if (this.show && !this.paramsProps.field && this.locale.success) {
-            setTimeout(() => {
+          setTimeout(() => {
+            if (this.show && !this.paramsProps.field && this.locale.success) {
               //Get form data
               let componentData = this.$clone(this.locale.formTemplate)
               componentData.typeForm = this.isUpdate ? 'update' : 'create'
@@ -148,8 +148,8 @@ export default {
               this.$store.dispatch('qcrudComponent/SET_COMPONENT', {
                 id: this.paramsProps.crudId, data: componentData
               })
-            }, 500)
-          }
+            }
+          }, 500)
         },
         update: () => {
           if (!this.paramsProps.field && this.locale.success) {
@@ -201,7 +201,7 @@ export default {
     async initForm() {
       this.success = false//succesfull
       this.loading = true//loading
-      this.locale = {fields: {options: {}}, fieldsTranslatable: {}, form : {}}//Reste locales
+      this.locale = {fields: {options: {}}, fieldsTranslatable: {}, form: {}}//Reste locales
       this.paramsProps = this.$clone(this.params)
       await this.getExtraFields()//Get extra fields to backend
       this.orderFields()//order fields to component locale

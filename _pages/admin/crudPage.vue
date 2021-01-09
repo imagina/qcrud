@@ -1,0 +1,47 @@
+<template>
+  <div id="crudPage" :key="pageId">
+    <!---Component CRUD-->
+    <crud v-if="crudData" :crud-data="crudData" ref="crudComponent" :custom-data="customData"/>
+  </div>
+</template>
+<script>
+export default {
+  props: {},
+  components: {},
+  watch: {
+    '$route': {
+      deep: true,
+      handler: function () {
+        this.init()
+      }
+    }
+  },
+  validations() {
+    return {}
+  },
+  mounted() {
+    this.$nextTick(function () {
+      this.init()
+    })
+  },
+  data() {
+    return {
+      pageId: this.$uid(),
+      crudData: false,
+      customData: {
+        mobileAction: true
+      }
+    }
+  },
+  methods: {
+    init() {
+      //Reset page ID
+      this.pageId = this.$uid()
+      //Set crud data
+      this.crudData = this.$route.meta.crud || false
+    }
+  }
+}
+</script>
+<style lang="stylus">
+</style>
