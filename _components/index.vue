@@ -68,7 +68,7 @@
           <template v-slot:body-cell="props">
             <!-- actions columns -->
             <q-td v-if="props.col.name == 'actions'" :props="props">
-              <div class="row q-gutter-x-xs" style="width : max-content">
+              <div class="full-width" style="width : max-content">
                 <!-- Custom Actions -->
                 <q-btn v-for="(action, key) in (params.read.actions || {})" size="sm"
                        v-if="action.vIf ? action.vIf : true" :key="key"
@@ -79,13 +79,13 @@
                 </q-btn>
                 <!--Edit button-->
                 <q-btn color="positive" icon="fas fa-pen" size="sm" style="font-size: 8px; padding: 6px"
-                       v-if="permitAction(props.row).edit" round unelevated
+                       v-if="permitAction(props.row).edit" round unelevated class="q-ml-xs"
                        v-bind="params.update.to ? {to : {name : params.update.to, params : props.row}} : {}"
-                       @click="params.update.to ? false : $emit('update', props.row.id)">
+                       @click="params.update.to ? false : $emit('update', props.row)">
                   <q-tooltip :delay="300">{{ $tr('ui.label.edit') }}</q-tooltip>
                 </q-btn>
                 <!--Delete button-->
-                <q-btn color="negative" icon="fas fa-trash-alt" size="sm"
+                <q-btn color="negative" icon="fas fa-trash-alt" size="sm" class="q-ml-xs"
                        v-if="permitAction(props.row).destroy" round unelevated
                        style="font-size: 8px; padding: 6px"
                        @click="()=>{itemIdToDelete = props.row; dialogDeleteItem = true}">

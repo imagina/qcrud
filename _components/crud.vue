@@ -312,10 +312,17 @@ export default {
       } else this.dialogPermissions.show = true
     },
     //watch emit update from index component
-    update(itemId) {
+    update(item) {
+      //Validate if can update
       if (this.hasPermission.edit) {
-        this.itemIdToEdit = itemId
-        if (itemId.field) this.fieldData = itemId.field
+        //Set custom crud fields
+        if (item.crudFields) {
+          this.paramsProps.formLeft = item.crudFields
+          this.paramsProps.Right = {}
+        }
+        //Set data to update
+        this.itemIdToEdit = item.id
+        if (item.id.field) this.fieldData = item.id.field
         this.showModal = true
       } else this.dialogPermissions.show = true
     },
