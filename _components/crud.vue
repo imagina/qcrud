@@ -1,7 +1,7 @@
 <template>
   <div id="crudContentPage">
     <!--=== Dynamic component to get crud data ===-->
-    <div v-if="componentCrudData" :is="componentCrudData" ref="componentCrudData"></div>
+    <component :is="componentCrudData" ref="componentCrudData" @hook:mounted="init"/>
 
     <!--=== Button to Create ===-->
     <q-btn class="btnJustCreate btn-small" v-bind="defaultProps" rounded unelevated
@@ -112,12 +112,11 @@ export default {
   },
   mounted() {
     this.$nextTick(async function () {
-      this.init()
     })
   },
   data() {
     return {
-      componentCrudData: false,//To get crud data from computed
+      componentCrudData: () => this.crudData,//To get crud data from computed
       params: false,
       success: false,//Global status of component
       loading: true,//Loading
@@ -235,26 +234,17 @@ export default {
   methods: {
     //init form
     async init() {
-      if (this.crudData) {
-        //Get crudData
-        this.crudData.then((response) => {
-          this.componentCrudData = response.default//asign component
-          setTimeout(() => {
-            if (this.$refs.componentCrudData && this.$refs.componentCrudData.crudData) {
-              this.params = this.$refs.componentCrudData.crudData//asing crudData to params
-              //Set default value selected
-              this.dataCrudSelect.itemSelected = (this.crudProps && this.crudProps.multiple) ? [] : null
-              this.loading = false //hidden Loading
-              this.success = true//udate success
-              this.getIndexOptions()//Get indexOptions if is crudSelect
-              //Listen event to created
-              this.$root.$on(`${this.paramsProps.apiRoute}.crud.event.created`, this.getIndexOptions)
-              //Set value select
-              this.setValueSelect()
-            }
-          }, 300)
-        }).catch(error => {
-        })
+      if (this.$refs.componentCrudData && this.$refs.componentCrudData.crudData) {
+        this.params = this.$refs.componentCrudData.crudData//asing crudData to params
+        //Set default value selected
+        this.dataCrudSelect.itemSelected = (this.crudProps && this.crudProps.multiple) ? [] : null
+        this.loading = false //hidden Loading
+        this.success = true//udate success
+        this.getIndexOptions()//Get indexOptions if is crudSelect
+        //Listen event to created
+        this.$root.$on(`${this.paramsProps.apiRoute}.crud.event.created`, this.getIndexOptions)
+        //Set value select
+        this.setValueSelect()
       }
     },
     //Return options if is crudSelect
