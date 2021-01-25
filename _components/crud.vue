@@ -235,7 +235,7 @@ export default {
     //init form
     async init() {
       if (this.$refs.componentCrudData && this.$refs.componentCrudData.crudData) {
-        this.params = this.$refs.componentCrudData.crudData//asing crudData to params
+        this.params = this.$clone(this.$refs.componentCrudData.crudData)//asing crudData to params
         //Set default value selected
         this.dataCrudSelect.itemSelected = (this.crudProps && this.crudProps.multiple) ? [] : null
         this.loading = false //hidden Loading
@@ -297,6 +297,9 @@ export default {
         this.dataFieldsCustom = dataCustom
         this.itemIdToEdit = false
         this.fieldData = false
+        //Reset forms
+        this.paramsProps.formLeft = this.$clone(this.params.formLeft || {})
+        this.paramsProps.formRight = this.$clone(this.params.formRight || {})
         if (this.paramsProps.create.to) this.$router.push(this.paramsProps.create.to)
         else this.showModal = true
       } else this.dialogPermissions.show = true
@@ -308,7 +311,7 @@ export default {
         //Set custom crud fields
         if (item.crudFields) {
           this.paramsProps.formLeft = item.crudFields
-          this.paramsProps.Right = {}
+          this.paramsProps.formRight = {}
         }
         //Set data to update
         this.itemIdToEdit = item.id
