@@ -132,7 +132,8 @@ export default {
         options: [],//options to show in select
         rootOptions: [],//Save all options
       },
-      dataFieldsCustom: {}
+      dataFieldsCustom: {},
+      itemCrudFields: false//Fields from item to replace form fields
     }
   },
   computed: {
@@ -205,7 +206,7 @@ export default {
     },
     //Return params Props
     paramsProps() {
-      let crudData = this.$refs.componentCrudData.crudData || {}//
+      let crudData = this.$clone(this.$refs.componentCrudData.crudData || {})//
       crudData.hasPermission = this.hasPermission//Add permission validated
 
       //Merge fields with dataFieldsCustom
@@ -224,6 +225,13 @@ export default {
         }
       }
 
+      //Replece to itemCrudFields
+      if (this.itemCrudFields) {
+        crudData.formLeft = this.$clone(this.itemCrudFields)
+        crudData.formRight = {}
+      }
+
+      //Response
       return crudData
     },
     //Emit value
@@ -297,9 +305,7 @@ export default {
         this.dataFieldsCustom = dataCustom
         this.itemIdToEdit = false
         this.fieldData = false
-        //Reset forms
-        this.paramsProps.formLeft = this.$clone(this.params.formLeft || {})
-        this.paramsProps.formRight = this.$clone(this.params.formRight || {})
+        this.itemCrudFields = false
         if (this.paramsProps.create.to) this.$router.push(this.paramsProps.create.to)
         else this.showModal = true
       } else this.dialogPermissions.show = true
@@ -308,11 +314,8 @@ export default {
     update(item) {
       //Validate if can update
       if (this.hasPermission.edit) {
-        //Set custom crud fields
-        if (item.crudFields) {
-          this.paramsProps.formLeft = item.crudFields
-          this.paramsProps.formRight = {}
-        }
+        //Set custom item crud fields
+        if (item.crudFields) this.itemCrudFields = this.$clone(item.crudFields)
         //Set data to update
         this.itemIdToEdit = item.id
         if (item.id.field) this.fieldData = item.id.field
