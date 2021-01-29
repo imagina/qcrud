@@ -48,9 +48,10 @@
                     <q-tooltip v-if="action.tooltip">{{ action.tooltip }}</q-tooltip>
                   </q-btn>
                   <!--Toggle view as grid-->
-                  <q-btn round unelevated size="12px" style="font-size: 8px; padding: 6px" color="light-blue"
-                         @click="table.grid = !table.grid" :icon="table.grid ? 'fas fa-th-large' : 'fas fa-list-ul'">
-                    <q-tooltip>{{ $tr(`qcrud.layout.message.${table.grid ? 'showAsList' : 'showAsCard'}`) }}</q-tooltip>
+                  <q-btn round unelevated size="12px" style="font-size: 8px; padding: 6px"
+                         color="light-blue" @click="table.grid = !table.grid"
+                         :icon="!table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'">
+                    <q-tooltip>{{ $tr(`ui.message.${table.grid ? 'listView' : 'gribView'}`) }}</q-tooltip>
                   </q-btn>
                   <!--Button new record-->
                   <q-btn icon="fas fa-plus" round unelevated size="12px" style="font-size: 8px; padding: 6px"
@@ -273,10 +274,18 @@ export default {
     //return table columns
     tablecolumns() {
       let columns = this.$clone(this.params.read.columns)
-      //Validate column actions
-      columns.forEach(item => {
-        if (item.name == 'actions') item.align = 'right'
+      //Check columns
+      columns.forEach(column => {
+        //Default sort by id
+        if (['id', 'created_at', 'updated_at'].indexOf(column.name) != -1) column.sortable = true
+        //Validate column actions
+        if (column.name == 'actions') column.align = 'right'
+        //Add format to status column
+        if ((['status', 'active'].indexOf(column.name) != -1) || column.asStatus) {
+          column.format = val => Number.isInteger(parseInt(val)) ? parseInt(val) : 0
+        }
       })
+
       return columns
     }
   },
