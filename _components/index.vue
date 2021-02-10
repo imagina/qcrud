@@ -282,10 +282,13 @@ export default {
         if (column.name == 'actions') column.align = 'right'
         //Add format to status column
         if ((['status', 'active'].indexOf(column.name) != -1) || column.asStatus) {
-          column.format = val => Number.isInteger(parseInt(val)) ? parseInt(val) : 0
+          column.format = val => {
+            let value = (typeof val === "boolean") ? (val = val ? 1 : 0) : val//Convert booleand to integer
+            return Number.isInteger(parseInt(value)) ? parseInt(value) : 0//Parse value
+          }
         }
       })
-
+      //Response
       return columns
     }
   },
