@@ -206,6 +206,7 @@ export default {
     },
     //Return params Props
     paramsProps() {
+      if (!this.$refs.componentCrudData) return {}
       let crudData = this.$clone(this.$refs.componentCrudData.crudData || {})//
       crudData.hasPermission = this.hasPermission//Add permission validated
 

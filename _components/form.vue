@@ -320,20 +320,45 @@ export default {
       if (await this.$refs.localeComponent.validateForm()) {
         this.loading = true
         let propParams = this.$clone(this.paramsProps)
+        let formData = this.$clone(this.getDataForm())
+        let requestInfo = {response: false, error: false}//Default request repsonse
 
         //Request
-        this.$crud.create(propParams.apiRoute, this.getDataForm()).then(response => {
+        await new Promise((resolve, reject) => {
+          if (propParams.create.method) {
+            //Call custom method
+            propParams.create.method(formData).then(response => {
+              requestInfo.response = response
+              return resolve(true)
+            }).catch(error => {
+              requestInfo.error = error
+              return resolve(true)
+            })
+          } else {
+            //Do request
+            this.$crud.create(propParams.apiRoute, this.getDataForm()).then(response => {
+              requestInfo.response = response
+              return resolve(true)
+            }).catch(error => {
+              requestInfo.error = error
+              return resolve(true)
+            })
+          }
+        })
+
+        //Action after request
+        if (requestInfo.response) {
           this.$root.$emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
           this.$alert.info({message: `${this.$tr('ui.message.recordCreated')}`})
           this.loading = false
           this.show = false
           //this.initForm()
           this.$emit('created', this.getDataForm())
-        }).catch(error => {
+        } else {
           this.$alert.error({message: `${this.$tr('ui.message.recordNoCreated')}`})
           this.loading = false//login hide
-          if (error) {//Message Validate
-            let errorMsg = JSON.parse(error)
+          if (requestInfo.error) {//Message Validate
+            let errorMsg = JSON.parse(requestInfo.error)
             if (errorMsg.email) {
               this.$alert.error({
                 message: this.$tr('quser.layout.message.emailExist'),
@@ -343,7 +368,7 @@ export default {
               this.$alert.error({message: `${this.$tr('ui.message.recordNoCreated')}`})
             }
           }
-        })
+        }
       }
     },
     //Update Category
@@ -352,21 +377,46 @@ export default {
         this.loading = true
         let propParams = this.$clone(this.paramsProps)
         let criteria = this.$clone(this.itemId)
+        let requestInfo = {response: false, error: false}//Default request repsonse
+        let formData = this.$clone(this.getDataForm())
 
         //If is field update criteria
         if (this.paramsProps.field && this.dataField.id) criteria = this.dataField.id
 
-        this.$crud.update(propParams.apiRoute, criteria, this.getDataForm()).then(response => {
+        //Request
+        await new Promise((resolve, reject) => {
+          if (propParams.update.method) {
+            //Call custom method
+            propParams.update.method(criteria, formData).then(response => {
+              requestInfo.response = response
+              return resolve(true)
+            }).catch(error => {
+              requestInfo.error = error
+              return resolve(true)
+            })
+          } else {
+            this.$crud.update(propParams.apiRoute, criteria, formData).then(response => {
+              requestInfo.response = response
+              return resolve(true)
+            }).catch(error => {
+              requestInfo.error = error
+              return resolve(true)
+            })
+          }
+        })
+
+        //Action after request
+        if (requestInfo.response) {
           this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
           this.$alert.info({message: this.$tr('ui.message.recordUpdated')})
           this.loading = false
           this.show = false
           //this.initForm()
-          this.$emit('updated', response.data)
-        }).catch(error => {
+          this.$emit('updated', requestInfo.response.data)
+        } else {
           this.loading = false
           this.$alert.error({message: this.$tr('ui.message.recordNoUpdated')})
-        })
+        }
       }
     },
     //Return data of form

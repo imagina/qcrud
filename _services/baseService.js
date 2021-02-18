@@ -26,11 +26,9 @@ export default {
       let urlApi = config(configName)//Get url from config
       let dataRequest = helper.toSnakeCase(data)
 
-      //Send to clear front cache
-      this.post('apiRoutes.qsite.cacheClear')
-
       //Request
       axios.post(urlApi, {attributes: dataRequest}).then(response => {
+        this.post('apiRoutes.qsite.cacheClear')//Send to clear front cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject(error.response.data.errors)//Failed response
@@ -118,10 +116,9 @@ export default {
       let urlApi = config(configName) + '/' + criteria//Get url from config
       //Get request params
       let requestParams = Object.assign(params.params, {attributes: helper.toSnakeCase(data)})
-      //Send to clear front cache
-      this.post('apiRoutes.qsite.cacheClear')
       //Request
       axios.put(urlApi, requestParams).then(response => {
+        this.post('apiRoutes.qsite.cacheClear')//Send to clear front cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject(error.response.data.errors)//Failed response
