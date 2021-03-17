@@ -17,7 +17,7 @@
         >
           <!--Slot Top-->
           <template slot="top">
-            <div class="row q-col-gutter-y-sm full-width">
+            <div class="row q-col-gutter-y-sm full-width items-center">
               <!--Table slot left-->
               <div class="table-top-left col-12 col-md-4 col-xl-3">
                 <!--Search-->
@@ -29,11 +29,10 @@
                   </template>
                 </q-input>
                 <!--Title-->
-                <div class="text-h6 text-primary ellipsis" v-if="params.read.title || params.read.icon">
-                  <q-icon v-if="params.read.icon" class="q-mr-sm" :name="params.read.icon"/>
-                  <span v-if="params.read.title" :title="params.read.title">
+                <div class="text-h6 text-blue-grey text-weight-bold text-subtitle1 ellipsis"
+                     v-if="params.read.title || params.read.icon">
+                  <q-icon v-if="params.read.icon" class="q-mr-xs" :name="params.read.icon" size="22px"/>
                   {{ params.read.title }}
-                </span>
                 </div>
               </div>
               <!--Table slot Right-->
@@ -215,7 +214,7 @@
 <script>
 export default {
   beforeDestroy() {
-    this.$root.$off('page.data.refresh')
+    this.$root.$off('crud.data.refresh')
   },
   props: {
     params: {default: false}
@@ -296,7 +295,7 @@ export default {
     //init form
     async init() {
       await this.orderFilters()//Order filters
-      this.$root.$on('page.data.refresh', () => this.getDataTable(true))//Listen refresh event
+      this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
       if (!this.params.read.filterName) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
