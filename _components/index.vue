@@ -71,7 +71,7 @@
               <div class="full-width" style="width : max-content">
                 <!-- Custom Actions -->
                 <q-btn v-for="(action, key) in (params.read.actions || {})" size="sm"
-                       v-if="action.vIf ? action.vIf : true" :key="key"
+                       v-if="(action.vIf != undefined) ? action.vIf : true" :key="key"
                        :icon="action.icon || ''" :color="action.color || ''"
                        style="font-size: 8px; padding: 6px" round unelevated
                        @click="callCustomAction(action,props.row,key)">
@@ -96,8 +96,10 @@
             <!-- status columns -->
             <q-td v-else-if="(['status','active'].indexOf(props.col.name) != -1) || props.col.asStatus"
                   :props="props" class="text-left">
+              <!--Action-->
               <q-btn-dropdown :color="props.value ? 'positive' : 'negative'" flat padding="sm none" class="text-caption"
-                              :label="props.value ? $tr('ui.label.enabled') : $tr('ui.label.disabled')" no-caps>
+                              :label="props.value ? $tr('ui.label.enabled') : $tr('ui.label.disabled')" no-caps
+                              v-if="permitAction(props.row).edit">
                 <!--Message change to-->
                 <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus(props)" v-close-popup>
                   <div class="row items-center">
@@ -108,6 +110,8 @@
                   </div>
                 </q-item>
               </q-btn-dropdown>
+              <!--Label-->
+              <label v-else>{{ props.value ? $tr('ui.label.disabled') : $tr('ui.label.enabled') }}</label>
             </q-td>
             <!--Default columns-->
             <q-td v-else :props="props" :title="props.value">
