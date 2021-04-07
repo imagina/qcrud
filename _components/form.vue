@@ -155,16 +155,16 @@ export default {
           if (!this.paramsProps.field && this.locale.success) {
             let formDataStore = this.$clone(this.$store.state.qcrudComponent.component[this.paramsProps.crudId])
             let formData = this.$clone(this.locale.formTemplate)
-            let emiteForm = formDataStore ? false : true
+            let emitForm = formDataStore ? false : true
 
-            //Vlaidate if change some item from form
-            if (!emiteForm)
+            //Validate if change some item from form
+            if (!emitForm)
               for (var itemName in formData)
                 if (JSON.stringify(formDataStore[itemName]) !== JSON.stringify(formData[itemName]))
-                  emiteForm = true
+                  emitForm = true
 
             //Emit form data
-            if (emiteForm)
+            if (emitForm)
               this.$store.dispatch('qcrudComponent/SET_DATA_COMPONENT', {
                 id: this.paramsProps.crudId, data: this.locale.formTemplate
               })
@@ -199,14 +199,14 @@ export default {
   methods: {
     //Init form
     async initForm() {
-      this.success = false//succesfull
+      this.success = false//successful
       this.loading = true//loading
-      this.locale = {fields: {options: {}}, fieldsTranslatable: {}, form: {}}//Reste locales
+      this.locale = {fields: {options: {}}, fieldsTranslatable: {}, form: {}}//Reset locales
       this.paramsProps = this.$clone(this.params)
       await this.getExtraFields()//Get extra fields to backend
       this.orderFields()//order fields to component locale
       this.show = this.value//Assign props value to show modal
-      this.success = true//succesfull
+      this.success = true//successful
       if (this.isUpdate || this.paramsProps.field) await this.getDataItem()//Get data item
       this.componentStore.create()//Create component in store
       this.loading = false
@@ -234,7 +234,7 @@ export default {
         }).catch(error => resolve(false))
       })
     },
-    //Order fields of parms
+    //Order fields of params
     orderFields() {
       let params = this.$clone(this.paramsProps)
       let formLeft = params.formLeft || {}
@@ -263,7 +263,7 @@ export default {
         }
       })
 
-      //Assign fields and valitadions to locale
+      //Assign fields and validations to locale
       this.locale.fields = this.$clone(fields)
       this.locale.fieldsTranslatable = this.$clone(fieldsTranslatables)
     },
@@ -323,7 +323,7 @@ export default {
         this.loading = true
         let propParams = this.$clone(this.paramsProps)
         let formData = this.$clone(this.getDataForm())
-        let requestInfo = {response: false, error: false}//Default request repsonse
+        let requestInfo = {response: false, error: false}//Default request response
 
         //Request
         await new Promise((resolve, reject) => {
@@ -379,7 +379,7 @@ export default {
         this.loading = true
         let propParams = this.$clone(this.paramsProps)
         let criteria = this.$clone(this.itemId)
-        let requestInfo = {response: false, error: false}//Default request repsonse
+        let requestInfo = {response: false, error: false}//Default request response
         let formData = this.$clone(this.getDataForm())
 
         //If is field update criteria
@@ -447,8 +447,8 @@ export default {
       }
 
       //Delete fields no crud
-      for (var fieldname in crudFields) {
-        if (crudFields[fieldname].noCrud) delete data[fieldname]
+      for (var fieldName in crudFields) {
+        if (crudFields[fieldName].noCrud) delete data[fieldName]
       }
 
       return data//Response
