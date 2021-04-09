@@ -218,19 +218,19 @@ export default {
         //Request params
         let requestParams = {
           refresh: true,
-          params: {filter: {configFieldName: this.paramsProps.extraFormFields}}
+          params: {filter: {configName: this.paramsProps.extraFormFields}}
         }
         //Request
-        this.$crud.index('apiRoutes.qsite.configFields', requestParams).then(response => {
+        this.$crud.index('apiRoutes.qsite.configs', requestParams).then(response => {
           //Add response to form
-          if (response.data && Object.keys(response.data)) {
+          if (response.data && Array.isArray(response.data) && Object.keys(response.data)) {
             if (this.paramsProps.formRight && Object.keys(this.paramsProps.formRight))
               this.paramsProps.formRight = this.$clone({...this.paramsProps.formRight, ...response.data})
             else if (this.paramsProps.formLeft && Object.keys(this.paramsProps.formLeft))
               this.paramsProps.formLeft = this.$clone({...this.paramsProps.formLeft, ...response.data})
           }
           //Response
-          resolve(response.data)
+          resolve(response.data || [])
         }).catch(error => resolve(false))
       })
     },
