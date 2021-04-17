@@ -2,7 +2,6 @@ import axios from 'axios'
 import {remember} from '@imagina/qsite/_plugins/remember'
 import {helper} from '@imagina/qsite/_plugins/helper'
 import config from '@imagina/qsite/_config/master/index'
-import {req} from "vuelidate/lib/validators/common";
 
 //Replace params in apiRoute
 function replaceParamsApiRoute(apiRoute, params) {
@@ -31,7 +30,7 @@ export default {
         this.post('apiRoutes.qsite.cacheClear')//Send to clear front cache
         resolve(response.data)//Successful response
       }).catch(error => {
-        reject(error.response.data.errors)//Failed response
+        reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
       })
     })
   },
@@ -121,7 +120,7 @@ export default {
         this.post('apiRoutes.qsite.cacheClear')//Send to clear front cache
         resolve(response.data)//Successful response
       }).catch(error => {
-        reject(error.response.data.errors)//Failed response
+        reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
       })
     })
   },
