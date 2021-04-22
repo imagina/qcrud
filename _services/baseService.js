@@ -1,6 +1,7 @@
 import axios from 'axios'
 import {remember} from '@imagina/qsite/_plugins/remember'
 import {helper} from '@imagina/qsite/_plugins/helper'
+import cache from '@imagina/qsite/_plugins/cache'
 import config from '@imagina/qsite/_config/master/index'
 
 //Replace params in apiRoute
@@ -22,12 +23,13 @@ export default {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!data) return reject('Data is required')
-      let urlApi = config(configName)//Get url from config
+      let urlApi = (config(configName) || configName)//Get url from config
       let dataRequest = helper.toSnakeCase(data)
 
       //Request
-      axios.post(urlApi, {attributes: dataRequest}).then(response => {
+      axios.post(urlApi, {attributes: dataRequest}).then(async response => {
         this.post('apiRoutes.qsite.cacheClear')//Send to clear front cache
+        await cache.remove({allKey: configName})//Clear api Route cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -45,7 +47,7 @@ export default {
     return new Promise((resolve, reject) => {
       params = {params: {}, refresh: false, cacheTime: (3600 * 3), ...params}//Validate params params
       if (!configName) return reject('Config name is required')//Validate config name
-      let urlApi = config(configName)//Get url from config
+      let urlApi = (config(configName) || configName)//Get url from config
       let key = `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
 
       remember.async({
@@ -81,7 +83,7 @@ export default {
       params = {params: {}, refresh: false, cacheTime: (3600 * 3), ...params}//Validate params params
       if (!configName) return reject('Config name is required')//Validate Config name
       if (!criteria) return reject('Criteria is required')//Validate criteria
-      let urlApi = config(configName) + '/' + criteria//Get url from config
+      let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       let key = `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
 
       remember.async({
@@ -112,12 +114,13 @@ export default {
       if (!configName) return reject('Config name is required')
       if (!criteria) return reject('Criteria is required')
       if (!data) return reject('Data is required')
-      let urlApi = config(configName) + '/' + criteria//Get url from config
+      let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Get request params
       let requestParams = Object.assign(params.params, {attributes: helper.toSnakeCase(data)})
       //Request
-      axios.put(urlApi, requestParams).then(response => {
+      axios.put(urlApi, requestParams).then(async response => {
         this.post('apiRoutes.qsite.cacheClear')//Send to clear front cache
+        await cache.remove({allKey: configName})//Clear api Route cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -138,7 +141,7 @@ export default {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!criteria) return reject('Criteria is required')
-      let urlApi = config(configName) + '/' + criteria//Get url from config
+      let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       let requestParams = (params && params.params) ? params.params : false//Get request params
       //Request
       //Send to clear front cache
@@ -163,7 +166,7 @@ export default {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!data) return reject('Data is required')
-      let urlApi = replaceParamsApiRoute(config(configName), data || {})//Get url from config
+      let urlApi = replaceParamsApiRoute((config(configName) || configName), data || {})//Get url from config
 
       //Request
       axios.post(urlApi, data).then(response => {
@@ -183,7 +186,7 @@ export default {
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
-      let urlApi = replaceParamsApiRoute(config(configName), data || {})//Get url from config
+      let urlApi = replaceParamsApiRoute((config(configName) || configName), data || {})//Get url from config
 
       //Request
       axios.get(urlApi, {params: params}).then(response => {
@@ -209,7 +212,7 @@ export default {
       if (!data) return reject('Data is required')
 
       //Request
-      axios.put(config(configName), data).then(response => {
+      axios.put((config(configName) || configName), data).then(response => {
         resolve(response.data)//Successful response
       }).catch(error => {
         reject(error)//Failed response

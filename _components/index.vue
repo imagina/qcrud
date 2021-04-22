@@ -377,11 +377,9 @@ export default {
       params.params.take = pagination.rowsPerPage
 
       //Set order by
-      if (pagination.sortBy) {
-        params.params.filter.order = {
-          field: pagination.sortBy,
-          way: pagination.descending ? 'desc' : 'asc'
-        }
+      params.params.filter.order = {
+        field: pagination.sortBy || 'id',
+        way: (pagination.descending != undefined) ? (pagination.descending ? 'desc' : 'asc') : 'desc'
       }
 
       //Merge with params from prop
@@ -423,6 +421,10 @@ export default {
           this.table.filter.search = this.$clone(params.params.filter.search)
         }
 
+        //Dispatch event hook
+        this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
+
+        //Close loading
         this.loading = false
       }).catch(error => {
         this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
@@ -457,6 +459,11 @@ export default {
           this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
           this.getDataTable(true)
           this.dialogDeleteItem = false
+
+          //Dispatch event hook
+          this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+
+          //Close loading
           this.loading = false
         }).catch(error => {
           this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})

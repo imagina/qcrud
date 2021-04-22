@@ -203,7 +203,13 @@ export default {
       this.loading = true//loading
       this.locale = {fields: {options: {}}, fieldsTranslatable: {}, form: {}}//Reset locales
       this.paramsProps = this.$clone(this.params)
-      await this.getExtraFields()//Get extra fields to backend
+      await Promise.all([
+        this.getExtraFields(),//Get extra fields to backend
+        this.$hook.dispatchEvent(//Dispatch hook event
+          (this.isUpdate ? 'isUpdating' : 'isCreating'),
+          {entityName: this.params.entityName}
+        ),
+      ])
       this.orderFields()//order fields to component locale
       this.show = this.value//Assign props value to show modal
       this.success = true//successful
@@ -352,6 +358,8 @@ export default {
         if (requestInfo.response) {
           this.$root.$emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
           this.$alert.info({message: `${this.$tr('ui.message.recordCreated')}`})
+          //Dispatch hook event
+          await this.$hook.dispatchEvent('wasCreated', {entityName: this.params.entityName})
           this.loading = false
           this.show = false
           //this.initForm()
@@ -411,6 +419,8 @@ export default {
         if (requestInfo.response) {
           this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
           this.$alert.info({message: this.$tr('ui.message.recordUpdated')})
+          //Dispatch hook event
+          await this.$hook.dispatchEvent('wasUpdated', {entityName: this.params.entityName})
           this.loading = false
           this.show = false
           //this.initForm()
