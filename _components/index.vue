@@ -8,7 +8,7 @@
         <q-table
           :grid="table.grid"
           :data="table.data"
-          :columns="tablecolumns"
+          :columns="tableColumns"
           :pagination.sync="table.pagination"
           :rows-per-page-options="rowsPerPageOption"
           @request="getData"
@@ -70,7 +70,7 @@
             <q-td v-if="props.col.name == 'actions'" :props="props">
               <div class="full-width" style="width : max-content">
                 <!-- Custom Actions -->
-                <q-btn v-for="(action, key) in (params.read.actions || {})" size="sm"
+                <q-btn v-for="(action, key) in fieldActions(props.row)" size="sm"
                        v-if="(action.vIf != undefined) ? action.vIf : true" :key="key"
                        :icon="action.icon || ''" :color="action.color || ''"
                        style="font-size: 8px; padding: 6px" round unelevated
@@ -138,8 +138,8 @@
                         <!-- actions columns -->
                         <div v-if="col.name == 'actions'" :props="props" class="row q-gutter-x-xs justify-end q-py-xs">
                           <!-- Custom Actions -->
-                          <q-btn v-for="(action, key) in (params.read.actions || {})" size="sm"
-                                 v-if="action.vIf ? action.vIf : true" :key="key"
+                          <q-btn v-for="(action, key) in fieldActions(props.row)" size="sm"
+                                 v-if="(action.vIf != undefined) ? action.vIf : true" :key="key"
                                  :icon="action.icon || ''" :color="action.color || ''"
                                  style="font-size: 8px; padding: 6px" round unelevated
                                  @click="callCustomAction(action,props.row,key)">
@@ -275,7 +275,7 @@ export default {
       return this.params.read.rowsPerPageOptions || [5, 10, 20, 50, 100, 300, 500]
     },
     //return table columns
-    tablecolumns() {
+    tableColumns() {
       let columns = this.$clone(this.params.read.columns)
       //Check columns
       columns.forEach(column => {
@@ -529,7 +529,23 @@ export default {
         this.loading = false
         this.$alert.error({message: this.$tr('ui.message.recordNoUpdated')})
       })
-    }
+    },
+    //Return field actions
+    fieldActions(field) {
+      let actions = this.$clone(this.params.read.actions || [])
+      let response = []
+
+      //Order field actions
+      if (actions && actions.length) {
+        actions.forEach(action => {
+          if (action.format) action = {...action, ...action.format(field)}
+          response.push(action)
+        })
+      }
+
+      //response
+      return response
+    },
   }
 }
 </script>
