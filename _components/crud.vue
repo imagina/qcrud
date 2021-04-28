@@ -323,6 +323,35 @@ export default {
         this.showModal = true
       } else this.dialogPermissions.show = true
     },
+    //Delete category
+    delete(item) {
+      this.$alert.error({
+        mode: 'modal',
+        title: `ID: ${item.id}`,
+        message: this.$tr('ui.message.deleteRecord'),
+        actions: [
+          {label: this.$tr('ui.label.cancel'), color: 'grey'},
+          {
+            label: this.$tr('ui.label.delete'),
+            color: 'red',
+            handler: () => {
+              //Request
+              this.$crud.delete(this.params.apiRoute, item.id).then(response => {
+                //Alert
+                this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
+                //Dispatch event hook
+                this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                //Event
+                this.$emit('deleted')
+              }).catch(error => {
+                this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
+                this.loading = false
+              })
+            }
+          }
+        ]
+      })
+    },
     //watch emit update from form component
     formEmmit(type = 'created', response = false) {
       if (this.type == 'full') {

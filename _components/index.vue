@@ -88,7 +88,7 @@
                 <q-btn color="negative" icon="fas fa-trash-alt" size="sm" class="q-ml-xs"
                        v-if="permitAction(props.row).destroy" round unelevated
                        style="font-size: 8px; padding: 6px"
-                       @click="()=>{itemIdToDelete = props.row; dialogDeleteItem = true}">
+                       @click="deleteItem(props.row)">
                   <q-tooltip :delay="300">{{ $tr('ui.label.delete') }}</q-tooltip>
                 </q-btn>
               </div>
@@ -156,7 +156,7 @@
                           <q-btn color="negative" icon="fas fa-trash-alt" size="sm"
                                  v-if="permitAction(props.row).destroy" round unelevated
                                  style="font-size: 8px; padding: 6px"
-                                 @click="()=>{itemIdToDelete = props.row; dialogDeleteItem = true}">
+                                 @click="deleteItem(props.row)">
                             <q-tooltip :delay="300">{{ $tr('ui.label.delete') }}</q-tooltip>
                           </q-btn>
                         </div>
@@ -189,25 +189,6 @@
             </div>
           </template>
         </q-table>
-
-        <!--Dialog to delete-->
-        <q-dialog v-model="dialogDeleteItem">
-          <q-card class="backend-page">
-            <q-card-section>
-              <h5 class="q-ma-none text-negative">{{ itemIdToDelete.title }}</h5>
-              {{ $tr('ui.message.deleteRecord') }}
-            </q-card-section>
-
-            <q-card-actions align="right">
-              <!--Button cancel-->
-              <q-btn color="blue-grey" label="Cancel" @click="dialogDeleteItem = false" unelevated rounded/>
-              <!--Button confirm delete category-->
-              <q-btn color="negative" icon="fas fa-trash-alt" :loading="loading"
-                     label="Delete" @click="deleteItem()" unelevated rounded/>
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
-
         <!--Loading-->
         <inner-loading :visible="loading"/>
       </div>
@@ -247,7 +228,6 @@ export default {
         grid: false
       },
       statusModel: {},//Model to status
-      dialogDeleteItem: false,//VModel to show dialog to agree delete
       itemIdToDelete: false,//ID of item to delete,
       filter: {
         available: false,
@@ -433,43 +413,53 @@ export default {
       })
     },
     //Delete category
-    deleteItem() {
-      this.loading = true
-      let propParams = this.$clone(this.params)
-      let item = this.$clone(this.itemIdToDelete)
+    deleteItem(item) {
+      this.$alert.error({
+        mode: 'modal',
+        title: `ID: ${item.id}`,
+        message: this.$tr('ui.message.deleteRecord'),
+        actions: [
+          {label: this.$tr('ui.label.cancel'), color: 'grey'},
+          {
+            label: this.$tr('ui.label.delete'),
+            color: 'red',
+            handler: () => {
+              this.loading = true
+              let propParams = this.$clone(this.params)
+              //If is crud field
+              if (this.params.field) {
+                let dataField = this.$clone(this.dataField)//get data table
+                dataField.value.splice(item.__index, 1)//Remove field
 
-      //If is crud field
-      if (this.params.field) {
-        let dataField = this.$clone(this.dataField)//get data table
-        dataField.value.splice(this.itemIdToDelete.__index, 1)//Remove field
+                //Request
+                this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
+                  this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
+                  this.getDataTable(true)
+                  this.loading = false
+                }).catch(error => {
+                  this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
+                  this.loading = false
+                })
+              } else {
+                //Request
+                this.$crud.delete(propParams.apiRoute, item.id).then(response => {
+                  this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
+                  this.getDataTable(true)
 
-        //Request
-        this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
-          this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
-          this.getDataTable(true)
-          this.dialogDeleteItem = false
-          this.loading = false
-        }).catch(error => {
-          this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
-          this.loading = false
-        })
-      } else {
-        //Request
-        this.$crud.delete(propParams.apiRoute, item.id).then(response => {
-          this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
-          this.getDataTable(true)
-          this.dialogDeleteItem = false
+                  //Dispatch event hook
+                  this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
 
-          //Dispatch event hook
-          this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
-
-          //Close loading
-          this.loading = false
-        }).catch(error => {
-          this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
-          this.loading = false
-        })
-      }
+                  //Close loading
+                  this.loading = false
+                }).catch(error => {
+                  this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
+                  this.loading = false
+                })
+              }
+            }
+          }
+        ]
+      })
     },
     //Check if permit action (delete or update)
     permitAction(field) {
