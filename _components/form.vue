@@ -229,7 +229,7 @@ export default {
         //Request
         this.$crud.index('apiRoutes.qsite.configs', requestParams).then(response => {
           //Add response to form
-          if (response.data && Array.isArray(response.data) && Object.keys(response.data)) {
+          if (response.data && Object.keys(response.data).length) {
             if (this.paramsProps.formRight && Object.keys(this.paramsProps.formRight))
               this.paramsProps.formRight = this.$clone({...this.paramsProps.formRight, ...response.data})
             else if (this.paramsProps.formLeft && Object.keys(this.paramsProps.formLeft))
