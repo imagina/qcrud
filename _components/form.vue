@@ -328,7 +328,7 @@ export default {
       if (await this.$refs.localeComponent.validateForm()) {
         this.loading = true
         let propParams = this.$clone(this.paramsProps)
-        let formData = this.$clone(this.getDataForm())
+        let formData = this.$clone(await this.getDataForm())
         let requestInfo = {response: false, error: false}//Default request response
 
         //Request
@@ -344,7 +344,7 @@ export default {
             })
           } else {
             //Do request
-            this.$crud.create(propParams.apiRoute, this.getDataForm()).then(response => {
+            this.$crud.create(propParams.apiRoute, formData).then(response => {
               requestInfo.response = response
               return resolve(true)
             }).catch(error => {
@@ -363,7 +363,7 @@ export default {
           this.loading = false
           this.show = false
           //this.initForm()
-          this.$emit('created', this.getDataForm())
+          this.$emit('created', formData)
         } else {
           this.$alert.error({message: `${this.$tr('ui.message.recordNoCreated')}`})
           this.loading = false//login hide
@@ -388,7 +388,7 @@ export default {
         let propParams = this.$clone(this.paramsProps)
         let criteria = this.$clone(this.itemId)
         let requestInfo = {response: false, error: false}//Default request response
-        let formData = this.$clone(this.getDataForm())
+        let formData = this.$clone(await this.getDataForm())
 
         //If is field update criteria
         if (this.paramsProps.field && this.dataField.id) criteria = this.dataField.id
@@ -433,35 +433,43 @@ export default {
     },
     //Return data of form
     getDataForm() {
-      //Clone data form
-      let data = this.$clone(this.locale.form)
-      let crudFields = {...(this.paramsProps.formLeft || {}), ...(this.paramsProps.formRight || {})}
-      //Validate options
-      if (data.options && !Object.keys(data.options).length) delete data.options
+      return new Promise(async (resolve, reject) => {
+        //Clone data form
+        let data = this.$clone(this.locale.form)
+        let crudFields = {...(this.paramsProps.formLeft || {}), ...(this.paramsProps.formRight || {})}
+        //Validate options
+        if (data.options && !Object.keys(data.options).length) delete data.options
 
-      //order if is field
-      if (this.paramsProps.field) {
-        if (this.field) {
-          this.dataField.value[this.field.__index] = data
-        }//Update field
-        else {
-          this.dataField.value.push(data)
-        }//Add to data field
+        //order if is field
+        if (this.paramsProps.field) {
+          if (this.field) {
+            this.dataField.value[this.field.__index] = data
+          }//Update field
+          else {
+            this.dataField.value.push(data)
+          }//Add to data field
 
-        //Format data field
-        data = {
-          userId: data.userId,
-          name: this.paramsProps.field,
-          value: this.dataField.value
+          //Format data field
+          data = {
+            userId: data.userId,
+            name: this.paramsProps.field,
+            value: this.dataField.value
+          }
         }
-      }
 
-      //Delete fields no crud
-      for (var fieldName in crudFields) {
-        if (crudFields[fieldName].noCrud) delete data[fieldName]
-      }
+        //Delete fields no crud
+        for (var fieldName in crudFields) {
+          if (crudFields[fieldName].noCrud) delete data[fieldName]
+        }
 
-      return data//Response
+        //Call custom Get Data Form
+        if (this.paramsProps.getDataForm) {
+          data = await this.paramsProps.getDataForm(this.$clone(data), this.isUpdate ? 'update' : 'create')
+        }
+        console.warn('crud', data)
+        //Response
+        resolve(data)
+      })
     },
     //format slug
     setDynamicValues(fieldName, field) {
