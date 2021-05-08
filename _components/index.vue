@@ -73,7 +73,7 @@
                 <q-btn v-for="(action, key) in fieldActions(props.row)" size="sm"
                        v-if="(action.vIf != undefined) ? action.vIf : true" :key="key"
                        :icon="action.icon || ''" :color="action.color || ''"
-                       style="font-size: 8px; padding: 6px" round unelevated
+                       style="font-size: 8px; padding: 6px" round unelevated class="q-ml-xs"
                        @click="callCustomAction(action,props.row,key)">
                   <q-tooltip v-if="action.tooltip">{{ action.tooltip }}</q-tooltip>
                 </q-btn>
