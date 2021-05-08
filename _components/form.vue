@@ -466,7 +466,6 @@ export default {
         if (this.paramsProps.getDataForm) {
           data = await this.paramsProps.getDataForm(this.$clone(data), this.isUpdate ? 'update' : 'create')
         }
-        console.warn('crud', data)
         //Response
         resolve(data)
       })
