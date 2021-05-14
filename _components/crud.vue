@@ -223,6 +223,7 @@ export default {
         for (var itemName in this.customData) {
           let itemValue = this.$clone(this.customData[itemName])
           crudData[itemName] = (typeof itemValue == 'object') ? {...crudData[itemName], ...itemValue} : itemValue
+          if (itemName == 'getDataForm') crudData[itemName] = this.customData[itemName]
         }
       }
 
