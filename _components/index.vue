@@ -6,14 +6,15 @@
       <div class="relative-position col-12" v-if="success">
         <!--Table-->
         <q-table
-          :grid="table.grid"
-          :data="table.data"
-          :columns="tableColumns"
-          :pagination.sync="table.pagination"
-          :rows-per-page-options="rowsPerPageOption"
-          @request="getData"
-          class="box-table stick-table"
-          :hide-header="!showSlotTable.header"
+            :grid="table.grid"
+            :data="table.data"
+            :columns="tableColumns"
+            :pagination.sync="table.pagination"
+            :rows-per-page-options="rowsPerPageOption"
+            @request="getData"
+            :class="`stick-table ${table.grid ? '' : 'box-table'}`"
+            :hide-header="!showSlotTable.header"
+            ref="tableComponent"
         >
           <!--Slot Top-->
           <template slot="top">
@@ -48,17 +49,16 @@
                   </q-btn>
                   <!--Toggle view as grid-->
                   <q-btn round unelevated size="12px" style="font-size: 8px; padding: 6px"
+                         v-if="(params.read.allowToggleView != undefined) ? params.read.allowToggleView : true"
                          color="light-blue" @click="table.grid = !table.grid"
                          :icon="!table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'">
                     <q-tooltip>{{ $tr(`ui.message.${table.grid ? 'listView' : 'gribView'}`) }}</q-tooltip>
                   </q-btn>
                   <!--Button new record-->
-                  <q-btn icon="fas fa-plus" round unelevated size="12px" style="font-size: 8px; padding: 6px"
+                  <q-btn rounded unelevated size="12px" :label="params.create.title" :icon="'fas fa-plus'"
+                         :style="params.create.title ? '' : 'font-size: 8px; padding: 6px'"
                          v-if="params.create && params.hasPermission.create" color="positive"
-                         v-bind="params.create.to ? {to : params.create.to} : {}"
-                         @click="params.create.to ? false : $emit('create')">
-                    <q-tooltip>{{ params.create.title }}</q-tooltip>
-                  </q-btn>
+                         @click="handlerActionCreate"/>
                 </div>
               </div>
             </div>
@@ -121,10 +121,13 @@
 
           <!--Custom cards-->
           <template v-slot:item="props">
-            <div class="q-pa-sm col-12 col-sm-6 col-md-4 col-lg-3">
-              <q-card flat bordered>
+            <div :class="`${gridParams.colClass}`">
+              <!--Card Component-->
+              <component v-if="gridParams.component" :is="gridParams.component" :row="props.row"/>
+              <!--Default Card -->
+              <q-card v-else flat class="box">
                 <q-list dense>
-                  <q-item v-for="col in props.cols" :key="col.name">
+                  <q-item v-for="col in props.cols" :key="col.name" style="padding: 3px 0">
                     <q-item-section>
                       <!--Field name-->
                       <q-item-label class="ellipsis">
@@ -136,7 +139,8 @@
                       <!--Field value-->
                       <q-item-label v-if="col.name != 'id'" class="ellipsis text-grey-6">
                         <!-- actions columns -->
-                        <div v-if="col.name == 'actions'" :props="props" class="row q-gutter-x-xs justify-end q-py-xs">
+                        <div v-if="col.name == 'actions'" :props="props"
+                             class="row q-gutter-x-xs justify-end q-py-xs">
                           <!-- Custom Actions -->
                           <q-btn v-for="(action, key) in fieldActions(props.row)" size="sm"
                                  v-if="(action.vIf != undefined) ? action.vIf : true" :key="key"
@@ -205,7 +209,11 @@ export default {
     params: {default: false}
   },
   components: {},
-  watch: {},
+  watch: {
+    'table.grid'() {
+      this.handlerGridView()
+    }
+  },
   mounted() {
     this.$nextTick(function () {
       this.init()
@@ -225,7 +233,7 @@ export default {
         filter: {
           search: null
         },
-        grid: false
+        grid: this.params.read.showAs == 'grid'
       },
       statusModel: {},//Model to status
       itemIdToDelete: false,//ID of item to delete,
@@ -273,6 +281,15 @@ export default {
       })
       //Response
       return columns
+    },
+    //Grid params
+    gridParams() {
+      let gridParams = this.params.read.grid || {}//Get grid params
+      //Response
+      return {
+        colClass: gridParams.colClass || 'col-12 col-sm-6 col-lg-4 col-xl-3',
+        component: gridParams.component || false
+      }
     }
   },
   methods: {
@@ -291,7 +308,10 @@ export default {
           }
         })
       }
+      //Success
       this.success = true
+      //Handler grid view
+      this.handlerGridView()
     },
     //Order filters
     orderFilters() {
@@ -331,10 +351,10 @@ export default {
     async getDataTable(refresh = false, filter = false, pagination = false) {
       //Call data table
       this.getData({
-          pagination: {...this.table.pagination, ...(pagination || {})},
-          filter: {...this.table.filter, ...(filter || {})}
-        },
-        refresh)
+            pagination: {...this.table.pagination, ...(pagination || {})},
+            filter: {...this.table.filter, ...(filter || {})}
+          },
+          refresh)
     },
     //Get products
     getData({pagination, filter}, refresh = false) {
@@ -404,6 +424,9 @@ export default {
         //Dispatch event hook
         this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
 
+        //Handler grid view
+        this.handlerGridView()
+
         //Close loading
         this.loading = false
       }).catch(error => {
@@ -467,7 +490,7 @@ export default {
       let destroy = true//Default action destroy
       //Get options form field
       let options = (field && field.options) ?
-        ((typeof field.options == 'string') ? JSON.parse(field.options) : field.options) : {}
+          ((typeof field.options == 'string') ? JSON.parse(field.options) : field.options) : {}
       //Validate if field is master record
       let isMasterRecord = (options.masterRecord && parseInt(options.masterRecord)) ? true : false
       //Check to permit action edit
@@ -536,6 +559,32 @@ export default {
       //response
       return response
     },
+    //Handler grid view
+    handlerGridView() {
+      setTimeout(() => {
+        let tableElement = this.$refs.tableComponent.$el//Get table element
+        if (this.table.grid) {
+          tableElement.querySelector('.q-table__top').classList.add('q-pa-none', 'box', 'box-auto-height')
+          tableElement.querySelector('.q-table__top').style.paddingBottom = '15px'
+          tableElement.querySelector('.q-table__top').style.marginBottom = '10px'
+          tableElement.querySelector('.q-table__bottom').classList.add('q-pa-none', 'box', 'box-auto-height')
+          tableElement.querySelector('.q-table__bottom').style.marginTop = '15px'
+          tableElement.querySelector('.q-table__grid-content').classList.add('q-col-gutter-md')
+        } else {
+          tableElement.querySelector('.q-table__top').classList.remove('q-pa-none', 'box', 'box-auto-height')
+          tableElement.querySelector('.q-table__top').style.marginBottom = '0'
+        }
+      }, 0)
+    },
+    //Hanlder method create
+    handlerActionCreate() {
+      //Redirect to vue route
+      if (this.params.create.to) return this.$router.push(this.params.create.to)
+      //Redirect esternal URL
+      if (this.params.create.toExternalUrl) return this.$helper.openExternalURL(this.params.create.toExternalUrl, false)
+      //Emit event create
+      this.$emit('create')
+    }
   }
 }
 </script>
