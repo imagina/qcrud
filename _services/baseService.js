@@ -28,7 +28,6 @@ export default {
 
       //Request
       axios.post(urlApi, {attributes: dataRequest}).then(async response => {
-        this.post('apiRoutes.qsite.cacheClear')//Send to clear front cache
         await cache.remove({allKey: configName})//Clear api Route cache
         resolve(response.data)//Successful response
       }).catch(error => {
@@ -119,7 +118,6 @@ export default {
       let requestParams = Object.assign(params.params, {attributes: helper.toSnakeCase(data)})
       //Request
       axios.put(urlApi, requestParams).then(async response => {
-        this.post('apiRoutes.qsite.cacheClear')//Send to clear front cache
         await cache.remove({allKey: configName})//Clear api Route cache
         resolve(response.data)//Successful response
       }).catch(error => {
@@ -143,9 +141,6 @@ export default {
       if (!criteria) return reject('Criteria is required')
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       let requestParams = (params && params.params) ? params.params : false//Get request params
-      //Request
-      //Send to clear front cache
-      this.post('apiRoutes.qsite.cacheClear')
       //Request
       axios.delete(urlApi, {params: requestParams}).then(response => {
         resolve(response.data)//Successful response
@@ -219,4 +214,14 @@ export default {
       })
     })
   },
+
+  /**
+   * Request to clear backend cache
+   */
+  clearCache() {
+    return new Promise(async (resolve, reject) => {
+      await this.post('apiRoutes.qsite.cacheClear').catch(error => reject(error))
+      resolve(true)
+    })
+  }
 }

@@ -206,8 +206,8 @@ export default {
       await Promise.all([
         this.getExtraFields(),//Get extra fields to backend
         this.$hook.dispatchEvent(//Dispatch hook event
-          (this.isUpdate ? 'isUpdating' : 'isCreating'),
-          {entityName: this.params.entityName}
+            (this.isUpdate ? 'isUpdating' : 'isCreating'),
+            {entityName: this.params.entityName}
         ),
       ])
       this.orderFields()//order fields to component locale
@@ -337,6 +337,7 @@ export default {
             //Call custom method
             propParams.create.method(formData).then(response => {
               requestInfo.response = response
+              this.$crud.clearCache()//Clear Cache
               return resolve(true)
             }).catch(error => {
               requestInfo.error = error
@@ -346,6 +347,7 @@ export default {
             //Do request
             this.$crud.create(propParams.apiRoute, formData).then(response => {
               requestInfo.response = response
+              this.$crud.clearCache()//Clear Cache
               return resolve(true)
             }).catch(error => {
               requestInfo.error = error
@@ -399,6 +401,7 @@ export default {
             //Call custom method
             propParams.update.method(criteria, formData).then(response => {
               requestInfo.response = response
+              this.$crud.clearCache()//Clear Cache
               return resolve(true)
             }).catch(error => {
               requestInfo.error = error
@@ -407,6 +410,7 @@ export default {
           } else {
             this.$crud.update(propParams.apiRoute, criteria, formData).then(response => {
               requestInfo.response = response
+              this.$crud.clearCache()//Clear Cache
               return resolve(true)
             }).catch(error => {
               requestInfo.error = error
@@ -493,8 +497,8 @@ export default {
           if (options && options.length) {
             //Get parents of category
             let parents = this.$array.parents(
-              this.$array.destroyTree(options),
-              this.locale.formTemplate.categoryId
+                this.$array.destroyTree(options),
+                this.locale.formTemplate.categoryId
             )
             //Add categories values
             if (parents && parents.id && parents.id.length) {

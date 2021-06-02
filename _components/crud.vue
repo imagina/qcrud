@@ -295,9 +295,9 @@ export default {
     filterOptions(val, update) {
       update(() => {
         this.dataCrudSelect.options = this.$helper.filterOptions(
-          val,
-          this.dataCrudSelect.rootOptions,
-          this.dataCrudSelect.itemSelected
+            val,
+            this.dataCrudSelect.rootOptions,
+            this.dataCrudSelect.itemSelected
         )
       })
     },
@@ -342,6 +342,8 @@ export default {
                 this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
                 //Dispatch event hook
                 this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                //Clear Cache
+                this.$crud.clearCache()
                 //Event
                 this.$emit('deleted')
               }).catch(error => {
