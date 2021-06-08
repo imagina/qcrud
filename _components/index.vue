@@ -123,7 +123,10 @@
           <template v-slot:item="props">
             <div :class="`${gridParams.colClass}`">
               <!--Card Component-->
-              <component v-if="gridParams.component" :is="gridParams.component" :row="props.row"/>
+              <component v-if="gridParams.component" :is="gridParams.component" :row="props.row"
+                         :permit-action="permitAction(props.row)"
+                         @update="params.update.to ? false : $emit('update', props.row)"
+                         @delete="deleteItem(props.row)"/>
               <!--Default Card -->
               <q-card v-else flat class="box">
                 <q-list dense>
@@ -153,7 +156,7 @@
                           <q-btn color="positive" icon="fas fa-pen" size="sm" style="font-size: 8px; padding: 6px"
                                  v-if="permitAction(props.row).edit" round unelevated
                                  v-bind="params.update.to ? {to : {name : params.update.to, params : props.row}} : {}"
-                                 @click="params.update.to ? false : $emit('update', props.row.id)">
+                                 @click="params.update.to ? false : $emit('update', props.row)">
                             <q-tooltip :delay="300">{{ $tr('ui.label.edit') }}</q-tooltip>
                           </q-btn>
                           <!--Delete button-->
