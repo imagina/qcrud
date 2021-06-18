@@ -1,7 +1,8 @@
 <template>
   <div id="crudPage" :key="pageId">
     <!---Component CRUD-->
-    <crud v-if="crudData" :crud-data="crudData" ref="crudComponent" :custom-data="customData"/>
+    <crud v-if="crudData" :crud-data="crudData" ref="crudComponent" :custom-data="customData"
+          :title="$tr($route.meta.title)"/>
   </div>
 </template>
 <script>

@@ -19,6 +19,16 @@
           <!--Slot Top-->
           <template slot="top">
             <div class="row q-col-gutter-y-sm full-width items-center">
+              <!--Title-->
+              <div class="col-12 text-h6 text-blue-grey text-weight-bold text-subtitle1 ellipsis"
+                   v-if="title || params.read.title">
+                <!--Icon-->
+                <q-icon v-if="params.read.icon" class="q-mr-xs" :name="params.read.icon" size="22px"/>
+                <!--Label-->
+                {{ title || params.read.title }}
+                <!--Separator-->
+                <q-separator class="q-my-sm"/>
+              </div>
               <!--Table slot left-->
               <div class="table-top-left col-12 col-md-4 col-xl-3">
                 <!--Search-->
@@ -29,12 +39,6 @@
                     <q-icon name="search"/>
                   </template>
                 </q-input>
-                <!--Title-->
-                <div class="text-h6 text-blue-grey text-weight-bold text-subtitle1 ellipsis"
-                     v-if="params.read.title || params.read.icon">
-                  <q-icon v-if="params.read.icon" class="q-mr-xs" :name="params.read.icon" size="22px"/>
-                  {{ params.read.title }}
-                </div>
               </div>
               <!--Table slot Right-->
               <div class="table-top-right col-12 col-md-8 col-xl-9 text-right">
@@ -68,30 +72,7 @@
           <template v-slot:body-cell="props">
             <!-- actions columns -->
             <q-td v-if="props.col.name == 'actions'" :props="props">
-              <div class="full-width" style="width : max-content">
-                <!-- Custom Actions -->
-                <q-btn v-for="(action, key) in fieldActions(props.row)" size="sm"
-                       v-if="(action.vIf != undefined) ? action.vIf : true" :key="key"
-                       :icon="action.icon || ''" :color="action.color || ''"
-                       style="font-size: 8px; padding: 6px" round unelevated class="q-ml-xs"
-                       @click="callCustomAction(action,props.row,key)">
-                  <q-tooltip v-if="action.tooltip">{{ action.tooltip }}</q-tooltip>
-                </q-btn>
-                <!--Edit button-->
-                <q-btn color="positive" icon="fas fa-pen" size="sm" style="font-size: 8px; padding: 6px"
-                       v-if="permitAction(props.row).edit" round unelevated class="q-ml-xs"
-                       v-bind="params.update.to ? {to : {name : params.update.to, params : props.row}} : {}"
-                       @click="params.update.to ? false : $emit('update', props.row)">
-                  <q-tooltip :delay="300">{{ $tr('ui.label.edit') }}</q-tooltip>
-                </q-btn>
-                <!--Delete button-->
-                <q-btn color="negative" icon="fas fa-trash-alt" size="sm" class="q-ml-xs"
-                       v-if="permitAction(props.row).destroy" round unelevated
-                       style="font-size: 8px; padding: 6px"
-                       @click="deleteItem(props.row)">
-                  <q-tooltip :delay="300">{{ $tr('ui.label.delete') }}</q-tooltip>
-                </q-btn>
-              </div>
+              <btn-menu :actions="fieldActions(props)" :action-data="props.row"/>
             </q-td>
             <!-- status columns -->
             <q-td v-else-if="(['status','active'].indexOf(props.col.name) != -1) || props.col.asStatus"
@@ -124,58 +105,35 @@
             <div :class="`${gridParams.colClass}`">
               <!--Card Component-->
               <component v-if="gridParams.component" :is="gridParams.component" :row="props.row"
-                         :permit-action="permitAction(props.row)"
+                         :permit-action="permitAction(props.row)" :field-actions="fieldActions(props)"
                          @update="params.update.to ? false : $emit('update', props.row)"
                          @delete="deleteItem(props.row)"/>
               <!--Default Card -->
-              <q-card v-else flat class="box">
+              <q-card v-else flat class="box" style="padding-top: 5px">
                 <q-list dense>
-                  <q-item v-for="col in props.cols" :key="col.name" style="padding: 3px 0">
+                  <q-item v-for="col in props.cols" :key="col.name" style="padding: 3px 0" v-if="col.name != 'actions'">
                     <q-item-section>
                       <!--Field name-->
                       <q-item-label class="ellipsis">
-                        <div v-if="col.name != 'actions'">
+                        <div v-if="col.name != 'actions'" class="row justify-between items-center">
+                          <!--Label-->
                           {{ col.label }} {{ col.name == 'id' ? col.value : '' }}
+                          <!--Actions-->
+                          <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props)" :action-data="props.row"/>
                         </div>
-                        <q-separator v-if="['id','actions'].indexOf(col.name) != -1" class="q-mt-sm"/>
+                        <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm"/>
                       </q-item-label>
                       <!--Field value-->
                       <q-item-label v-if="col.name != 'id'" class="ellipsis text-grey-6">
-                        <!-- actions columns -->
-                        <div v-if="col.name == 'actions'" :props="props"
-                             class="row q-gutter-x-xs justify-end q-py-xs">
-                          <!-- Custom Actions -->
-                          <q-btn v-for="(action, key) in fieldActions(props.row)" size="sm"
-                                 v-if="(action.vIf != undefined) ? action.vIf : true" :key="key"
-                                 :icon="action.icon || ''" :color="action.color || ''"
-                                 style="font-size: 8px; padding: 6px" round unelevated
-                                 @click="callCustomAction(action,props.row,key)">
-                            <q-tooltip v-if="action.tooltip">{{ action.tooltip }}</q-tooltip>
-                          </q-btn>
-                          <!--Edit button-->
-                          <q-btn color="positive" icon="fas fa-pen" size="sm" style="font-size: 8px; padding: 6px"
-                                 v-if="permitAction(props.row).edit" round unelevated
-                                 v-bind="params.update.to ? {to : {name : params.update.to, params : props.row}} : {}"
-                                 @click="params.update.to ? false : $emit('update', props.row)">
-                            <q-tooltip :delay="300">{{ $tr('ui.label.edit') }}</q-tooltip>
-                          </q-btn>
-                          <!--Delete button-->
-                          <q-btn color="negative" icon="fas fa-trash-alt" size="sm"
-                                 v-if="permitAction(props.row).destroy" round unelevated
-                                 style="font-size: 8px; padding: 6px"
-                                 @click="deleteItem(props.row)">
-                            <q-tooltip :delay="300">{{ $tr('ui.label.delete') }}</q-tooltip>
-                          </q-btn>
-                        </div>
                         <!-- status columns -->
-                        <div v-else-if="(['status','active'].indexOf(col.name) != -1) || col.asStatus"
+                        <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
                              class="text-left">
                           <q-btn-dropdown :color="col.value ? 'positive' : 'negative'" flat padding="sm none"
-                                          class="text-caption"
                                           :label="col.value ? $tr('ui.label.enabled') : $tr('ui.label.disabled')"
-                                          no-caps>
+                                          class="text-caption" no-caps>
                             <!--Message change to-->
-                            <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus(props)" v-close-popup>
+                            <q-item class="q-pa-sm cursor-pointer" v-close-popup
+                                    @click.native="updateStatus({...props, col : col})">
                               <div class="row items-center">
                                 <q-icon name="fas fa-pen" class="q-mr-sm"
                                         :color="!col.value ? 'positive' : 'negative'"/>
@@ -209,7 +167,8 @@ export default {
     this.$root.$off('crud.data.refresh')
   },
   props: {
-    params: {default: false}
+    params: {default: false},
+    title: {default: false}
   },
   components: {},
   watch: {
@@ -554,6 +513,29 @@ export default {
       let actions = this.$clone(this.params.read.actions || [])
       let response = []
 
+      //Add default actions
+      actions = [...actions,
+        {//Edit action
+          icon: 'fas fa-pen',
+          color: 'green',
+          label: this.$tr('ui.label.edit'),
+          vIf: this.permitAction(field).edit,
+          action: (item) => {
+            if (this.params.update.to) this.$router.push({name: this.params.update.to, params: item})
+            else this.$emit('update', item)
+          }
+        },
+        {//Delete action
+          icon: 'fas fa-trash-alt',
+          color: 'negative',
+          label: this.$tr('ui.label.delete'),
+          vIf: this.permitAction(field).destroy,
+          action: (item) => {
+            this.deleteItem(item)
+          }
+        }
+      ]
+
       //Order field actions
       if (actions && actions.length) {
         actions.forEach(action => {
@@ -568,15 +550,15 @@ export default {
     //Handler grid view
     handlerGridView() {
       setTimeout(() => {
-        let tableElement = this.$refs.tableComponent.$el//Get table element
-        if (this.table.grid) {
+        let tableElement = this.$refs.tableComponent ? this.$refs.tableComponent.$el : false//Get table element
+        if (tableElement && this.table.grid) {
           tableElement.querySelector('.q-table__top').classList.add('q-pa-none', 'box', 'box-auto-height')
           tableElement.querySelector('.q-table__top').style.paddingBottom = '15px'
           tableElement.querySelector('.q-table__top').style.marginBottom = '10px'
           tableElement.querySelector('.q-table__bottom').classList.add('q-pa-none', 'box', 'box-auto-height')
           tableElement.querySelector('.q-table__bottom').style.marginTop = '15px'
           tableElement.querySelector('.q-table__grid-content').classList.add('q-col-gutter-md')
-        } else {
+        } else if (tableElement) {
           tableElement.querySelector('.q-table__top').classList.remove('q-pa-none', 'box', 'box-auto-height')
           tableElement.querySelector('.q-table__top').style.marginBottom = '0'
         }
@@ -604,6 +586,10 @@ export default {
 
       .table-top-right
         order 2
+
+  .q-table__top
+    border-top-left-radius 15px
+    border-top-right-radius 15px
 
   .stick-table
     th:last-child, td:last-child
