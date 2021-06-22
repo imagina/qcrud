@@ -61,7 +61,7 @@
                   <!--Button new record-->
                   <q-btn rounded unelevated size="12px" :label="params.create.title" :icon="'fas fa-plus'"
                          :style="params.create.title ? '' : 'font-size: 8px; padding: 6px'"
-                         v-if="params.create && params.hasPermission.create" color="positive"
+                         v-if="params.create && params.hasPermission.create" color="green"
                          @click="handlerActionCreate"/>
                 </div>
               </div>
@@ -78,13 +78,13 @@
             <q-td v-else-if="(['status','active'].indexOf(props.col.name) != -1) || props.col.asStatus"
                   :props="props" class="text-left">
               <!--Action-->
-              <q-btn-dropdown :color="props.value ? 'positive' : 'negative'" flat padding="sm none" class="text-caption"
+              <q-btn-dropdown :color="props.value ? 'green' : 'red'" flat padding="sm none" class="text-caption"
                               :label="props.value ? $tr('ui.label.enabled') : $tr('ui.label.disabled')" no-caps
                               v-if="permitAction(props.row).edit">
                 <!--Message change to-->
                 <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus(props)" v-close-popup>
                   <div class="row items-center">
-                    <q-icon name="fas fa-pen" class="q-mr-sm" :color="!props.value ? 'positive' : 'negative'"/>
+                    <q-icon name="fas fa-pen" class="q-mr-sm" :color="!props.value ? 'green' : 'red'"/>
                     {{
                       $tr('ui.message.changeTo', {text: (props.value ? $tr('ui.label.disabled') : $tr('ui.label.enabled'))})
                     }}
@@ -128,7 +128,7 @@
                         <!-- status columns -->
                         <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
                              class="text-left">
-                          <q-btn-dropdown :color="col.value ? 'positive' : 'negative'" flat padding="sm none"
+                          <q-btn-dropdown :color="col.value ? 'green' : 'red'" flat padding="sm none"
                                           :label="col.value ? $tr('ui.label.enabled') : $tr('ui.label.disabled')"
                                           class="text-caption" no-caps>
                             <!--Message change to-->
@@ -136,7 +136,7 @@
                                     @click.native="updateStatus({...props, col : col})">
                               <div class="row items-center">
                                 <q-icon name="fas fa-pen" class="q-mr-sm"
-                                        :color="!col.value ? 'positive' : 'negative'"/>
+                                        :color="!col.value ? 'green' : 'red'"/>
                                 {{
                                   $tr('ui.message.changeTo', {text: (col.value ? $tr('ui.label.disabled') : $tr('ui.label.enabled'))})
                                 }}
@@ -527,7 +527,7 @@ export default {
         },
         {//Delete action
           icon: 'fas fa-trash-alt',
-          color: 'negative',
+          color: 'red',
           label: this.$tr('ui.label.delete'),
           vIf: this.permitAction(field).destroy,
           action: (item) => {

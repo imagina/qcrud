@@ -14,13 +14,13 @@
               :readonly="dataCrudSelect.loading" behavior="menu">
       <!--Before options slot-->
       <template v-slot:before-options>
-        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="positive"
+        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
                :label="`${params.create.title || ''}`" @click="create" v-if="params.create"/>
         <div v-else></div>
       </template>
       <!--No options slot-->
       <template v-slot:no-option>
-        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="positive"
+        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
                :label="`${params.create.title || ''}`" @click="create" v-if="params.create"/>
         <q-item>
           <q-item-section class="text-grey">
@@ -55,14 +55,14 @@
     <q-dialog v-model="dialogPermissions.show">
       <q-card>
         <q-card-section>
-          <div class="text-h6 text-negative">
+          <div class="text-h6 text-red">
             <q-icon name="fas fa-exclamation-triangle"/>
             {{ $tr('qcrud.layout.message.denyPermissions') }}
           </div>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="OK" color="negative" v-close-popup/>
+          <q-btn flat label="OK" color="red" v-close-popup/>
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -176,7 +176,7 @@ export default {
         case 'button-create':
           defaultProps = {
             icon: 'fas fa-plus',
-            color: 'positive',
+            color: 'green',
             size: 'sm',
             ...defaultProps,
           }
