@@ -1,74 +1,49 @@
 <template>
   <!--Modal with form to category-->
-  <q-dialog :id="paramsProps.modalId || 'modalFormCrud'" content-class="modal-form-crud"
-            v-model="show" persistent maximized transition-show="slide-up" transition-hide="slide-down">
-    <q-card id="cardContent" :class="`bg-grey-1 backend-page row ${existFormRight ? 'col-2' : 'col-1'}`">
-      <!--Header-->
-      <q-toolbar class="bg-primary text-white" v-if="paramsProps">
-        <q-toolbar-title>
-          <label v-if="!isUpdate && !field">{{ paramsProps.create.title }}</label>
-          <label v-else>{{ paramsProps.update.title }} <span v-if="!field">ID: {{ itemId }}</span></label>
-        </q-toolbar-title>
-        <q-btn class="q-hide q-md-show" flat @click="componentStore.remove()" v-close-popup icon="fas fa-times"/>
-      </q-toolbar>
-
-      <!--Content-->
-      <q-card-section class="relative-position col-12">
-        <!--Forms-->
-        <q-form autocorrect="off" autocomplete="off" ref="formContent" class="row q-col-gutter-x-md col-12"
-                @submit="(!isUpdate && !field) ?  createItem() : updateItem()" v-if="success"
-                @validation-error="$alert.error($tr('ui.message.formInvalid'))">
-          <!--Language-->
-          <div class="col-12 q-mb-md"
-               v-show="locale.fieldsTranslatable && Object.keys(locale.fieldsTranslatable).length">
-            <locales v-model="locale" ref="localeComponent" :form="$refs.formContent"/>
-          </div>
-
-          <!--Form-->
-          <div v-for="(pos,key) in ['formLeft','formRight']" :key="pos" v-if="locale.success"
-               :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`">
-            <!--Fields-->
-            <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
-              <!--Dynamic fake field-->
-              <dynamic-field v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
-                             @input="setDynamicValues(field.name || key, field)" :key="key"
-                             :field="{...field, testId : (field.testId || field.name || key)}"
-                             :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                             v-if="showField(field, (field.name || key)) && (field.isFakeField || field.fakeFieldName)"
-                             @enter="$refs.formContent.submit()"/>
-              <!--Dynamic field-->
-              <dynamic-field v-model="locale.formTemplate[field.name || key]" :key="key"
-                             @input="setDynamicValues(field.name || key, field)"
-                             :field="{...field, testId : (field.testId  || field.name || key)}"
-                             :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                             v-if="showField(field, (field.name || key)) && !field.isFakeField && !field.fakeFieldName"
-                             @enter="$refs.formContent.submit()"/>
+  <master-modal :id="paramsProps.modalId || 'modalFormCrud'" v-model="show" v-bind="modalProps"
+                @hide="componentStore.remove()">
+    <div class="modal-crud">
+      <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
+        <div class="relative-position col-12">
+          <!--Forms-->
+          <q-form autocorrect="off" autocomplete="off" ref="formContent" class="row q-col-gutter-md col-12"
+                  @submit="(!isUpdate && !field) ?  createItem() : updateItem()" v-if="success"
+                  @validation-error="$alert.error($tr('ui.message.formInvalid'))">
+            <!--Language-->
+            <div class="col-12"
+                 v-show="locale.fieldsTranslatable && Object.keys(locale.fieldsTranslatable).length">
+              <locales v-model="locale" ref="localeComponent" :form="$refs.formContent"/>
             </div>
-          </div>
-        </q-form>
-        <!--Loading-->
-        <inner-loading :visible="loading"/>
-      </q-card-section>
 
-      <!--Footer desktop-->
-      <div class="q-pa-md q-hide q-md-show text-right full-width">
-        <!--Button Save-->
-        <q-btn :icon="actionBottom.icon" :color="actionBottom.color" rounded unelevated
-               :label="actionBottom.label" :loading="loading" @click="$refs.formContent.submit()"/>
-      </div>
-      <!--Footer mobile-->
-      <div id="mobilActions" class="row q-md-hide full-width">
-        <div class="col">
-          <q-btn icon="fas fa-times" color="grey-5" text-color="grey-8" unelevated class="full-width full-height"
-                 :label="$tr('ui.label.cancel')" v-close-popup/>
+            <!--Form-->
+            <div v-for="(pos,key) in ['formLeft','formRight']" :key="pos"
+                 v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
+                 :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`">
+              <div class="box">
+                <!--Fields-->
+                <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
+                  <!--Dynamic fake field-->
+                  <dynamic-field v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
+                                 @input="setDynamicValues(field.name || key, field)" :key="key"
+                                 :field="{...field, testId : (field.testId || field.name || key)}"
+                                 :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
+                                 v-if="showField(field, (field.name || key)) && (field.isFakeField || field.fakeFieldName)"
+                                 @enter="$refs.formContent.submit()"/>
+                  <!--Dynamic field-->
+                  <dynamic-field v-model="locale.formTemplate[field.name || key]" :key="key"
+                                 @input="setDynamicValues(field.name || key, field)"
+                                 :field="{...field, testId : (field.testId  || field.name || key)}"
+                                 :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
+                                 v-if="showField(field, (field.name || key)) && !field.isFakeField && !field.fakeFieldName"
+                                 @enter="$refs.formContent.submit()"/>
+                </div>
+              </div>
+            </div>
+          </q-form>
         </div>
-        <div class="col">
-          <q-btn :icon="actionBottom.icon" :color="actionBottom.color" unelevated class="full-width full-height"
-                 :label="actionBottom.label" :loading="loading" @click="$refs.formContent.submit()"/>
-        </div>
       </div>
-    </q-card>
-  </q-dialog>
+    </div>
+  </master-modal>
 </template>
 
 <script>
@@ -122,6 +97,28 @@ export default {
     }
   },
   computed: {
+    //modal props
+    modalProps() {
+      //Validate params props
+      if (!this.paramsProps) return {}
+
+      //Response
+      return {
+        title: (!this.isUpdate && !this.field) ? this.paramsProps.create.title :
+            `${this.paramsProps.update.title} ${!this.field ? ('ID: ' + this.itemId) : ''}`,
+        width: 'max-content',
+        loading: this.loading,
+        actions: [
+          {
+            props: {
+              color: 'green',
+              label: (!this.isUpdate && !this.field) ? this.$tr('ui.label.save') : this.$tr('ui.label.update')
+            },
+            action: () => this.$refs.formContent.submit()
+          }
+        ]
+      }
+    },
     //Check if exist from right
     existFormRight() {
       if (this.paramsProps.formRight && Object.keys(this.paramsProps.formRight).length) {
@@ -175,25 +172,6 @@ export default {
             this.$store.dispatch('qcrudComponent/DELETE_COMPONENT', this.paramsProps.crudId)
         },
       }
-    },
-    //Config action bottom
-    actionBottom() {
-      let response = {}
-      if (!this.isUpdate && !this.field) {
-        response = {
-          icon: 'fas fa-save',
-          color: 'green',
-          label: this.$tr('ui.label.save')
-        }
-      } else {
-        response = {
-          icon: 'fas fa-pen',
-          color: 'green',
-          label: this.$tr('ui.label.update')
-        }
-      }
-      //Response
-      return response
     }
   },
   methods: {
@@ -542,43 +520,26 @@ export default {
 </script>
 
 <style lang="stylus">
-.modal-form-crud
+.modal-crud
   #cardContent
     max-height calc(100vh - 48px) !important
-
-    .q-card__section
-      min-height 250px
-      max-height calc(100vh - 176px) !important
-      overflow-y scroll
-    @media screen and (max-width: $breakpoint-md)
-      max-height 100vh !important
-      height 100vh
-      .q-card__section
-        max-height 100vh !important
-        height calc(100vh - 95px)
+    min-height 150px
 
   .col-1
-    width 100vw
+    width calc(100vw - 80px)
     @media screen and (min-width: $breakpoint-sm)
-      max-width 100vw !important
+      max-width calc(100vw - 80px) !important
     @media screen and (min-width: $breakpoint-md)
       max-width 65vw !important
     @media screen and (min-width: $breakpoint-lg)
       max-width 45vw !important
 
   .col-2
-    width 100vw
+    width calc(100vw - 80px)
     @media screen and (min-width: $breakpoint-sm)
-      max-width 100vw !important
+      max-width calc(100vw - 80px) !important
     @media screen and (min-width: $breakpoint-md)
       max-width 80vw !important
     @media screen and (min-width: $breakpoint-lg)
       max-width 65vw !important
-
-  #mobilActions
-    max-height 45px
-    height 45px
-
-    .q-btn
-      border-radius 0
 </style>

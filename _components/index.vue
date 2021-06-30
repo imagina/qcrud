@@ -5,67 +5,15 @@
       <!--Data-->
       <div class="relative-position col-12" v-if="success">
         <!--Table-->
-        <q-table
-            :grid="table.grid"
-            :data="table.data"
-            :columns="tableColumns"
-            :pagination.sync="table.pagination"
-            :rows-per-page-options="rowsPerPageOption"
-            @request="getData"
-            :class="`stick-table ${table.grid ? '' : 'box-table'}`"
-            :hide-header="!showSlotTable.header"
-            ref="tableComponent"
-        >
+        <q-table :grid="table.grid" :data="table.data" :columns="tableColumns" :pagination.sync="table.pagination"
+                 :rows-per-page-options="rowsPerPageOption" @request="getData" class="stick-table"
+                 :hide-header="!showSlotTable.header" ref="tableComponent" card-container-class="q-col-gutter-md">
           <!--Slot Top-->
           <template slot="top">
-            <div class="row q-col-gutter-y-sm full-width items-center">
-              <!--Title-->
-              <div class="col-12 text-h6 text-blue-grey text-weight-bold text-subtitle1 ellipsis"
-                   v-if="title || params.read.title">
-                <!--Icon-->
-                <q-icon v-if="params.read.icon" class="q-mr-xs" :name="params.read.icon" size="22px"/>
-                <!--Label-->
-                {{ title || params.read.title }}
-                <!--Separator-->
-                <q-separator class="q-my-sm"/>
-              </div>
-              <!--Table slot left-->
-              <div class="table-top-left col-12 col-md-4 col-xl-3">
-                <!--Search-->
-                <q-input clearable v-model="table.filter.search" dense outlined debounce="800"
-                         :placeholder="`${$tr('ui.label.search',{capitalize : true})}...`"
-                         @input="getDataTable()" v-if="params.read.search !== false">
-                  <template v-slot:append>
-                    <q-icon name="search"/>
-                  </template>
-                </q-input>
-              </div>
-              <!--Table slot Right-->
-              <div class="table-top-right col-12 col-md-8 col-xl-9 text-right">
-                <div class="row q-gutter-xs justify-end">
-                  <!-- Custom Actions -->
-                  <q-btn v-for="(action, key) in (params.read.globalActions || {})" :key="key"
-                         v-if="action.vIf ? action.vIf : true"
-                         :icon="action.icon || ''" :color="action.color || ''"
-                         style="font-size: 8px; padding: 6px" round unelevated
-                         @click="callCustomAction(action,false,key)">
-                    <q-tooltip v-if="action.tooltip">{{ action.tooltip }}</q-tooltip>
-                  </q-btn>
-                  <!--Toggle view as grid-->
-                  <q-btn round unelevated size="12px" style="font-size: 8px; padding: 6px"
-                         v-if="(params.read.allowToggleView != undefined) ? params.read.allowToggleView : true"
-                         color="light-blue" @click="table.grid = !table.grid"
-                         :icon="!table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'">
-                    <q-tooltip>{{ $tr(`ui.message.${table.grid ? 'listView' : 'gribView'}`) }}</q-tooltip>
-                  </q-btn>
-                  <!--Button new record-->
-                  <q-btn rounded unelevated size="12px" :label="params.create.title" :icon="'fas fa-plus'"
-                         :style="params.create.title ? '' : 'font-size: 8px; padding: 6px'"
-                         v-if="params.create && params.hasPermission.create" color="green"
-                         @click="handlerActionCreate"/>
-                </div>
-              </div>
-            </div>
+            <!--Page Actions-->
+            <page-actions :extra-actions="tableActions"
+                          :title="(title || params.read.title) ? (title || params.read.title) : ''"
+                          @search="val => {table.filter.search = val; getDataTable()}" @new="handlerActionCreate()"/>
           </template>
 
           <!--Custom columns-->
@@ -171,11 +119,7 @@ export default {
     title: {default: false}
   },
   components: {},
-  watch: {
-    'table.grid'() {
-      this.handlerGridView()
-    }
-  },
+  watch: {},
   mounted() {
     this.$nextTick(function () {
       this.init()
@@ -207,6 +151,22 @@ export default {
     }
   },
   computed: {
+    //Table actions
+    tableActions() {
+      return [
+        'search', 'new',
+        //Change table view
+        {
+          label: this.$tr(`ui.message.${this.table.grid ? 'listView' : 'gribView'}`),
+          vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
+          props: {
+            icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
+          },
+          action: () => this.table.grid = !this.table.grid
+        }
+      ]
+    },
+    //Define slot table to show
     showSlotTable() {
       let data = this.$clone(this.table.data)
       let lengData = (data && data.length) ? data.length : false
@@ -272,8 +232,6 @@ export default {
       }
       //Success
       this.success = true
-      //Handler grid view
-      this.handlerGridView()
     },
     //Order filters
     orderFilters() {
@@ -385,9 +343,6 @@ export default {
 
         //Dispatch event hook
         this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
-
-        //Handler grid view
-        this.handlerGridView()
 
         //Close loading
         this.loading = false
@@ -547,23 +502,6 @@ export default {
       //response
       return response
     },
-    //Handler grid view
-    handlerGridView() {
-      setTimeout(() => {
-        let tableElement = this.$refs.tableComponent ? this.$refs.tableComponent.$el : false//Get table element
-        if (tableElement && this.table.grid) {
-          tableElement.querySelector('.q-table__top').classList.add('q-pa-none', 'box', 'box-auto-height')
-          tableElement.querySelector('.q-table__top').style.paddingBottom = '15px'
-          tableElement.querySelector('.q-table__top').style.marginBottom = '10px'
-          tableElement.querySelector('.q-table__bottom').classList.add('q-pa-none', 'box', 'box-auto-height')
-          tableElement.querySelector('.q-table__bottom').style.marginTop = '15px'
-          tableElement.querySelector('.q-table__grid-content').classList.add('q-col-gutter-md')
-        } else if (tableElement) {
-          tableElement.querySelector('.q-table__top').classList.remove('q-pa-none', 'box', 'box-auto-height')
-          tableElement.querySelector('.q-table__top').style.marginBottom = '0'
-        }
-      }, 0)
-    },
     //Hanlder method create
     handlerActionCreate() {
       //Redirect to vue route
@@ -579,17 +517,32 @@ export default {
 
 <style lang="stylus">
 #componentCrudIndex
-  .q-table-container
-    @media screen and (max-width: $breakpoint-sm)
-      .table-top-left
-        order 1
+  th
+    color $blue-grey
+    font-weight bold
+    font-size 13px !important
+    text-align left !important
 
-      .table-top-right
-        order 2
+  .q-table__card
+    background-color transparent !important
+    box-shadow none !important
+
+  .q-table__top, .q-table__middle, .q-table__bottom
+    border-radius $custom-radius
+    box-shadow $custom-box-shadow
+    background-color white
 
   .q-table__top
-    border-top-left-radius 15px
-    border-top-right-radius 15px
+    margin-bottom 16px !important
+    padding 12px 16px !important
+
+  .q-table__middle
+    min-height 0 !important
+    margin 0 !important
+
+  .q-table__bottom
+    margin-top 16px !important
+    padding 12px 16px !important
 
   .stick-table
     th:last-child, td:last-child
