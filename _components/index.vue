@@ -153,18 +153,24 @@ export default {
   computed: {
     //Table actions
     tableActions() {
-      return [
-        'search', 'new',
-        //Change table view
-        {
-          label: this.$tr(`ui.message.${this.table.grid ? 'listView' : 'gribView'}`),
-          vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
-          props: {
-            icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
-          },
-          action: () => this.table.grid = !this.table.grid
-        }
-      ]
+      //Default response
+      let response = [{
+        label: this.$tr(`ui.message.${this.table.grid ? 'listView' : 'gribView'}`),
+        vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
+        props: {
+          icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
+        },
+        action: () => this.table.grid = !this.table.grid
+      }]
+
+      //Add search action
+      if (this.params.read.search !== false) response.push('search')
+
+      //Add create action
+      if (this.params.create && this.params.hasPermission.create) response.push('new')
+
+      //Response
+      return response
     },
     //Define slot table to show
     showSlotTable() {
