@@ -40,6 +40,15 @@ export default {
       this.pageId = this.$uid()
       //Set crud data
       this.crudData = this.$route.meta.crud || false
+      //Handle edit and create url action
+      this.handlerUrlCrudAction()
+    },
+    handlerUrlCrudAction() {
+      setTimeout(() => {
+        let urlQuery = this.$route.query
+        if (urlQuery.edit) this.$refs.crudComponent.update({id: urlQuery.edit})
+        if (urlQuery.create) this.$refs.crudComponent.create()
+      }, 500)
     }
   }
 }

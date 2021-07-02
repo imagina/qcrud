@@ -482,8 +482,7 @@ export default {
           label: this.$tr('ui.label.edit'),
           vIf: this.permitAction(field).edit,
           action: (item) => {
-            if (this.params.update.to) this.$router.push({name: this.params.update.to, params: item})
-            else this.$emit('update', item)
+            this.$emit('update', item)
           }
         },
         {//Delete action

@@ -320,9 +320,13 @@ export default {
         //Set custom item crud fields
         if (item.crudFields) this.itemCrudFields = this.$clone(item.crudFields)
         //Set data to update
-        this.itemIdToEdit = item.id
         if (item.id.field) this.fieldData = item.id.field
-        this.showModal = true
+        //Go to edit
+        if (this.params.update.to) this.$router.push({name: this.params.update.to, params: item})
+        else {
+          this.itemIdToEdit = item.id
+          this.showModal = true
+        }
       } else this.dialogPermissions.show = true
     },
     //Delete category
