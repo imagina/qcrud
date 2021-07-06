@@ -527,6 +527,8 @@ export default {
     font-weight bold
     font-size 13px !important
     text-align left !important
+  td
+    color #222222
 
   .q-table__card
     background-color transparent !important
