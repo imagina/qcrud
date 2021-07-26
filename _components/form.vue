@@ -129,8 +129,10 @@ export default {
     },
     //Validate if form is update
     isUpdate() {
-      if (parseInt(this.itemId) >= 0) return true
-      return false
+      if(this.itemId === undefined) return false
+      if(this.itemId === null) return false
+      if(this.itemId === false) return false
+      return true
     },
     //Actions to store component
     componentStore() {
