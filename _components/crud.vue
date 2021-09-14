@@ -347,8 +347,6 @@ export default {
                 this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
                 //Dispatch event hook
                 this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
-                //Clear Cache
-                this.$crud.clearCache()
                 //Event
                 this.$emit('deleted')
               }).catch(error => {

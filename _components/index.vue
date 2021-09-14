@@ -380,7 +380,6 @@ export default {
                 //Request
                 this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
                   this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
-                  this.$crud.clearCache()//Clear Cache
                   this.getDataTable(true)
                   this.loading = false
                 }).catch(error => {
@@ -392,7 +391,6 @@ export default {
                 this.$crud.delete(propParams.apiRoute, item.id).then(response => {
                   this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
                   this.getDataTable(true)
-                  this.$crud.clearCache()//Clear Cache
 
                   //Dispatch event hook
                   this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
@@ -461,7 +459,6 @@ export default {
           if (itemData.id == item.row.id) itemData[item.col.name] = !item.row[item.col.name]
           return itemData//Response
         }))
-        this.$crud.clearCache()//Clear Cache
         this.loading = false
         this.$alert.info({message: this.$tr('ui.message.recordUpdated')})
       }).catch(error => {

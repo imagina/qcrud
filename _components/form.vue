@@ -317,7 +317,6 @@ export default {
             //Call custom method
             propParams.create.method(formData).then(response => {
               requestInfo.response = response
-              this.$crud.clearCache()//Clear Cache
               return resolve(true)
             }).catch(error => {
               requestInfo.error = error
@@ -327,7 +326,6 @@ export default {
             //Do request
             this.$crud.create(propParams.apiRoute, formData).then(response => {
               requestInfo.response = response
-              this.$crud.clearCache()//Clear Cache
               return resolve(true)
             }).catch(error => {
               requestInfo.error = error
@@ -381,7 +379,6 @@ export default {
             //Call custom method
             propParams.update.method(criteria, formData).then(response => {
               requestInfo.response = response
-              this.$crud.clearCache()//Clear Cache
               return resolve(true)
             }).catch(error => {
               requestInfo.error = error
@@ -390,7 +387,6 @@ export default {
           } else {
             this.$crud.update(propParams.apiRoute, criteria, formData).then(response => {
               requestInfo.response = response
-              this.$crud.clearCache()//Clear Cache
               return resolve(true)
             }).catch(error => {
               requestInfo.error = error

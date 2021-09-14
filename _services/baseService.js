@@ -29,6 +29,7 @@ export default {
       //Request
       axios.post(urlApi, {attributes: dataRequest}).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
+        this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -119,6 +120,7 @@ export default {
       //Request
       axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
+        this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -143,6 +145,7 @@ export default {
       let requestParams = (params && params.params) ? params.params : false//Get request params
       //Request
       axios.delete(urlApi, {params: requestParams}).then(response => {
+        this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject(error.response.data.errors)//Failed response
