@@ -224,6 +224,7 @@ export default {
     //init form
     async init() {
       await this.orderFilters()//Order filters
+      this.handlerUrlCrudAction()//Handler url action
       this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
       if (!this.params.read.filterName) this.getDataTable()//Get data
       //Emit mobile main action
@@ -512,6 +513,31 @@ export default {
       if (this.params.create.toExternalUrl) return this.$helper.openExternalURL(this.params.create.toExternalUrl, false)
       //Emit event create
       this.$emit('create')
+    },
+    //Handler url action
+    handlerUrlCrudAction() {
+      setTimeout(() => {
+        let actions = this.$clone(this.params.read.actions || [])//Get read actions
+        let urlQuery = this.$route.query//Get urlQuery
+
+        //Validate if exist actions and url queries
+        if (actions.length && Object.keys(urlQuery).length) {
+          let actionValue = urlQuery[Object.keys(urlQuery)[0]]//Get first query parameter value from url
+          let actionCrudData = actions.find(item => item.name == Object.keys(urlQuery)[0])//search action with name fro url query
+
+          if (actionCrudData) {
+            //Request Params
+            let requestParams = {
+              refresh: true,
+              params: this.$clone(this.params.read.requestParams || {})
+            }
+            //Request and call action
+            this.$crud.show(this.params.apiRoute, actionValue, requestParams).then(response => {
+              actionCrudData.action(response.data)
+            })
+          }
+        }
+      }, 500)
     }
   }
 }
@@ -524,6 +550,7 @@ export default {
     font-weight bold
     font-size 13px !important
     text-align left !important
+
   td
     color #222222
 
