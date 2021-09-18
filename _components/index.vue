@@ -106,10 +106,15 @@
         <inner-loading :visible="loading"/>
       </div>
     </div>
+    <!-- Export Component -->
+    <master-export v-model="exportParams" ref="exportComponent" export-item/>
   </div>
 </template>
 
 <script>
+//Components
+import masterExport from "@imagina/qsite/_components/master/masterExport"
+
 export default {
   beforeDestroy() {
     this.$root.$off('crud.data.refresh')
@@ -118,7 +123,7 @@ export default {
     params: {default: false},
     title: {default: false}
   },
-  components: {},
+  components: {masterExport},
   watch: {},
   mounted() {
     this.$nextTick(function () {
@@ -147,7 +152,8 @@ export default {
         available: false,
         show: false,
       },
-      dataField: []
+      dataField: [],
+      exportParams: false
     }
   },
   computed: {
@@ -474,6 +480,17 @@ export default {
 
       //Add default actions
       actions = [...actions,
+        //Export
+        {
+          label: this.$tr('ui.label.export'),
+          vIf: this.exportParams,
+          icon: 'fas fa-file-download',
+          action: (item) => this.$refs.exportComponent.showReportItem({
+            item: item,
+            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
+            filter: {id: item.id}
+          })
+        },
         {//Edit action
           icon: 'fas fa-pen',
           color: 'green',
