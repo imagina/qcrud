@@ -57,7 +57,11 @@
                          @update="params.update.to ? false : $emit('update', props.row)"
                          @delete="deleteItem(props.row)"/>
               <!--Default Card -->
-              <q-card v-else flat class="box" style="padding-top: 5px">
+              <q-card v-else flat class="box default-card-grid" style="padding-top: 5px">
+                <!--item image-->
+                <div class="default-card-grid_item-image" v-if="itemImage(props.row)"
+                     :style="`background-image: url('${itemImage(props.row)}')`"></div>
+                <!--Fields-->
                 <q-list dense>
                   <q-item v-for="col in props.cols" :key="col.name" style="padding: 3px 0" v-if="col.name != 'actions'">
                     <q-item-section>
@@ -555,6 +559,18 @@ export default {
           }
         }
       }, 500)
+    },
+    //return item image
+    itemImage(item) {
+      //instance response
+      let response = false
+
+      //search mediumThumb
+      if (item.mediaFiles && item.mediaFiles.mainimage)
+        response = item.mediaFiles.mainimage.mediumThumb
+
+      //response
+      return response
     }
   }
 }
@@ -604,6 +620,16 @@ export default {
       position: sticky
       left: 0
       z-index: 1
+
+  .default-card-grid
+    .default-card-grid_item-image
+      width 100%
+      height 140px
+      background-position center
+      background-size cover
+      background-repeat no-repeat
+      border-radius $custom-radius-items
+      margin 10px 0 10px 0
 
 #dialogFilters
   min-height max-content !important
