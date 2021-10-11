@@ -8,36 +8,13 @@
            @click="create()" v-if="showType('button-create')"/>
 
     <!--=== Select to List and Create ===-->
-    <q-select v-model="dataCrudSelect.itemSelected" :options="dataCrudSelect.options || []"
-              :loading="dataCrudSelect.loading" style="width: 100%;" v-if="showType('select')"
-              @filter="filterOptions" @input="emitValue" v-bind="defaultProps"
-              :readonly="dataCrudSelect.loading" behavior="menu">
+    <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')">
       <!--Before options slot-->
-      <template v-slot:before-options>
+      <div slot="before-options" @click="create">
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
-               :label="`${params.create.title || ''}`" @click="create" v-if="params.create"/>
-        <div v-else></div>
-      </template>
-      <!--No options slot-->
-      <template v-slot:no-option>
-        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
-               :label="`${params.create.title || ''}`" @click="create" v-if="params.create"/>
-        <q-item>
-          <q-item-section class="text-grey">
-            {{ $tr('ui.message.notFound') }}
-          </q-item-section>
-        </q-item>
-      </template>
-      <!--Option tu multiple prop-->
-      <template v-slot:option="scope" v-if="defaultProps.multiple">
-        <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
-          <q-item-section>
-            <q-checkbox v-model="dataCrudSelect.itemSelected" :val="scope.opt.value"
-                        :label="scope.opt.label"/>
-          </q-item-section>
-        </q-item>
-      </template>
-    </q-select>
+               :label="`${params.create.title || ''}`" v-if="params.create"/>
+      </div>
+    </dynamic-field>
 
     <!--=== Full Crud ===-->
     <div v-if="success">
@@ -240,6 +217,25 @@ export default {
     //Emit value
     emitValue() {
       this.$emit('input', this.dataCrudSelect.itemSelected)
+    },
+    //select field props
+    selectField() {
+      return {
+        value: null,
+        type: 'treeSelect',
+        props: {
+          label: (this.params ? this.params.create.title : ''),
+          options: this.$array.tree((this.dataCrudSelect.rootOptions || []), {label: 'label', id: 'value'}),
+          clearable: false,
+          appendToBody: true,
+          sortValueBy: 'INDEX',
+          searchNested: true,
+          flat: this.crudProps.multiple ? true : false,
+          loading: this.dataCrudSelect.loading,
+          readonly: this.dataCrudSelect.loading,
+          ...this.crudProps
+        }
+      }
     }
   },
   methods: {
