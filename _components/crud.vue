@@ -8,7 +8,8 @@
            @click="create()" v-if="showType('button-create')"/>
 
     <!--=== Select to List and Create ===-->
-    <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')">
+    <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
+                   @input="emitValue">
       <!--Before options slot-->
       <div slot="before-options" @click="create">
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
