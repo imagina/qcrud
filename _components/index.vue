@@ -69,7 +69,7 @@
                       <q-item-label class="ellipsis">
                         <div v-if="col.name != 'actions'" class="row justify-between items-center">
                           <!--Label-->
-                          {{ col.label }} {{ col.name == 'id' ? col.value : '' }}
+                          <div> {{ col.label }} {{ col.name == 'id' ? col.value : '' }}</div>
                           <!--Actions-->
                           <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props)" :action-data="props.row"/>
                         </div>
