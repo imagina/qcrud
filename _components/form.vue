@@ -1,7 +1,7 @@
 <template>
   <!--Modal with form to category-->
   <master-modal :id="paramsProps.modalId || 'modalFormCrud'" v-model="show" v-bind="modalProps"
-                @hide="componentStore.remove()">
+                @hide="componentStore.remove()" custom-position>
     <div class="modal-crud">
       <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
         <div class="relative-position col-12">
@@ -129,9 +129,9 @@ export default {
     },
     //Validate if form is update
     isUpdate() {
-      if(this.itemId === undefined) return false
-      if(this.itemId === null) return false
-      if(this.itemId === false) return false
+      if (this.itemId === undefined) return false
+      if (this.itemId === null) return false
+      if (this.itemId === false) return false
       return true
     },
     //Actions to store component
@@ -518,26 +518,4 @@ export default {
 </script>
 
 <style lang="stylus">
-.modal-crud
-  #cardContent
-    max-height calc(100vh - 48px) !important
-    min-height 150px
-
-  .col-1
-    width calc(100vw - 80px)
-    @media screen and (min-width: $breakpoint-sm)
-      max-width calc(100vw - 80px) !important
-    @media screen and (min-width: $breakpoint-md)
-      max-width 65vw !important
-    @media screen and (min-width: $breakpoint-lg)
-      max-width 45vw !important
-
-  .col-2
-    width calc(100vw - 80px)
-    @media screen and (min-width: $breakpoint-sm)
-      max-width calc(100vw - 80px) !important
-    @media screen and (min-width: $breakpoint-md)
-      max-width 80vw !important
-    @media screen and (min-width: $breakpoint-lg)
-      max-width 65vw !important
 </style>
