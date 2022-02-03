@@ -7,9 +7,9 @@
         <!--Table-->
         <q-table :grid="table.grid" :data="table.data" :columns="tableColumns" :pagination.sync="table.pagination"
                  :rows-per-page-options="rowsPerPageOption" @request="getData" class="stick-table"
-                 :hide-header="!showSlotTable.header" ref="tableComponent" card-container-class="q-col-gutter-md">
+                 ref="tableComponent" card-container-class="q-col-gutter-md">
           <!--Slot Top-->
-          <template slot="top">
+          <template slot="top" v-if="showSlotTable.header">
             <!--Page Actions-->
             <page-actions :extra-actions="tableActions"
                           :title="(title || params.read.title) ? (title || params.read.title) : ''"
@@ -190,7 +190,7 @@ export default {
 
       //Order response
       let response = {
-        header: lengData ? true : false,
+        header: this.params.read.hideHeader ? false : (lengData ? true : false),
         bottom: (pagination.rowsNumber >= pagination.rowsPerPage) ? true : (!lengData ? true : false)
       }
 
