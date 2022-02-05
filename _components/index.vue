@@ -582,7 +582,7 @@ export default {
     color $blue-grey
     font-weight bold
     font-size 13px !important
-    text-align left !important
+    //text-align left !important
 
   td
     color #222222
