@@ -190,7 +190,7 @@ export default {
 
       //Order response
       let response = {
-        header: this.params.read.hideHeader ? false : (lengData ? true : false),
+        header: this.params.read.hideHeader ? false : true,
         bottom: (pagination.rowsNumber >= pagination.rowsPerPage) ? true : (!lengData ? true : false)
       }
 
