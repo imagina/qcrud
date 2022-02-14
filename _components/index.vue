@@ -27,20 +27,20 @@
                   :props="props" class="text-left">
               <!--Action-->
               <q-btn-dropdown :color="props.value ? 'green' : 'red'" flat padding="sm none" class="text-caption"
-                              :label="props.value ? $tr('ui.label.enabled') : $tr('ui.label.disabled')" no-caps
+                              :label="props.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')" no-caps
                               v-if="permitAction(props.row).edit">
                 <!--Message change to-->
                 <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus(props)" v-close-popup>
                   <div class="row items-center">
                     <q-icon name="fas fa-pen" class="q-mr-sm" :color="!props.value ? 'green' : 'red'"/>
                     {{
-                      $tr('ui.message.changeTo', {text: (props.value ? $tr('ui.label.disabled') : $tr('ui.label.enabled'))})
+                      $tr('isite.cms.message.changeTo', {text: (props.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
                     }}
                   </div>
                 </q-item>
               </q-btn-dropdown>
               <!--Label-->
-              <label v-else>{{ props.value ? $tr('ui.label.disabled') : $tr('ui.label.enabled') }}</label>
+              <label v-else>{{ props.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled') }}</label>
             </q-td>
             <!--Default columns-->
             <q-td v-else :props="props" :title="props.value">
@@ -81,7 +81,7 @@
                         <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
                              class="text-left">
                           <q-btn-dropdown :color="col.value ? 'green' : 'red'" flat padding="sm none"
-                                          :label="col.value ? $tr('ui.label.enabled') : $tr('ui.label.disabled')"
+                                          :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
                                           class="text-caption" no-caps>
                             <!--Message change to-->
                             <q-item class="q-pa-sm cursor-pointer" v-close-popup
@@ -90,7 +90,7 @@
                                 <q-icon name="fas fa-pen" class="q-mr-sm"
                                         :color="!col.value ? 'green' : 'red'"/>
                                 {{
-                                  $tr('ui.message.changeTo', {text: (col.value ? $tr('ui.label.disabled') : $tr('ui.label.enabled'))})
+                                  $tr('isite.cms.message.changeTo', {text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
                                 }}
                               </div>
                             </q-item>
@@ -165,7 +165,7 @@ export default {
     tableActions() {
       //Default response
       let response = [{
-        label: this.$tr(`ui.message.${this.table.grid ? 'listView' : 'gribView'}`),
+        label: this.$tr(`isite.cms.message.${this.table.grid ? 'listView' : 'gribView'}`),
         vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
         props: {
           icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
@@ -364,7 +364,7 @@ export default {
         //Close loading
         this.loading = false
       }).catch(error => {
-        this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
+        this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
         console.error(error)
         this.loading = false
       })
@@ -374,11 +374,11 @@ export default {
       this.$alert.error({
         mode: 'modal',
         title: `ID: ${item.id}`,
-        message: this.$tr('ui.message.deleteRecord'),
+        message: this.$tr('isite.cms.message.deleteRecord'),
         actions: [
-          {label: this.$tr('ui.label.cancel'), color: 'grey'},
+          {label: this.$tr('isite.cms.label.cancel'), color: 'grey'},
           {
-            label: this.$tr('ui.label.delete'),
+            label: this.$tr('isite.cms.label.delete'),
             color: 'red',
             handler: () => {
               this.loading = true
@@ -390,17 +390,17 @@ export default {
 
                 //Request
                 this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
-                  this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
+                  this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
                   this.loading = false
                 }).catch(error => {
-                  this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
+                  this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
                   this.loading = false
                 })
               } else {
                 //Request
                 this.$crud.delete(propParams.apiRoute, item.id).then(response => {
-                  this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
+                  this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
 
                   //Dispatch event hook
@@ -409,7 +409,7 @@ export default {
                   //Close loading
                   this.loading = false
                 }).catch(error => {
-                  this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
+                  this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
                   this.loading = false
                 })
               }
@@ -471,10 +471,10 @@ export default {
           return itemData//Response
         }))
         this.loading = false
-        this.$alert.info({message: this.$tr('ui.message.recordUpdated')})
+        this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
       }).catch(error => {
         this.loading = false
-        this.$alert.error({message: this.$tr('ui.message.recordNoUpdated')})
+        this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
       })
     },
     //Return field actions
@@ -486,7 +486,7 @@ export default {
       actions = [...actions,
         //Export
         {
-          label: this.$tr('ui.label.export'),
+          label: this.$tr('isite.cms.label.export'),
           vIf: this.exportParams,
           icon: 'fas fa-file-download',
           action: (item) => this.$refs.exportComponent.showReportItem({
@@ -498,7 +498,7 @@ export default {
         {//Edit action
           icon: 'fas fa-pen',
           color: 'green',
-          label: this.$tr('ui.label.edit'),
+          label: this.$tr('isite.cms.label.edit'),
           vIf: this.permitAction(field).edit,
           action: (item) => {
             this.$emit('update', item)
@@ -507,7 +507,7 @@ export default {
         {//Delete action
           icon: 'fas fa-trash-alt',
           color: 'red',
-          label: this.$tr('ui.label.delete'),
+          label: this.$tr('isite.cms.label.delete'),
           vIf: this.permitAction(field).destroy,
           action: (item) => {
             this.deleteItem(item)

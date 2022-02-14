@@ -8,7 +8,7 @@
           <!--Forms-->
           <q-form autocorrect="off" autocomplete="off" ref="formContent" class="row q-col-gutter-md col-12"
                   @submit="(!isUpdate && !field) ?  createItem() : updateItem()" v-if="success"
-                  @validation-error="$alert.error($tr('ui.message.formInvalid'))">
+                  @validation-error="$alert.error($tr('isite.cms.message.formInvalid'))">
             <!--Language-->
             <div class="col-12"
                  v-show="locale.fieldsTranslatable && Object.keys(locale.fieldsTranslatable).length">
@@ -112,7 +112,7 @@ export default {
           {
             props: {
               color: 'green',
-              label: (!this.isUpdate && !this.field) ? this.$tr('ui.label.save') : this.$tr('ui.label.update')
+              label: (!this.isUpdate && !this.field) ? this.$tr('isite.cms.label.save') : this.$tr('isite.cms.label.update')
             },
             action: () => this.$refs.formContent.submit()
           }
@@ -276,7 +276,7 @@ export default {
             this.loading = false//hide loading
             resolve(true)
           }).catch(error => {
-            this.$alert.error({message: this.$tr('ui.message.errorRequest'), pos: 'bottom'})
+            this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
             this.loading = false//hide loading
             reject(false)
           })
@@ -296,7 +296,7 @@ export default {
             this.loading = false//hide loading
             resolve(true)
           }).catch(error => {
-            this.$alert.error(this.$tr('ui.message.errorRequest'))
+            this.$alert.error(this.$tr('isite.cms.message.errorRequest'))
             this.loading = false//hide loading
             reject(false)
           })
@@ -337,7 +337,7 @@ export default {
         //Action after request
         if (requestInfo.response) {
           this.$root.$emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
-          this.$alert.info({message: `${this.$tr('ui.message.recordCreated')}`})
+          this.$alert.info({message: `${this.$tr('isite.cms.message.recordCreated')}`})
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasCreated', {entityName: this.params.entityName})
           this.loading = false
@@ -345,17 +345,17 @@ export default {
           //this.initForm()
           this.$emit('created', formData)
         } else {
-          this.$alert.error({message: `${this.$tr('ui.message.recordNoCreated')}`})
+          this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
           this.loading = false//login hide
           if (requestInfo.error) {//Message Validate
             let errorMsg = JSON.parse(requestInfo.error)
             if (errorMsg.email) {
               this.$alert.error({
-                message: this.$tr('quser.layout.message.emailExist'),
+                message: this.$tr('iprofile.cms.message.emailExist'),
                 pos: 'bottom', timeOut: 4000
               })
             } else {
-              this.$alert.error({message: `${this.$tr('ui.message.recordNoCreated')}`})
+              this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
             }
           }
         }
@@ -398,7 +398,7 @@ export default {
         //Action after request
         if (requestInfo.response) {
           this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
-          this.$alert.info({message: this.$tr('ui.message.recordUpdated')})
+          this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasUpdated', {entityName: this.params.entityName})
           this.loading = false
@@ -407,7 +407,7 @@ export default {
           this.$emit('updated', requestInfo.response.data)
         } else {
           this.loading = false
-          this.$alert.error({message: this.$tr('ui.message.recordNoUpdated')})
+          this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
         }
       }
     },

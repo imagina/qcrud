@@ -41,7 +41,7 @@ export default {
           actions: [
             {
               props: {
-                label: this.$tr('ui.label.save'),
+                label: this.$tr('isite.cms.label.save'),
                 color: 'green',
               },
               action: () => {
@@ -107,12 +107,12 @@ export default {
         let requestData = this.$clone(this.sections.form.data)
         //Request
         this.$crud.update(this.crudData.apiRoute, this.sections.form.recordId, requestData).then(response => {
-          this.$alert.success({message: `${this.$tr('ui.message.recordUpdated')}`})
+          this.$alert.success({message: `${this.$tr('isite.cms.message.recordUpdated')}`})
           this.sections.form.show = false
           this.loading = false
           resolve(true)
         }).catch(error => {
-          this.$alert.error({message: this.$tr('ui.message.recordNoUpdated')})
+          this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
           this.loading = false
           reject(error)
         })

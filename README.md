@@ -78,11 +78,11 @@ to config your CRUD. with next format:
         isFakeField: true,//Define if field is a fake field
         noCrud: true,//If is true, this field will no send as form
         props : {//All props accepted to field
-          label: `${this.$tr('ui.label.role')}`,
+          label: `${this.$tr('isite.cms.label.role')}`,
           rules : [], //rules to validate field
           vIf : true,//to load or no this field
           options: [ //Options to load only in type [select, multiSelect]
-            {label: this.$tr('ui.label.all'), id: '0'}
+            {label: this.$tr('isite.cms.label.all'), id: '0'}
           ],
           crudType : [select, button-create, full], //type of load crud, default it's select
           crudData : import('path-crud'),

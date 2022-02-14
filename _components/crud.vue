@@ -35,7 +35,7 @@
         <q-card-section>
           <div class="text-h6 text-red">
             <q-icon name="fas fa-exclamation-triangle"/>
-            {{ $tr('qcrud.layout.message.denyPermissions') }}
+            {{ $tr('isite.cms.crud.message.denyPermissions') }}
           </div>
         </q-card-section>
 
@@ -331,23 +331,23 @@ export default {
       this.$alert.error({
         mode: 'modal',
         title: `ID: ${item.id}`,
-        message: this.$tr('ui.message.deleteRecord'),
+        message: this.$tr('isite.cms.message.deleteRecord'),
         actions: [
-          {label: this.$tr('ui.label.cancel'), color: 'grey'},
+          {label: this.$tr('isite.cms.label.cancel'), color: 'grey'},
           {
-            label: this.$tr('ui.label.delete'),
+            label: this.$tr('isite.cms.label.delete'),
             color: 'red',
             handler: () => {
               //Request
               this.$crud.delete(this.params.apiRoute, item.id).then(response => {
                 //Alert
-                this.$alert.info({message: this.$tr('ui.message.recordDeleted')})
+                this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                 //Dispatch event hook
                 this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
                 //Event
                 this.$emit('deleted')
               }).catch(error => {
-                this.$alert.error({message: this.$tr('ui.message.recordNoDeleted'), pos: 'bottom'})
+                this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
                 this.loading = false
               })
             }
