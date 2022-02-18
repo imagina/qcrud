@@ -532,6 +532,8 @@ export default {
       if (this.params.create.to) return this.$router.push(this.params.create.to)
       //Redirect esternal URL
       if (this.params.create.toExternalUrl) return this.$helper.openExternalURL(this.params.create.toExternalUrl, false)
+      //Call a method to dispatch this action
+      if (this.params.create.method) return this.params.create.method()
       //Emit event create
       this.$emit('create')
     },
