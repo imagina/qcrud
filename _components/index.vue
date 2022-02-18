@@ -11,7 +11,7 @@
           <!--Slot Top-->
           <template slot="top" v-if="showSlotTable.header">
             <!--Page Actions-->
-            <page-actions :extra-actions="tableActions"
+            <page-actions :extra-actions="tableActions" :excludeActions="params.read.noFilter ? ['filter'] : []"
                           :title="(title || params.read.title) ? (title || params.read.title) : ''"
                           @search="val => {table.filter.search = val; getDataTable()}" @new="handlerActionCreate()"/>
           </template>
@@ -27,7 +27,8 @@
                   :props="props" class="text-left">
               <!--Action-->
               <q-btn-dropdown :color="props.value ? 'green' : 'red'" flat padding="sm none" class="text-caption"
-                              :label="props.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')" no-caps
+                              :label="props.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
+                              no-caps
                               v-if="permitAction(props.row).edit">
                 <!--Message change to-->
                 <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus(props)" v-close-popup>
@@ -254,6 +255,7 @@ export default {
     orderFilters() {
       return new Promise(async (resolve, reject) => {
         let params = this.$clone(this.params)
+        if(this.params.read.noFilter) return resolve(true)
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
@@ -584,7 +586,8 @@ export default {
     color $blue-grey
     font-weight bold
     font-size 13px !important
-    //text-align left !important
+
+  //text-align left !important
 
   td
     color #222222
