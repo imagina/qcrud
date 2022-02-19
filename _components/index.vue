@@ -520,7 +520,7 @@ export default {
       //Order field actions
       if (actions && actions.length) {
         actions.forEach(action => {
-          if (action.format) action = {...action, ...action.format(field)}
+          //if (action.format) action = {...action, ...action.format(field)}
           response.push(action)
         })
       }
