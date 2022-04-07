@@ -12,7 +12,7 @@
           <template slot="top" v-if="showSlotTable.header">
             <!--Page Actions-->
             <page-actions :extra-actions="tableActions" :excludeActions="params.read.noFilter ? ['filter'] : []"
-                          :title="(title || params.read.title) ? (title || params.read.title) : ''"
+                          :title="tableTitle"
                           @search="val => {table.filter.search = val; getDataTable()}" @new="handlerActionCreate()"/>
           </template>
 
@@ -162,6 +162,15 @@ export default {
     }
   },
   computed: {
+    //Table Title
+    tableTitle() {
+      const useLegacyStructure = parseInt(this.$store.getters['qsiteApp/getSettingValueByName']('isite::legacyStructureCMS') || 0)
+      if (this.title)
+        return useLegacyStructure ? this.$tr(this.title) : this.title
+      if (this.params.read.title)
+        return useLegacyStructure ? this.$tr(this.params.read.title) : params.read.title
+      return ""
+    },
     //Table actions
     tableActions() {
       //Default response
