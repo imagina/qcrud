@@ -1,7 +1,7 @@
 <template>
   <div id="componentCrudIndex">
     <!--Content-->
-    <div class="backend-page">
+    <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
       <!--Data-->
       <div class="relative-position col-12" v-if="success">
         <!--Table-->
@@ -209,6 +209,7 @@ export default {
         },
         grid: this.params.read.showAs == 'grid'
       },
+      appConfig: config('app'),
       statusModel: {},//Model to status
       itemIdToDelete: false,//ID of item to delete,
       filter: {
@@ -669,6 +670,11 @@ export default {
 
 <style lang="stylus">
 #componentCrudIndex
+  #backend-page
+    .q-table__top, .q-table__middle, .q-table__bottom
+      border-radius $custom-radius
+      box-shadow $custom-box-shadow
+      background-color white
   th
     color $blue-grey
     font-weight bold
@@ -683,7 +689,7 @@ export default {
     background-color transparent !important
     box-shadow none !important
 
-  .q-table__top, .q-table__middle, .q-table__bottom
+  .q-table__middle
     border-radius $custom-radius
     box-shadow $custom-box-shadow
     background-color white
@@ -691,6 +697,7 @@ export default {
   .q-table__top
     margin-bottom 16px !important
     padding 12px 16px !important
+    back(true)
 
   .q-table__middle
     min-height 0 !important
@@ -699,6 +706,7 @@ export default {
   .q-table__bottom
     margin-top 16px !important
     padding 12px 16px !important
+    back(true)
 
   .stick-table
     th:last-child, td:last-child
