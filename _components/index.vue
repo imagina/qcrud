@@ -220,6 +220,15 @@ export default {
     }
   },
   computed: {
+    //Table Title
+    tableTitle() {
+      const useLegacyStructure = parseInt(this.$store.getters['qsiteApp/getSettingValueByName']('isite::legacyStructureCMS') || 0)
+      if (this.title)
+        return useLegacyStructure ? this.$tr(this.title) : this.title
+      if (this.params.read.title)
+        return useLegacyStructure ? this.$tr(this.params.read.title) : params.read.title
+      return ""
+    },
     //Table actions
     tableActions() {
       //Default response
