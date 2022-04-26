@@ -6,14 +6,13 @@
       <div class="relative-position col-12" v-if="success">
         <!--Table-->
         <q-table :grid="table.grid" :data="table.data" :columns="tableColumns" :pagination.sync="table.pagination"
-                  :loading="loading" @request="getData" class="stick-table"  v-model:pagination="table.pagination"
+                  @request="getData" class="stick-table"  v-model:pagination="table.pagination"
                   ref="tableComponent" card-container-class="q-col-gutter-md">
           <!--Slot Top-->
           <template slot="top" v-if="showSlotTable.header">
             <!--Page Actions-->
             <page-actions :extra-actions="tableActions" :excludeActions="params.read.noFilter ? ['filter'] : []"
-                          :title="setTitle((title || params.read.title) ? (title || params.read.title) : '')"
-                          @search="val => {table.filter.search = val; getDataTable()}" @new="handlerActionCreate()"/>
+                          :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}" @new="handlerActionCreate()"/>
           </template>
 
           <!--Custom columns-->
@@ -176,7 +175,6 @@
 <script>
 //Components
 import masterExport from "@imagina/qsite/_components/master/masterExport"
-import footerComponen from 'src/modules/app/_components/footer';
 
 export default {
   beforeDestroy() {
