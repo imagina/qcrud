@@ -107,12 +107,13 @@
           </template>
           <!-- pagination -->
             <template #bottom="props">
-              <div class="bottonCrud full-width flex items-center justify-between q-px-md">
-                <div class="text-primary">
+              <div :class="`bottonCrud full-width flex items-center ${windowSize == 'mobile' ? 'justify-center' : 'justify-between'}`">
+                <div :class="`text-primary ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
                  {{$tr('isite.cms.label.showing')}} {{countPage(props)}} {{$trp('isite.cms.label.entry')}}
                 </div>
                 <div class="col-12 q-ml-sm q-mr-lg flex flex-center">
                   <q-pagination
+                    v-if="showPagination(props)"
                     v-model="table.pagination.page"
                     :value="props.pagination"
                     @click.prevent="getDataTable()"
@@ -195,6 +196,7 @@ export default {
     return {
       success: false,//Global status of component
       loading: true,//Loading
+      windowWith: window.innerWidth, //windows size
       table: {//Object config table
         data: [],
         pagination: {
@@ -287,6 +289,10 @@ export default {
       //Response
       return columns
     },
+    //windows size 
+    windowSize() {
+      return this.windowWith >= '500' ? 'desktop' : 'mobile'
+    },
     //Grid params
     gridParams() {
       let gridParams = this.params.read.grid || {}//Get grid params
@@ -366,6 +372,10 @@ export default {
         //Resolve
         resolve(true)
       })
+    },
+    //showPagination
+    showPagination(props) {
+      return this.windowSize == 'desktop' && props.pagesNumber > 1
     },
     //set Title's translations
     setTitle(title) {
@@ -702,6 +712,7 @@ export default {
     margin 0 !important
 
   .q-table__bottom
+    border-top 1px solid transparent !important
     margin-top 16px !important
     padding 12px 16px !important
     back(true)
