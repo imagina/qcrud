@@ -309,7 +309,9 @@ export default {
       const rowsPerPage =  props.pagination.rowsPerPage
       const showTable = this.table.data.length
       const totalPage = props.pagination.rowsNumber 
-      const start = page == 1 ? 1 : page * rowsPerPage - ((rowsPerPage - (page - 1)) <= 0 ? 1 : rowsPerPage - (page - 1) )
+      const pageTree = (rowsPerPage - (page - (page - 1)))
+      const firtsPage = (rowsPerPage - (page - 1)) <= 0 ? 1 : rowsPerPage - (page - 1)
+      const start = page == 1 ? 1 : page * rowsPerPage - ( page > 2 ? pageTree : firtsPage)
       const end = showTable < rowsPerPage ? totalPage : page * showTable
       return `${start} - ${end} ${this.$tr('isite.cms.label.of')} ${totalPage}`
     },
