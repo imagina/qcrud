@@ -6,13 +6,14 @@
       <div class="relative-position col-12" v-if="success">
         <!--Table-->
         <q-table :grid="table.grid" :data="table.data" :columns="tableColumns" :pagination.sync="table.pagination"
-                  @request="getData" class="stick-table"  v-model:pagination="table.pagination"
-                  ref="tableComponent" card-container-class="q-col-gutter-md">
+                 @request="getData" class="stick-table" v-model:pagination="table.pagination"
+                 ref="tableComponent" card-container-class="q-col-gutter-md">
           <!--Slot Top-->
           <template slot="top" v-if="showSlotTable.header">
             <!--Page Actions-->
             <page-actions :extra-actions="tableActions" :excludeActions="params.read.noFilter ? ['filter'] : []"
-                          :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}" @new="handlerActionCreate()"/>
+                          :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
+                          @new="handlerActionCreate()"/>
           </template>
 
           <!--Custom columns-->
@@ -106,13 +107,14 @@
             </div>
           </template>
           <!-- pagination -->
-            <template #bottom="props">
-              <div :class="`bottonCrud full-width flex items-center ${windowSize == 'mobile' ? 'justify-center' : 'justify-between'}`">
-                <div :class="`text-primary ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
-                 {{$tr('isite.cms.label.showing')}} {{countPage(props)}} {{$trp('isite.cms.label.entry')}}
-                </div>
-                <div class="col-12 q-ml-sm q-mr-lg flex flex-center">
-                  <q-pagination
+          <template #bottom="props">
+            <div
+                :class="`bottonCrud full-width flex items-center ${windowSize == 'mobile' ? 'justify-center' : 'justify-between'}`">
+              <div :class="`text-primary ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
+                {{ $tr('isite.cms.label.showing') }} {{ countPage(props) }} {{ $trp('isite.cms.label.entry') }}
+              </div>
+              <div class="col-12 q-ml-sm q-mr-lg flex flex-center">
+                <q-pagination
                     v-if="showPagination(props)"
                     v-model="table.pagination.page"
                     :value="props.pagination"
@@ -123,12 +125,12 @@
                     :max-pages="6"
                     :ellipses="false"
                     :boundary-numbers="false"
-                  />
-                </div>
+                />
+              </div>
+              <div class="flex items-center">
                 <div class="flex items-center">
-                  <div class="flex items-center">
-                    <div>{{$tr('isite.cms.label.show')}}</div>
-                    <q-select
+                  <div>{{ $tr('isite.cms.label.show') }}</div>
+                  <q-select
                       v-model="table.pagination.rowsPerPage"
                       :options="rowsPerPageOption"
                       @input="getDataTable()"
@@ -136,11 +138,11 @@
                       dense
                       class="q-mx-sm text-caption"
                       outlined
-                    />
-                    <div>{{$trp('isite.cms.label.entry')}}</div>
-                  </div>
-                  <div class="actionsBtnPag">
-                    <q-btn
+                  />
+                  <div>{{ $trp('isite.cms.label.entry') }}</div>
+                </div>
+                <div class="actionsBtnPag">
+                  <q-btn
                       icon="chevron_left"
                       color="primary"
                       round
@@ -148,8 +150,8 @@
                       flat
                       :disable="props.isFirstPage"
                       @click="props.prevPage"
-                    />
-                    <q-btn
+                  />
+                  <q-btn
                       icon="chevron_right"
                       color="primary"
                       round
@@ -157,11 +159,11 @@
                       flat
                       :disable="props.isLastPage"
                       @click="props.nextPage"
-                    />
-                  </div>
+                  />
                 </div>
               </div>
-            </template>  
+            </div>
+          </template>
           <!-- pagination -->
         </q-table>
         <!--Loading-->
@@ -289,7 +291,7 @@ export default {
       //Response
       return columns
     },
-    //windows size 
+    //windows size
     windowSize() {
       return this.windowWith >= '500' ? 'desktop' : 'mobile'
     },
@@ -304,12 +306,12 @@ export default {
     }
   },
   methods: {
-    countPage(props){
+    countPage(props) {
       const page = props.pagination.page
-      const rowsPerPage =  props.pagination.rowsPerPage
+      const rowsPerPage = props.pagination.rowsPerPage
       const showTable = this.table.data.length
-      const totalPage = props.pagination.rowsNumber 
-      const start = page == 1 ? 1 : page * rowsPerPage - ((rowsPerPage - (page - 1)) <= 0 ? 1 : rowsPerPage - (page - 1) )
+      const totalPage = props.pagination.rowsNumber
+      const start = page == 1 ? 1 : page * rowsPerPage - ((rowsPerPage - (page - 1)) <= 0 ? 1 : rowsPerPage - (page - 1))
       const end = showTable < rowsPerPage ? totalPage : page * showTable
       return `${start} - ${end} ${this.$tr('isite.cms.label.of')} ${totalPage}`
     },
@@ -317,7 +319,7 @@ export default {
       this.loading = true
       setTimeout(() => {
         this.loading = false
-      }, 500) 
+      }, 500)
     },
     //init form
     async init() {
@@ -342,7 +344,7 @@ export default {
     orderFilters() {
       return new Promise(async (resolve, reject) => {
         let params = this.$clone(this.params)
-        if(this.params.read.noFilter) return resolve(true)
+        if (this.params.read.noFilter) return resolve(true)
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
@@ -376,11 +378,6 @@ export default {
     //showPagination
     showPagination(props) {
       return this.windowSize == 'desktop' && props.pagesNumber > 1
-    },
-    //set Title's translations
-    setTitle(title) {
-      const useLegacyStructure = parseInt(this.$store.getters['qsiteApp/getSettingValueByName']('isite::legacyStructureCMS') || 0)
-      return  useLegacyStructure ? this.$tr(title) : title
     },
     //Request products with params from server table
     async getDataTable(refresh = false, filter = false, pagination = false) {
@@ -681,8 +678,9 @@ export default {
   #backend-page
     .q-table__top, .q-table__middle, .q-table__bottom
       border-radius $custom-radius
-      box-shadow $custom-box-shadow
+      //box-shadow $custom-box-shadow
       background-color white
+
   th
     color $blue-grey
     font-weight bold
