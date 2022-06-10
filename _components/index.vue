@@ -110,21 +110,23 @@
           <template #bottom="props">
             <div
                 :class="`bottonCrud full-width flex items-center ${windowSize == 'mobile' ? 'justify-center' : 'justify-between'}`">
-              <div :class="`text-primary ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
+              <div :class="`text-blue-grey ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
                 {{ $tr('isite.cms.label.showing') }} {{ countPage(props) }} {{ $trp('isite.cms.label.entry') }}
               </div>
               <div class="col-12 q-ml-sm q-mr-lg flex flex-center">
                 <q-pagination
+                    id="crudPaginationComponent"
                     v-if="showPagination(props)"
                     v-model="table.pagination.page"
                     :value="props.pagination"
                     @click.prevent="getDataTable()"
                     round
-                    color="primary"
+                    color="blue-grey"
                     :max="props.pagesNumber"
                     :max-pages="6"
                     :ellipses="false"
                     :boundary-numbers="false"
+                    unelevated
                 />
               </div>
               <div class="flex items-center">
@@ -737,6 +739,12 @@ export default {
       background-repeat no-repeat
       border-radius $custom-radius-items
       margin 10px 0 10px 0
+
+  #crudPaginationComponent
+    .q-btn
+      height 30px
+      width 30px
+      min-width 30px !important
 
 #dialogFilters
   min-height max-content !important
