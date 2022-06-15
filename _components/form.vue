@@ -10,7 +10,7 @@
                   @submit="(!isUpdate && !field) ?  createItem() : updateItem()" v-if="success"
                   @validation-error="$alert.error($tr('isite.cms.message.formInvalid'))">
             <!--Language-->
-            <div class="col-12"
+            <div :class="locale.languages && (locale.languages.length >= 2) ? 'col-12' : 'q-pa-none'"
                  v-show="locale.fieldsTranslatable && Object.keys(locale.fieldsTranslatable).length">
               <locales v-model="locale" ref="localeComponent" :form="$refs.formContent"/>
             </div>
@@ -19,7 +19,7 @@
             <div v-for="(pos,key) in ['formLeft','formRight']" :key="pos"
                  v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
                  :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`">
-              <div class="box">
+              <div>
                 <!--Fields-->
                 <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
                   <!--Dynamic fake field-->
