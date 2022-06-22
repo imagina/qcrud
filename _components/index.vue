@@ -2,20 +2,26 @@
   <div id="componentCrudIndex">
     <!--Content-->
     <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
-      <!--Data-->
+      <!--Page Actions-->
+      <div class="q-pr-sm q-pl-md q-py-sm q-mt-xs">
+        <page-actions
+            :extra-actions="tableActions"
+            :excludeActions="params.read.noFilter ? ['filter'] : []"
+            :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
+            @new="handlerActionCreate()"
+        />
+      </div>
       <div class="relative-position col-12" v-if="success">
-        <!--Table-->
-        <q-table :grid="table.grid" :data="table.data" :columns="tableColumns" :pagination.sync="table.pagination"
+        <!-- Drag View-->
+        <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
+          <recursiveItemDraggable :items="dataTableDraggable"/>
+        </div>
+        <!--Table/Grid View-->
+        <q-table v-if="['table','grid'].includes(localShowAs)"
+                 :grid="localShowAs === 'grid'" :data="table.data" :columns="tableColumns"
+                 :pagination.sync="table.pagination"
                  @request="getData" class="stick-table" v-model:pagination="table.pagination"
                  ref="tableComponent" card-container-class="q-col-gutter-md">
-          <!--Slot Top-->
-          <template slot="top" v-if="showSlotTable.header">
-            <!--Page Actions-->
-            <page-actions :extra-actions="tableActions" :excludeActions="params.read.noFilter ? ['filter'] : []"
-                          :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
-                          @new="handlerActionCreate()"/>
-          </template>
-
           <!--Custom columns-->
           <template v-slot:body-cell="props">
             <!-- actions columns -->
@@ -180,6 +186,7 @@
 <script>
 //Components
 import masterExport from "@imagina/qsite/_components/master/masterExport"
+import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 
 export default {
   beforeDestroy() {
@@ -189,7 +196,10 @@ export default {
     params: {default: false},
     title: {default: false}
   },
-  components: {masterExport},
+  components: {
+    masterExport,
+    recursiveItemDraggable
+  },
   watch: {},
   mounted() {
     this.$nextTick(function () {
@@ -210,8 +220,7 @@ export default {
         },
         filter: {
           search: null
-        },
-        grid: this.params.read.showAs == 'grid'
+        }
       },
       appConfig: config('app'),
       statusModel: {},//Model to status
@@ -221,7 +230,9 @@ export default {
         show: false,
       },
       dataField: [],
-      exportParams: false
+      exportParams: false,
+      dataDraggable: [],
+      localShowAs: 'table',
     }
   },
   computed: {
@@ -243,9 +254,9 @@ export default {
         props: {
           icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
         },
-        action: () => this.table.grid = !this.table.grid
+        vIfAction: this.readShowAs === 'drag',
+        action: () => this.localShowAs = this.localShowAs === 'grid' ? 'table' : 'grid',
       }]
-
       //Add search action
       if (this.params.read.search !== false) response.push('search')
 
@@ -253,7 +264,7 @@ export default {
       if (this.params.create && this.params.hasPermission.create) response.push('new')
 
       //Response
-      return response
+      return response.filter((item) => !item.vIfAction)
     },
     //Define slot table to show
     showSlotTable() {
@@ -304,6 +315,32 @@ export default {
       return {
         colClass: gridParams.colClass || 'col-12 col-sm-6 col-lg-4 col-xl-3',
         component: gridParams.component || false
+      }
+    },
+    //Validate read show as
+    readShowAs() {
+      return this.params.read.showAs || "table"
+    },
+    getDataTableDraggable() {
+      return this.table.data.map((item) => {
+        const drag = this.params.read.drag || {};
+        const title = item[drag.title?.field || 'id'];
+        const subTitle = item[drag.subTitle?.field || ''];
+        return {
+          id: item.id,
+          title: drag.title?.format(title) || title,
+          subTitle: drag.subTitle?.format(subTitle) || subTitle,
+          children: [],
+          actions: this.fieldActions(item),
+        }
+      });
+    },
+    dataTableDraggable: {
+      get: function () {
+        return this.dataDraggable;
+      },
+      set: function (value) {
+        this.dataDraggable = value;
       }
     }
   },
@@ -403,13 +440,11 @@ export default {
         refresh: refresh,
         params: propParams.read.requestParams || {}
       }
-
       //add params
       if (!params.params.filter) params.params.filter = {}
       params.params.filter = {...params.params.filter, ...this.table.filter, ...filter}
-      params.params.page = pagination.page
-      params.params.take = pagination.rowsPerPage
-
+      params.params.page = pagination.page;
+      params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
       params.params.filter.order = {
         field: pagination.sortBy || 'id',
@@ -457,7 +492,9 @@ export default {
 
         //Dispatch event hook
         this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
-
+        //Sync data to drag view
+        this.dataTableDraggable = this.getDataTableDraggable;
+        this.localShowAs = this.readShowAs;
         //Close loading
         this.loading = false
       }).catch(error => {
