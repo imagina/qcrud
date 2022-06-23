@@ -3,7 +3,7 @@
     <!--Content-->
     <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
       <!--Page Actions-->
-      <div class="q-pr-sm q-pl-md q-py-sm q-mt-xs">
+      <div class="q-my-md">
         <page-actions
             :extra-actions="tableActions"
             :excludeActions="params.read.noFilter ? ['filter'] : []"
@@ -11,6 +11,7 @@
             @new="handlerActionCreate()"
         />
       </div>
+      <!--Content-->
       <div class="relative-position col-12" v-if="success">
         <!-- Drag View-->
         <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
