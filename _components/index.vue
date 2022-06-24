@@ -18,44 +18,121 @@
           <recursiveItemDraggable :items="dataTableDraggable"/>
         </div>
         <!--Table/Grid View-->
-        <q-table v-if="['table','grid'].includes(localShowAs)"
-                 :grid="localShowAs === 'grid'" :data="table.data" :columns="tableColumns"
-                 :pagination.sync="table.pagination"
-                 @request="getData" class="stick-table" v-model:pagination="table.pagination"
-                 ref="tableComponent" card-container-class="q-col-gutter-md">
-          <!--Custom columns-->
-          <template v-slot:body-cell="props">
-            <!-- actions columns -->
-            <q-td v-if="props.col.name == 'actions'" :props="props">
-              <btn-menu :actions="fieldActions(props)" :action-data="props.row"/>
-            </q-td>
-            <!-- status columns -->
-            <q-td v-else-if="(['status','active'].indexOf(props.col.name) != -1) || props.col.asStatus"
-                  :props="props" class="text-left">
-              <!--Action-->
-              <q-btn-dropdown :color="props.value ? 'green' : 'red'" flat padding="sm none" class="text-caption"
-                              :label="props.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
-                              no-caps
-                              v-if="permitAction(props.row).edit">
-                <!--Message change to-->
-                <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus(props)" v-close-popup>
-                  <div class="row items-center">
-                    <q-icon name="fas fa-pen" class="q-mr-sm" :color="!props.value ? 'green' : 'red'"/>
-                    {{
-                      $tr('isite.cms.message.changeTo', {text: (props.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
-                    }}
+        <q-table
+          v-model:pagination="table.pagination"
+          v-if="['table','grid'].includes(localShowAs)"
+          :grid="localShowAs === 'grid'" :data="table.data" 
+          :columns="tableColumns"
+          :pagination.sync="table.pagination"
+          @request="getData" 
+          class="stick-table" 
+          ref="tableComponent" 
+          card-container-class="q-col-gutter-md"
+        >
+          <!--Custom cards-->
+          <template v-slot:body="props">
+            <q-tr :props="props">
+              <q-td
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+              >
+                 <!-- Button table collapsable -->
+                <div 
+                  v-if="col.name === 'expandibleColumn'"
+                >
+                    <q-btn 
+                      size="sm"
+                      flat 
+                      round
+                      color="blue-grey"
+                      :icon="tableCollapseIcon(props.key)"
+                      @click="tableKey = (showCollapsedTable(props.key)) ? null : props.key"
+                      
+                 />
+                </div>
+                <div v-if="col.name == 'actions'">
+                    <btn-menu 
+                      :actions="fieldActions(col)" 
+                      :action-data="props.row"
+                    />
+                </div>
+                <!-- status columns -->
+                <div 
+                  v-else-if="(['status','active'].indexOf(col.name) != -1) || col.asStatus"
+                  class="text-left"
+                >
+                  <!--Action-->
+                  <q-btn-dropdown 
+                    :color="col.value ? 'green' : 'red'" 
+                    flat 
+                    padding="sm none" 
+                    class="text-caption"
+                    :label="props.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
+                    no-caps
+                    v-if="permitAction(props.row).edit"
+                  >
+                    <!--Message change to-->
+                      <q-item 
+                        class="q-pa-sm cursor-pointer" 
+                        @click.native="updateStatus(props)" 
+                        v-close-popup
+                      >
+                        <div 
+                          class="row items-center"
+                        >
+                          <q-icon 
+                            name="fas fa-pen" 
+                            class="q-mr-sm" 
+                            :color="!col.value ? 'green' : 'red'"
+                          />
+                              {{
+                                $tr('isite.cms.message.changeTo', {text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
+                              }}
+                          </div>
+                      </q-item>
+                  </q-btn-dropdown>
+                    <!--Label-->
+                    <label v-else>
+                      {{ col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled') }}
+                    </label>
+                </div>
+                <!--Default columns-->
+                <div v-else>
+                  {{ col.value }}
+                </div>
+              </q-td>
+            </q-tr>
+            <!-- Collapsed table relationship -->
+            <q-tr v-show="showCollapsedTable(props.key)">
+              <q-td colspan="100%" class="collapseTable">
+                <div
+                  v-if="validateRelationshipData(props.row)"
+                > 
+                  <div 
+                    class="
+                      q-py-sm 
+                      q-px-sm 
+                      text-blue-grey 
+                      text-h4 
+                      text-weight-bold 
+                      text-subtitle1 
+                      ellipsis 
+                      title-content
+                      text-center"
+                  >
+                    {{ relation('label') }}
                   </div>
-                </q-item>
-              </q-btn-dropdown>
-              <!--Label-->
-              <label v-else>{{ props.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled') }}</label>
-            </q-td>
-            <!--Default columns-->
-            <q-td v-else :props="props" :title="props.value">
-              {{ props.value }}
-            </q-td>
+                  <q-table
+                    :data="getRelationshipData(props.row)"
+                    :columns="relation('columns')"
+                    hide-bottom
+                  />
+                </div> 
+                 <not-result v-else/>
+              </q-td>
+            </q-tr>
           </template>
-
           <!--Custom cards-->
           <template v-slot:item="props">
             <div :class="`${gridParams.colClass}`">
@@ -209,6 +286,7 @@ export default {
   },
   data() {
     return {
+      tableKey: null, // TableKey
       success: false,//Global status of component
       loading: true,//Loading
       windowWith: window.innerWidth, //windows size
@@ -285,6 +363,14 @@ export default {
     rowsPerPageOption() {
       return this.params.read.rowsPerPageOptions || [5, 10, 20, 50, 100, 300, 500]
     },
+    // collapsible relation return type
+    relation() {
+      return key => {
+        const relation = this.params.read.relation || {};
+        const type = key === 'column' ? [] : '';
+        return relation[key] || type;
+      };
+    },
     //return table columns
     tableColumns() {
       let columns = this.$clone(this.params.read.columns)
@@ -302,6 +388,15 @@ export default {
           }
         }
       })
+      // Collapsible action column
+      const relationName = this.relation('name'); 
+      if(this.table.data.some((item) => item.hasOwnProperty(relationName))) {
+          columns.unshift({
+          name: 'expandibleColumn', 
+          label: '',
+          align: 'center',
+        })
+      }
       //Response
       return columns
     },
@@ -343,7 +438,15 @@ export default {
       set: function (value) {
         this.dataDraggable = value;
       }
-    }
+    },
+    // validation to hide and show table collapse
+    showCollapsedTable() {
+      return key => key === this.tableKey;
+    },
+    // collapse return icon 
+    tableCollapseIcon(key) {
+      return key => this.showCollapsedTable(key) ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+    },
   },
   methods: {
     countPage(props) {
@@ -708,7 +811,16 @@ export default {
 
       //response
       return response
-    }
+    },
+    // returns the collapsible table relationship information 
+    getRelationshipData(data) {
+      return data[this.relation('name')] || [];
+    },
+    // collapse table validation
+    validateRelationshipData(data) {
+      const name = this.relation('name');
+      return data[name] ? data[name].length > 0 : false;
+    },
   }
 }
 </script>
@@ -783,7 +895,15 @@ export default {
       height 30px
       width 30px
       min-width 30px !important
-
+  .collapseTable
+    padding 0;
+    .q-table, 
+    th:last-child, th:first-child, td:last-child, td:first-child
+     background-color: $custom-accent-color
+    .q-table__middle 
+      padding 0;
+      box-shadow none;
+      border-radius: 0;  
 #dialogFilters
   min-height max-content !important
 </style>
