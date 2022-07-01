@@ -102,8 +102,8 @@
               </q-td>
             </q-tr>
             <!-- Collapsed table relationship -->
-            <q-tr>
-              <q-td colspan="100%" id="collapseTable" style="height: 0">
+            <q-tr style="border: 0">
+              <q-td colspan="100%" id="collapseTable" style="height: 0; border: 0">
                 <q-expansion-item :ref="`trExpansion${props.key}`" header-style="display : none" group="trExpansion">
                   <div id="contentRelationData" class="row items-center justify-center">
                     <!-- Data -->
@@ -830,6 +830,8 @@ export default {
       if (!this.showCollapsedTable(props.key)) {
         this.tableKey = props.key
         this.getRelationData(props.row)
+      } else {
+        this.tableKey = null
       }
     },
     //Request the relation data
