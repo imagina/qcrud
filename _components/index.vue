@@ -105,10 +105,12 @@
             <q-tr>
               <q-td colspan="100%" id="collapseTable" style="height: 0">
                 <q-expansion-item :ref="`trExpansion${props.key}`" header-style="display : none" group="trExpansion">
-                  <div v-if="validateRelationshipData(props.row)">
-                    <div
-                        v-if="relation('label')"
-                        class="
+                  <div id="contentRelationData" class="row items-center justify-center">
+                    <!-- Data -->
+                    <div v-if="relation.data.length" class="col-12">
+                      <div
+                          v-if="relationConfig('label')"
+                          class="
                       q-py-sm
                       q-px-sm
                       text-blue-grey
@@ -118,16 +120,20 @@
                       ellipsis
                       title-content
                       text-center"
-                    >
-                      {{ relation('label') }}
+                      >
+                        {{ relationConfig('label') }}
+                      </div>
+                      <q-table
+                          :data="relation.data"
+                          :columns="relationConfig('columns')"
+                          hide-bottom
+                      />
                     </div>
-                    <q-table
-                        :data="getRelationshipData(props.row)"
-                        :columns="relation('columns')"
-                        hide-bottom
-                    />
+                    <!-- Empty result -->
+                    <not-result v-else/>
+                    <!-- Inner loading -->
+                    <inner-loading :visible="relation.loading"/>
                   </div>
-                  <not-result v-else/>
                 </q-expansion-item>
               </q-td>
             </q-tr>
@@ -311,6 +317,10 @@ export default {
       exportParams: false,
       dataDraggable: [],
       localShowAs: 'table',
+      relation: {
+        loading: false,
+        data: []
+      }
     }
   },
   computed: {
@@ -363,9 +373,10 @@ export default {
       return this.params.read.rowsPerPageOptions || [5, 10, 20, 50, 100, 300, 500]
     },
     // collapsible relation return type
-    relation() {
-      return key => {
+    relationConfig() {
+      return (key = false) => {
         const relation = this.params.read.relation || {};
+        if (!key) return relation
         const type = key === 'column' ? [] : '';
         return relation[key] || type;
       };
@@ -388,8 +399,8 @@ export default {
         }
       })
       // Collapsible action column
-      const relationName = this.relation('name');
-      if (this.relation('name')) {
+      const relationName = this.relationConfig('name');
+      if (this.relationConfig('name') || this.relationConfig('apiRoute')) {
         columns.unshift({
           name: 'expandibleColumn',
           label: '',
@@ -811,19 +822,38 @@ export default {
       //response
       return response
     },
-    // returns the collapsible table relationship information
-    getRelationshipData(data) {
-      return data[this.relation('name')] || [];
-    },
-    // collapse table validation
-    validateRelationshipData(data) {
-      const name = this.relation('name');
-      return data[name] ? data[name].length > 0 : false;
-    },
     //Toggle relation data
     toggleRelationContent(props) {
-      this.tableKey = (this.showCollapsedTable(props.key)) ? null : props.key
+      //Toggle section
       this.$refs[`trExpansion${props.key}`].toggle()
+      //Actions when open a section
+      if (!this.showCollapsedTable(props.key)) {
+        this.tableKey = props.key
+        this.getRelationData(props.row)
+      }
+    },
+    //Request the relation data
+    getRelationData(row) {
+      //Reset de realtion data
+      this.relation.data = []
+
+      if (this.relationConfig('apiRoute')) {
+        this.relation.loading = true
+        //Request Params
+        const requestParams = {
+          refresh: true,
+          params: this.relationConfig().requestParams ? this.relationConfig().requestParams(row) : {}
+        }
+        //Request
+        this.$crud.index(this.relationConfig('apiRoute'), requestParams).then(response => {
+          this.relation.data = this.$clone(response.data)
+          this.relation.loading = false
+        }).catch(error => {
+          this.relation.loading = false
+        })
+      } else {
+        this.relation.data = row[this.relationConfig('name')] || [];
+      }
     }
   }
 }
@@ -903,6 +933,11 @@ export default {
   #collapseTable
     padding 0;
     background-color: $grey-1
+
+    #contentRelationData
+      min-height 90px
+      position relative
+      width 100%
 
     .q-table, th:last-child, th:first-child, td:last-child, td:first-child
       background-color: $grey-1
