@@ -29,7 +29,7 @@
             ref="tableComponent"
             card-container-class="q-col-gutter-md"
         >
-          <!--Custom cards-->
+          <!--Custom Columns-->
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td
@@ -38,16 +38,14 @@
                   :props="props"
               >
                 <!-- Button table collapsable -->
-                <div
-                    v-if="col.name === 'expandibleColumn'"
-                >
+                <div v-if="col.name === 'expandibleColumn'">
                   <q-btn
                       size="sm"
                       flat
                       round
                       color="blue-grey"
                       :icon="tableCollapseIcon(props.key)"
-                      @click="tableKey = (showCollapsedTable(props.key)) ? null : props.key"
+                      @click="toggleRelationContent(props)"
 
                   />
                 </div>
@@ -104,12 +102,13 @@
               </q-td>
             </q-tr>
             <!-- Collapsed table relationship -->
-            <q-tr v-show="showCollapsedTable(props.key)">
-              <q-td colspan="100%" id="collapseTable">
-                <div v-if="validateRelationshipData(props.row)">
-                  <div
-                      v-if="relation('label')"
-                      class="
+            <q-tr>
+              <q-td colspan="100%" id="collapseTable" style="height: 0">
+                <q-expansion-item :ref="`trExpansion${props.key}`" header-style="display : none" group="trExpansion">
+                  <div v-if="validateRelationshipData(props.row)">
+                    <div
+                        v-if="relation('label')"
+                        class="
                       q-py-sm
                       q-px-sm
                       text-blue-grey
@@ -119,16 +118,17 @@
                       ellipsis
                       title-content
                       text-center"
-                  >
-                    {{ relation('label') }}
+                    >
+                      {{ relation('label') }}
+                    </div>
+                    <q-table
+                        :data="getRelationshipData(props.row)"
+                        :columns="relation('columns')"
+                        hide-bottom
+                    />
                   </div>
-                  <q-table
-                      :data="getRelationshipData(props.row)"
-                      :columns="relation('columns')"
-                      hide-bottom
-                  />
-                </div>
-                <not-result v-else/>
+                  <not-result v-else/>
+                </q-expansion-item>
               </q-td>
             </q-tr>
           </template>
@@ -820,6 +820,11 @@ export default {
       const name = this.relation('name');
       return data[name] ? data[name].length > 0 : false;
     },
+    //Toggle relation data
+    toggleRelationContent(props) {
+      this.tableKey = (this.showCollapsedTable(props.key)) ? null : props.key
+      this.$refs[`trExpansion${props.key}`].toggle()
+    }
   }
 }
 </script>
