@@ -108,26 +108,27 @@
                   <div id="contentRelationData" class="row items-center justify-center">
                     <!-- Data -->
                     <div v-if="relation.data.length" class="col-12">
-                      <div
-                          v-if="relationConfig('label')"
-                          class="
-                      q-py-sm
-                      q-px-sm
-                      text-blue-grey
-                      text-h4
-                      text-weight-bold
-                      text-subtitle1
-                      ellipsis
-                      title-content
-                      text-center"
-                      >
+                      <!--Label-->
+                      <div v-if="relationConfig('label')"
+                           class="q-py-sm q-px-sm text-blue-grey text-h4 text-weight-bold text-subtitle1 ellipsis title-content text-center">
                         {{ relationConfig('label') }}
                       </div>
-                      <q-table
-                          :data="relation.data"
-                          :columns="relationConfig('columns')"
-                          hide-bottom
-                      />
+                      <!-- Table -->
+                      <q-table :data="relation.data"
+                               :columns="relationConfig('columns')"
+                               hide-bottom>
+                        <template v-slot:body-cell="props">
+                          <q-td :props="props">
+                            <!--Actions-->
+                            <btn-menu v-if="props.col.name == 'actions'"
+                                      :actions="relationConfig('actions')"
+                                      :action-data="props.row"
+                            />
+                            <!-- Default Value -->
+                            <label v-else>{{ props.value }}</label>
+                          </q-td>
+                        </template>
+                      </q-table>
                     </div>
                     <!-- Empty result -->
                     <not-result v-else/>
@@ -375,10 +376,23 @@ export default {
     // collapsible relation return type
     relationConfig() {
       return (key = false) => {
-        const relation = this.params.read.relation || {};
+        //Instance de relationConfig
+        const relation = {
+          label: '',
+          apiRoute: '',
+          requestParams: {},
+          columns: [],
+          actions: [],
+          ...(this.params.read.relation || {})
+        };
+        //Default response
         if (!key) return relation
-        const type = key === 'column' ? [] : '';
-        return relation[key] || type;
+        //Add action column
+        if (relation.actions.length && !relation.columns.find(item => item.name == 'actions')) {
+          relation.columns.push({name: 'actions', label: this.$tr('isite.cms.form.actions'), align: 'center'},)
+        }
+        //Response
+        return relation[key];
       };
     },
     //return table columns
