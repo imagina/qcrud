@@ -49,6 +49,7 @@
 
                   />
                 </div>
+                <!--Actions column-->
                 <div v-if="col.name == 'actions'">
                   <btn-menu
                       :actions="fieldActions(col)"
@@ -56,34 +57,22 @@
                   />
                 </div>
                 <!-- status columns -->
-                <div
-                    v-else-if="(['status','active'].indexOf(col.name) != -1) || col.asStatus"
-                    class="text-left"
-                >
+                <div v-else-if="(['status','active'].indexOf(col.name) != -1) || col.asStatus"
+                     class="text-left">
                   <!--Action-->
                   <q-btn-dropdown
                       :color="col.value ? 'green' : 'red'"
                       flat
                       padding="sm none"
                       class="text-caption"
-                      :label="props.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
+                      :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
                       no-caps
                       v-if="permitAction(props.row).edit"
                   >
                     <!--Message change to-->
-                    <q-item
-                        class="q-pa-sm cursor-pointer"
-                        @click.native="updateStatus(props)"
-                        v-close-popup
-                    >
-                      <div
-                          class="row items-center"
-                      >
-                        <q-icon
-                            name="fas fa-pen"
-                            class="q-mr-sm"
-                            :color="!col.value ? 'green' : 'red'"
-                        />
+                    <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus({...props, col})" v-close-popup>
+                      <div class="row items-center">
+                        <q-icon name="fas fa-pen" class="q-mr-sm" :color="!col.value ? 'green' : 'red'"/>
                         {{
                           $tr('isite.cms.message.changeTo', {text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
                         }}
@@ -148,7 +137,7 @@
                          @update="params.update.to ? false : $emit('update', props.row)"
                          @delete="deleteItem(props.row)"/>
               <!--Default Card -->
-              <q-card v-else flat class="box default-card-grid" style="padding-top: 5px">
+              <q-card v-else class="box default-card-grid" style="padding-top: 5px">
                 <!--item image-->
                 <div class="default-card-grid_item-image" v-if="itemImage(props.row)"
                      :style="`background-image: url('${itemImage(props.row)}')`"></div>
@@ -188,7 +177,7 @@
                           </q-btn-dropdown>
                         </div>
                         <!--Default columns-->
-                        <div v-else> {{ col.value }}</div>
+                        <div v-else> {{ col.value || '-' }}</div>
                       </q-item-label>
                     </q-item-section>
                   </q-item>
