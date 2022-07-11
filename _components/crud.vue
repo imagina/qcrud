@@ -320,6 +320,8 @@ export default {
         if (item.id.field) this.fieldData = item.id.field
         //Go to edit
         if (this.params.update.to) this.$router.push({name: this.params.update.to, params: item})
+        //Edit by method
+        else if (this.params.update.method) this.params.update.method(item)
         else {
           this.itemIdToEdit = item.id
           this.showModal = true
