@@ -11,6 +11,21 @@
             @new="handlerActionCreate()"
         />
       </div>
+      <!-- Bulk Actions -->
+      <div v-if="selectedRows.length" id="selectedRows"
+           class="bg-primary text-white row justify-between items-center q-px-md q-mb-md q-py-sm">
+        <!-- Label -->
+        <div class="col-12 col-md-4">
+          <b>{{ $tr('isite.cms.selectedRows', {num: selectedRows.length}) }}</b>
+        </div>
+        <!--Actions-->
+        <div class="col-12 col-md-8">
+          <div class="row q-gutter-sm justify-end">
+            <q-btn v-for="(act, keyAct) in bulkActions" :key="keyAct" v-bind="act.props"
+                   @click="handlerBulkAction(act)"/>
+          </div>
+        </div>
+      </div>
       <!--Content-->
       <div class="relative-position col-12" v-if="success">
         <!-- Drag View-->
@@ -33,10 +48,14 @@
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td
-                  v-for="col in props.cols"
+                  v-for="(col, keyCol) in props.cols"
                   :key="col.name"
                   :props="props"
               >
+                <!-- Select row -->
+                <div v-if="col.name === 'selectColumn'">
+                  <q-checkbox v-model="selectedRows" :val="props.rowIndex"/>
+                </div>
                 <!-- Button table collapsable -->
                 <div v-if="col.name === 'expandibleColumn'">
                   <q-btn
@@ -245,7 +264,6 @@
               </div>
             </div>
           </template>
-          <!-- pagination -->
         </q-table>
         <!--Loading-->
         <inner-loading :visible="loading"/>
@@ -310,7 +328,8 @@ export default {
       relation: {
         loading: false,
         data: []
-      }
+      },
+      selectedRows: []
     }
   },
   computed: {
@@ -401,6 +420,8 @@ export default {
           }
         }
       })
+      //Force align first column
+      columns[0].align = 'left'
       // Collapsible action column
       const relationName = this.relationConfig('name');
       if (this.relationConfig('name') || this.relationConfig('apiRoute')) {
@@ -409,6 +430,10 @@ export default {
           label: '',
           align: 'center',
         })
+      }
+      //Select column
+      if (this.bulkActions.length) {
+        columns.unshift({name: 'selectColumn', label: '', align: 'center'})
       }
       //Response
       return columns
@@ -430,6 +455,7 @@ export default {
     readShowAs() {
       return this.params.read.showAs || "table"
     },
+    //Get Config data to table dragable
     getDataTableDraggable() {
       return this.table.data.map((item) => {
         const drag = this.params.read.drag || {};
@@ -444,6 +470,7 @@ export default {
         }
       });
     },
+    //data to table dragablle
     dataTableDraggable: {
       get: function () {
         return this.dataDraggable;
@@ -460,6 +487,39 @@ export default {
     tableCollapseIcon(key) {
       return key => this.showCollapsedTable(key) ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     },
+    //Return the bulk actions
+    bulkActions() {
+      var response = []
+      var bulkActions = this.params.read.bulkActions || []
+      //Validate availability
+      response = bulkActions.filter(action => {
+        //Validate vIf
+        if ((action.vIf != undefined) && !action.vIf) return false
+        //Validate permission
+        if ((action.permission != undefined) && !this.$auth.hasAccess(action.permission)) return false
+        //Validate apiRoute
+        if (!action.apiRoute) return false
+        //Default response
+        return true
+      }).map(action => {
+        return {
+          ...action,
+          props: {
+            rounded: true,
+            dense: true,
+            unelevated: true,
+            color: "white",
+            class: 'btn-small',
+            noCaps: true,
+            textColor: "blue-grey",
+            padding: '3px 10px',
+            ...(action.props || {})
+          }
+        }
+      })
+      //Response
+      return response
+    }
   },
   methods: {
     countPage(props) {
@@ -470,12 +530,6 @@ export default {
       const start = page == 1 ? 1 : page * rowsPerPage - ((rowsPerPage - (page - 1)) <= 0 ? 1 : rowsPerPage - (page - 1))
       const end = showTable < rowsPerPage ? totalPage : page * showTable
       return `${start} - ${end} ${this.$tr('isite.cms.label.of')} ${totalPage}`
-    },
-    refresh() {
-      this.loading = true
-      setTimeout(() => {
-        this.loading = false
-      }, 500)
     },
     //init form
     async init() {
@@ -548,6 +602,9 @@ export default {
     getData({pagination, filter}, refresh = false) {
       let propParams = this.$clone(this.params)
       this.loading = true
+
+      //Reset selected Rows
+      this.selectedRows = []
 
       //Refresh all data
       if (refresh) this.$cache.remove({allKey: this.params.apiRoute})
@@ -859,6 +916,28 @@ export default {
       } else {
         this.relation.data = row[this.relationConfig('name')] || [];
       }
+    },
+    //handler bulk action
+    handlerBulkAction(act) {
+      this.loading = true
+      //Instance the criteria
+      const criteria = act.criteria || 'id'
+      //Get selected data by criteria
+      const selectedDataByCriteria = this.table.data.filter((item, keyItem) => {
+        if (this.selectedRows.includes(keyItem)) return true
+        else return false
+      }).map(item => item[criteria])
+      //Instance request params
+      var requestParams = {
+        attributes: {
+          field: this.$helper.convertStringToSnakeCase(criteria),
+          [this.$helper.convertStringToSnakeCase(criteria)]: selectedDataByCriteria
+        }
+      }
+      //Request
+      this.$crud.post(act.apiRoute, requestParams).then(response => {
+        this.getDataTable(true)
+      }).catch(error => this.loading = false)
     }
   }
 }
@@ -951,6 +1030,9 @@ export default {
       padding 0;
       box-shadow none;
       border-radius: 0;
+
+  #selectedRows
+    border-radius $custom-radius
 
 #dialogFilters
   min-height max-content !important
