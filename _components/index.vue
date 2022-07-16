@@ -7,6 +7,7 @@
         <page-actions
             :extra-actions="tableActions"
             :excludeActions="params.read.noFilter ? ['filter'] : []"
+            :searchAction="params.read.searchAction"
             :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
             @new="handlerActionCreate()"
         />
