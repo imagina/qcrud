@@ -125,6 +125,7 @@
                       <!-- Table -->
                       <q-table :data="relation.data"
                                :columns="relationConfig('columns')"
+                               :rows-per-page-options="[0]"
                                hide-bottom>
                         <template v-slot:body-cell="props">
                           <q-td :props="props">
