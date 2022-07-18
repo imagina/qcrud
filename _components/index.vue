@@ -116,7 +116,7 @@
                 <q-expansion-item :ref="`trExpansion${props.key}`" header-style="display : none" group="trExpansion">
                   <div id="contentRelationData" class="row items-center justify-center">
                     <!-- Data -->
-                    <div v-if="relation.data.length" class="col-12">
+                    <div v-if="relation.data.length" class="col-12 q-mb-md shadow-3">
                       <!--Label-->
                       <div v-if="relationConfig('label')"
                            class="q-py-sm q-px-sm text-blue-grey text-h4 text-weight-bold text-subtitle1 ellipsis title-content text-center">
