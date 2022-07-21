@@ -1,7 +1,7 @@
 <template>
   <!--Modal with form to category-->
   <master-modal :id="paramsProps.modalId || 'modalFormCrud'" v-model="show" v-bind="modalProps"
-                @hide="componentStore.remove()" custom-position>
+                @hide="componentStore.remove()" custom-position :persistent="true">
     <div class="modal-crud">
       <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
         <div class="relative-position col-12">
