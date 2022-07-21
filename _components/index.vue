@@ -336,6 +336,9 @@ export default {
   },
   computed: {
     //Table Title
+    permisionRelation() {
+      return this.params.read.relation.permission ? this.$auth.hasAccess(this.params.read.relation.permission) : true;
+    },
     tableTitle() {
       const useLegacyStructure = parseInt(this.$store.getters['qsiteApp/getSettingValueByName']('isite::legacyStructureCMS') || 0)
       if (this.title)
@@ -426,7 +429,7 @@ export default {
       columns[0].align = 'left'
       // Collapsible action column
       const relationName = this.relationConfig('name');
-      if (this.relationConfig('name') || this.relationConfig('apiRoute')) {
+      if ((this.relationConfig('name') || this.relationConfig('apiRoute')) && this.permisionRelation) {
         columns.unshift({
           name: 'expandibleColumn',
           label: '',
