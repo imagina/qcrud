@@ -544,9 +544,7 @@ export default {
         this.$eventBus.$emit('setMobileMainAction', {
           icon: 'fas fa-plus',
           color: 'green',
-          callBack: () => {
-            this.params.create.to ? this.$router.push(this.params.create.to) : this.$emit('create')
-          }
+          callBack: () => this.handlerActionCreate()
         })
       }
       //Success
