@@ -123,10 +123,10 @@
                         {{ relationConfig('label') }}
                       </div>
                       <!-- Table -->
-                      <q-table :data="relation.data"
-                               :columns="relationConfig('columns')"
-                               :rows-per-page-options="[0]"
-                               hide-bottom>
+                      <q-table 
+                        :data="relation.data"
+                        :columns="relationConfig('columns')"
+                      >
                         <template v-slot:body-cell="props">
                           <q-td :props="props">
                             <!--Actions-->
@@ -429,7 +429,7 @@ export default {
       columns[0].align = 'left'
       // Collapsible action column
       const relationName = this.relationConfig('name');
-      if ((this.relationConfig('name') || this.relationConfig('apiRoute')) && this.permisionRelation) {
+      if ((this.relationConfig('name') || this.relationConfig('apiRoute'))) {
         columns.unshift({
           name: 'expandibleColumn',
           label: '',
