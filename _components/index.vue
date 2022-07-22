@@ -429,7 +429,7 @@ export default {
       columns[0].align = 'left'
       // Collapsible action column
       const relationName = this.relationConfig('name');
-      if ((this.relationConfig('name') || this.relationConfig('apiRoute'))) {
+      if ((this.relationConfig('name') || this.relationConfig('apiRoute')) && this.permisionRelation) {
         columns.unshift({
           name: 'expandibleColumn',
           label: '',
