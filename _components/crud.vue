@@ -9,9 +9,9 @@
 
     <!--=== Select to List and Create ===-->
     <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
-                   @input="emitValue">
+                   @input="emitValue" @click.native="showEventListener">
       <!--Before options slot-->
-      <div slot="before-options" @click="create">
+      <div slot="before-options">
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
                :label="`${params.create.title || ''}`" v-if="params.create"/>
       </div>
@@ -217,7 +217,7 @@ export default {
     },
     //Emit value
     emitValue() {
-      this.$emit('input', this.dataCrudSelect.itemSelected)
+      this.$emit('input', this.dataCrudSelect.itemSelected)      
     },
     //select field props
     selectField() {
@@ -240,6 +240,16 @@ export default {
     }
   },
   methods: {
+    showEventListener() {
+      const el = document.querySelector(".btnCreateCrud");
+      if(el) {
+        el.addEventListener("click", this.showCreateModal);
+      }
+    },
+    showCreateModal(e) {
+      this.create();
+      e.stopPropagation();
+    },
     //init form
     async init() {
       if (this.$refs.componentCrudData && this.$refs.componentCrudData.crudData) {
