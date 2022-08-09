@@ -106,7 +106,9 @@
                 </div>
                 <!--Default columns-->
                 <div v-else>
-                  {{ col.value }}
+                  <div @click="rowclick(col,props.row)" :class="isActionableColumn(col) ? 'cursor-pointer': ''">
+                    {{ col.value }}
+                  </div>
                 </div>
               </q-td>
             </q-tr>
@@ -601,6 +603,23 @@ export default {
           },
           refresh)
     },
+    //Row click
+    async rowclick(col,row){
+      // if is an actionable column
+      if(this.isActionableColumn(col)){
+        //if the col has an action callback
+        if(col.action){
+          await col.action(row)
+        } else{
+          //finding the default action
+          let defaultAction = this.fieldActions(col).find(action => {
+            return action.default ?? false
+          })
+
+          if (defaultAction.action) await defaultAction.action(row)
+        }
+      }
+    },
     //Get products
     getData({pagination, filter}, refresh = false) {
       let propParams = this.$clone(this.params)
@@ -793,6 +812,11 @@ export default {
       let actions = this.$clone(this.params.read.actions || [])
       let response = []
 
+      //
+      let defaultAction = actions.find(action => {
+        return action.default ?? false;
+      })
+
       //Add default actions
       actions = [...actions,
         //Export
@@ -809,11 +833,20 @@ export default {
         {//Edit action
           icon: 'fas fa-pen',
           color: 'green',
+          default: defaultAction ? false: true,
           label: this.$tr('isite.cms.label.edit'),
           vIf: this.permitAction(field).edit,
           action: (item) => {
             this.$emit('update', item)
           }
+        },
+        {//Copy disclosure link action
+          label: this.$tr('isite.cms.label.copyDisclosureLink'),
+          format: (item) => {
+            return { vIf: item.url ? true : false }
+          },
+          icon: "fas fa-copy",
+          action: (item) => this.$helper.copyToClipboard(item.url,'isite.cms.messages.copyDisclosureLink'),
         },
         {//Delete action
           icon: 'fas fa-trash-alt',
@@ -833,7 +866,6 @@ export default {
           response.push(action)
         })
       }
-
       //response
       return response
     },
@@ -941,6 +973,15 @@ export default {
       this.$crud.post(act.apiRoute, requestParams).then(response => {
         this.getDataTable(true)
       }).catch(error => this.loading = false)
+    },
+    //Table default column actionable
+    isActionableColumn(col){
+
+      //if the columns has an action callback
+      if(col.action) return true;
+
+      //default columns
+      return ['title','name','id'].includes(col.name)
     }
   }
 }
