@@ -73,7 +73,7 @@
                 <!-- Select row -->
                 <div v-if="col.name === 'selectColumn'">
                   <q-checkbox v-model="selectedRows" 
-                    :val="props.rowIndex"
+                    :val="props.key"
                   />
                 </div>
                 <!-- Button table collapsable -->
@@ -979,7 +979,7 @@ export default {
       const criteria = act.criteria || 'id'
       //Get selected data by criteria
       const selectedDataByCriteria = this.table.data.filter((item, keyItem) => {
-        if (this.selectedRows.includes(keyItem)) return true
+        if (this.selectedRows.includes(item.id)) return true
         else return false
       }).map(item => item[criteria])
       //Instance request params
@@ -1005,8 +1005,8 @@ export default {
     },
     selectAllFields() {
       if(this.selectedRowsAll) {
-        const indexs = this.table.data.map((item, index) => index);
-        this.selectedRows = indexs;
+        const ids = this.table.data.map((item, index) => item.id);
+        this.selectedRows = ids;
         return;
       }
       this.selectedRows = [];
