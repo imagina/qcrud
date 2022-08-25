@@ -46,6 +46,23 @@
             card-container-class="q-col-gutter-md"
         >
           <!--Custom Columns-->
+          <template v-slot:header="props">
+            <q-tr :props="props">
+              <q-th
+                v-for="col in props.cols"
+                :key="col.name"
+                :props="props"
+              >
+                <div v-if="col.name === 'selectColumn'">
+                  <q-checkbox 
+                    v-model="selectedRowsAll"
+                    @input="selectAllFields"
+                  />
+                </div>
+                {{ col.label }}
+              </q-th>
+            </q-tr>
+          </template>
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td
@@ -55,7 +72,9 @@
               >
                 <!-- Select row -->
                 <div v-if="col.name === 'selectColumn'">
-                  <q-checkbox v-model="selectedRows" :val="props.rowIndex"/>
+                  <q-checkbox v-model="selectedRows" 
+                    :val="props.rowIndex"
+                  />
                 </div>
                 <!-- Button table collapsable -->
                 <div v-if="col.name === 'expandibleColumn'">
@@ -333,7 +352,8 @@ export default {
         loading: false,
         data: []
       },
-      selectedRows: []
+      selectedRows: [],
+      selectedRowsAll: false,
     }
   },
   computed: {
@@ -982,7 +1002,15 @@ export default {
 
       //default columns
       return ['title','name','id'].includes(col.name)
-    }
+    },
+    selectAllFields() {
+      if(this.selectedRowsAll) {
+        const indexs = this.table.data.map((item, index) => index);
+        this.selectedRows = indexs;
+        return;
+      }
+      this.selectedRows = [];
+    },
   }
 }
 </script>
