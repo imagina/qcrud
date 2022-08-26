@@ -646,7 +646,8 @@ export default {
       this.loading = true
 
       //Reset selected Rows
-      this.selectedRows = []
+      this.selectedRows = [];
+      this.selectedRowsAll = false;
 
       //Refresh all data
       if (refresh) this.$cache.remove({allKey: this.params.apiRoute})
