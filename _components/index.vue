@@ -27,8 +27,8 @@
           </div>
         </div>
       </div>
-      <!--Content-->
       <div class="relative-position col-12" v-if="success">
+        <folders v-if="localShowAs === 'folders'" />
         <!-- Drag View-->
         <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
           <recursiveItemDraggable :items="dataTableDraggable"/>
@@ -36,12 +36,13 @@
         <!--Table/Grid View-->
         <q-table
             v-model:pagination="table.pagination"
-            v-if="['table','grid'].includes(localShowAs)"
+            v-if="['table','grid','folders'].includes(localShowAs)"
             :grid="localShowAs === 'grid'" :data="table.data"
             :columns="tableColumns"
             :pagination.sync="table.pagination"
             @request="getData"
             class="stick-table"
+            :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
             ref="tableComponent"
             card-container-class="q-col-gutter-md"
         >
@@ -301,6 +302,7 @@
 //Components
 import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
+import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 
 export default {
   beforeDestroy() {
@@ -313,6 +315,11 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable
+  },
+  provide() {
+    return {
+      getRelationData: this.getRelationData,
+    }
   },
   watch: {},
   mounted() {
@@ -686,7 +693,9 @@ export default {
         }
 
         //Set data to table
-        this.table.data = this.$clone(dataTable)
+        this.table.data = this.$clone(dataTable);
+        const folderList = foldersStore().transformDataToDragableForderList(dataTable);
+        foldersStore().setFolderList(folderList);
         this.table.pagination.page = this.$clone(response.meta.page.currentPage)
         this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
         this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
@@ -957,6 +966,7 @@ export default {
 
       if (this.relationConfig('apiRoute')) {
         this.relation.loading = true
+        foldersStore().setRelationLoading(row.id, true);
         //Request Params
         const requestParams = {
           refresh: true,
@@ -965,9 +975,12 @@ export default {
         //Request
         this.$crud.index(this.relationConfig('apiRoute'), requestParams).then(response => {
           this.relation.data = this.$clone(response.data)
+          foldersStore().getListOfDragableRelations(row.id, response.data);
           this.relation.loading = false
+          foldersStore().setRelationLoading(row.id, false);
         }).catch(error => {
           this.relation.loading = false
+          foldersStore().setRelationLoading(row.id, false);
         })
       } else {
         this.relation.data = row[this.relationConfig('name')] || [];
