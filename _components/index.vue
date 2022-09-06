@@ -319,6 +319,7 @@ export default {
   provide() {
     return {
       getRelationData: this.getRelationData,
+      fieldActions: this.fieldActions,
     }
   },
   watch: {},
@@ -853,7 +854,7 @@ export default {
         {
           label: this.$tr('isite.cms.label.export'),
           vIf: this.exportParams,
-          icon: 'fas fa-file-download',
+          icon: 'fa-regular fa-download',
           action: (item) => this.$refs.exportComponent.showReportItem({
             item: item,
             exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
@@ -861,7 +862,7 @@ export default {
           })
         },
         {//Edit action
-          icon: 'fas fa-pen',
+          icon: 'fa-regular fa-pencil',
           color: 'green',
           default: defaultAction ? false: true,
           label: this.$tr('isite.cms.label.edit'),
@@ -879,7 +880,7 @@ export default {
           action: (item) => this.$helper.copyToClipboard(item.url,'isite.cms.messages.copyDisclosureLink'),
         },
         {//Delete action
-          icon: 'fas fa-trash-alt',
+          icon: 'fa-regular fa-trash-can',
           color: 'red',
           label: this.$tr('isite.cms.label.delete'),
           vIf: this.permitAction(field).destroy,
