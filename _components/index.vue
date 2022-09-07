@@ -28,7 +28,10 @@
         </div>
       </div>
       <div class="relative-position col-12" v-if="success">
-        <folders v-if="localShowAs === 'folders'" />
+        <folders
+          :folderList="folderList"
+          v-if="localShowAs === 'folders'" 
+        />
         <!-- Drag View-->
         <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
           <recursiveItemDraggable :items="dataTableDraggable"/>
@@ -362,6 +365,7 @@ export default {
       },
       selectedRows: [],
       selectedRowsAll: false,
+      folderList: [],
     }
   },
   computed: {
@@ -696,7 +700,7 @@ export default {
         //Set data to table
         this.table.data = this.$clone(dataTable);
         const folderList = foldersStore().transformDataToDragableForderList(dataTable);
-        foldersStore().setFolderList(folderList);
+        this.folderList = folderList;
         this.table.pagination.page = this.$clone(response.meta.page.currentPage)
         this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
         this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
@@ -967,7 +971,7 @@ export default {
 
       if (this.relationConfig('apiRoute')) {
         this.relation.loading = true
-        foldersStore().setRelationLoading(row.id, true);
+        this.setRelationLoading(row.id, true);
         //Request Params
         const requestParams = {
           refresh: true,
@@ -976,12 +980,12 @@ export default {
         //Request
         this.$crud.index(this.relationConfig('apiRoute'), requestParams).then(response => {
           this.relation.data = this.$clone(response.data)
-          foldersStore().getListOfDragableRelations(row.id, response.data);
+          this.getListOfDragableRelations(row.id, response.data);
           this.relation.loading = false
-          foldersStore().setRelationLoading(row.id, false);
+          this.setRelationLoading(row.id, false);
         }).catch(error => {
           this.relation.loading = false
-          foldersStore().setRelationLoading(row.id, false);
+          this.setRelationLoading(row.id, false);
         })
       } else {
         this.relation.data = row[this.relationConfig('name')] || [];
@@ -1026,6 +1030,22 @@ export default {
       }
       this.selectedRows = [];
     },
+    setRelationLoading(folderId, value) {
+        const folder = this.folderList.find(item => item.id === folderId);
+        folder.loading = value;
+    },
+    getListOfDragableRelations(folderId, relationList) {
+        try {
+            this.folderList.forEach((item) => {
+                if(item.id === folderId) {
+                    item.reportList = relationList;
+                }         
+            })
+        } catch (error) {
+            console.error(error);
+            console.error('[folderStore:getListOfDragableRelations]');
+        }
+    }
   }
 }
 </script>
