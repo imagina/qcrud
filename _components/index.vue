@@ -32,21 +32,22 @@
       <div class="relative-position col-12" v-if="success">
         <!-- Drag View-->
         <kanban
-          v-show="localShowAs === 'kanban'"
-          :routes="params.read.kanban" 
-          ref="kanban"
-        >
-          <template v-slot:pageAction>
-            <page-actions
-              v-if="localShowAs === 'kanban'"
-              :extra-actions="tableActions"
-              :excludeActions="params.read.noFilter ? ['filter'] : []"
-              :searchAction="params.read.searchAction"
-              :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
-              @new="handlerActionCreate()"
-            />
-          </template>
-        </kanban>
+            v-show="localShowAs === 'kanban' && params.read.kanban"
+            :routes="params.read.kanban" 
+            ref="kanban"
+            :showFunnel="true"
+          >
+            <template v-slot:pageAction>
+              <page-actions
+                v-if="localShowAs === 'kanban'"
+                :extra-actions="tableActions"
+                :excludeActions="params.read.noFilter ? ['filter'] : []"
+                :searchAction="params.read.searchAction"
+                :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
+                @new="handlerActionCreate()"
+              />
+            </template>
+        </kanban> 
         <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
           <recursiveItemDraggable :items="dataTableDraggable"/>
         </div>
@@ -659,6 +660,7 @@ export default {
     },
     //Get products
     getData({pagination, filter}, refresh = false) {
+      this.localShowAs = this.readShowAs;
       let propParams = this.$clone(this.params)
       this.loading = true
 
