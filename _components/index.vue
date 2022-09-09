@@ -307,7 +307,7 @@
           </template>
         </q-table>
         <!--Loading-->
-        <inner-loading :visible="loading"/>
+        <inner-loading :visible="localShowAs !== 'kanban' && loading"/>
       </div>
     </div>
     <!-- Export Component -->
@@ -578,6 +578,7 @@ export default {
     },
     //init form
     async init() {
+      this.localShowAs = this.readShowAs;
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
       this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
@@ -660,7 +661,6 @@ export default {
     },
     //Get products
     getData({pagination, filter}, refresh = false) {
-      this.localShowAs = this.readShowAs;
       let propParams = this.$clone(this.params)
       this.loading = true
 
@@ -730,7 +730,6 @@ export default {
         this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
         //Sync data to drag view
         this.dataTableDraggable = this.getDataTableDraggable;
-        this.localShowAs = this.readShowAs;
         //Close loading
         this.loading = false
       }).catch(error => {
