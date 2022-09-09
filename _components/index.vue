@@ -581,7 +581,11 @@ export default {
       this.localShowAs = this.readShowAs;
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
-      this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
+      if(this.readShowAs === 'kanban') {
+        this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init());
+      } else {
+        this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
+      }
       if (!this.params.read.filterName) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
@@ -1037,9 +1041,11 @@ export default {
       }
       if(this.readShowAs === 'kanban') {
         this.localShowAs = this.localShowAs === 'kanban' ? 'table' : 'kanban';
+        this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init());
         return;
       }
       this.localShowAs =  this.localShowAs === 'grid' ? 'table' : 'grid'
+      this.$root.$on('crud.data.refresh', () => this.getDataTable(true));
     }
   }
 }
