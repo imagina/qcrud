@@ -391,7 +391,7 @@ export default {
           icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
         },
         vIfAction: this.readShowAs === 'drag',
-        action: () => this.localShowAs = this.localShowAs === 'grid' ? 'table' : 'grid',
+        action: this.actionsTable,
       }]
       //Add search action
       if (this.params.read.search !== false) response.push('search')
@@ -1032,7 +1032,7 @@ export default {
     },
     setRelationLoading(folderId, value) {
         const folder = this.folderList.find(item => item.id === folderId);
-        folder.loading = value;
+        if(folder) folder.loading = value;
     },
     getListOfDragableRelations(folderId, relationList) {
         try {
@@ -1045,6 +1045,13 @@ export default {
             console.error(error);
             console.error('[folderStore:getListOfDragableRelations]');
         }
+    },
+    actionsTable() {
+      if(this.readShowAs === 'folders') {
+        this.localShowAs = this.localShowAs === 'folders' ? 'table' : 'folders';
+        return;
+      }
+      this.localShowAs =  this.localShowAs === 'grid' ? 'table' : 'grid'
     }
   }
 }
