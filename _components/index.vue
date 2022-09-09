@@ -5,6 +5,7 @@
       <!--Page Actions-->
       <div class="q-my-md">
         <page-actions
+            v-if="localShowAs !== 'kanban'"
             :extra-actions="tableActions"
             :excludeActions="params.read.noFilter ? ['filter'] : []"
             :searchAction="params.read.searchAction"
@@ -30,6 +31,22 @@
       <!--Content-->
       <div class="relative-position col-12" v-if="success">
         <!-- Drag View-->
+        <kanban
+          v-show="localShowAs === 'kanban'"
+          :routes="params.read.kanban" 
+          ref="kanban"
+        >
+          <template v-slot:pageAction>
+            <page-actions
+              v-if="localShowAs === 'kanban'"
+              :extra-actions="tableActions"
+              :excludeActions="params.read.noFilter ? ['filter'] : []"
+              :searchAction="params.read.searchAction"
+              :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
+              @new="handlerActionCreate()"
+            />
+          </template>
+        </kanban>
         <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
           <recursiveItemDraggable :items="dataTableDraggable"/>
         </div>
@@ -379,14 +396,14 @@ export default {
           icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
         },
         vIfAction: this.readShowAs === 'drag',
-        action: () => this.localShowAs = this.localShowAs === 'grid' ? 'table' : 'grid',
+        action: this.actionsTable,
       }]
       //Add search action
       if (this.params.read.search !== false) response.push('search')
 
       //Add create action
       if (this.params.create && this.params.hasPermission.create) response.push('new')
-
+      if(this.localShowAs === 'kanban' && this.$refs.kanban) response.push(this.$refs.kanban.extraPageActions);
       //Response
       return response.filter((item) => !item.vIfAction)
     },
@@ -1012,6 +1029,17 @@ export default {
       }
       this.selectedRows = [];
     },
+    actionsTable() {
+      if(this.readShowAs === 'folders') {
+        this.localShowAs = this.localShowAs === 'folders' ? 'table' : 'folders';
+        return;
+      }
+      if(this.readShowAs === 'kanban') {
+        this.localShowAs = this.localShowAs === 'kanban' ? 'table' : 'kanban';
+        return;
+      }
+      this.localShowAs =  this.localShowAs === 'grid' ? 'table' : 'grid'
+    }
   }
 }
 </script>
