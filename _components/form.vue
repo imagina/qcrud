@@ -458,7 +458,7 @@ export default {
         //Format Slug
         if ((['title', 'name', 'slug'].indexOf(fieldName) != -1) && (this.locale.formTemplate.slug != undefined)) {
           let slug = this.isUpdate ? false : (formTemplate.name || formTemplate.title || false)//Default data to slug
-          if ((fieldName == 'slug') && formTemplate.slug) slug = formTemplate.slug.replace(/-/g, ' ')//Format slug
+          if ((fieldName == 'slug') && formTemplate.slug) slug = formTemplate.slug
           if (slug) this.locale.formTemplate.slug = this.$clone(this.$helper.getSlug(slug))
         }
 
