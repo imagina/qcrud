@@ -5,7 +5,6 @@
       <!--Page Actions-->
       <div class="q-my-md">
         <page-actions
-            v-if="localShowAs !== 'kanban'"
             :extra-actions="tableActions"
             :excludeActions="params.read.noFilter ? ['filter'] : []"
             :searchAction="params.read.searchAction"
@@ -30,24 +29,12 @@
       </div>
       <!--Content-->
       <div class="relative-position col-12" v-if="success">
-        <!-- Drag View-->
+        <!-- Kanban View-->
         <kanban
             v-show="localShowAs === 'kanban' && params.read.kanban"
             :routes="params.read.kanban" 
             ref="kanban"
-            :showFunnel="true"
-          >
-            <template v-slot:pageAction>
-              <page-actions
-                v-if="localShowAs === 'kanban'"
-                :extra-actions="tableActions"
-                :excludeActions="params.read.noFilter ? ['filter'] : []"
-                :searchAction="params.read.searchAction"
-                :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
-                @new="handlerActionCreate()"
-              />
-            </template>
-        </kanban> 
+        /> 
         <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
           <recursiveItemDraggable :items="dataTableDraggable"/>
         </div>
@@ -317,6 +304,7 @@
 
 <script>
 //Components
+import { computed } from 'vue';
 import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 
@@ -333,6 +321,11 @@ export default {
     recursiveItemDraggable
   },
   watch: {},
+  provide() {
+    return {
+      funnelPageAction: computed(() => this.funnelId),
+    };
+  },
   mounted() {
     this.$nextTick(function () {
       this.init()
@@ -372,6 +365,7 @@ export default {
       },
       selectedRows: [],
       selectedRowsAll: false,
+      funnelId: null,
     }
   },
   computed: {
@@ -611,6 +605,11 @@ export default {
               fields: this.$clone(params.read.filters || {}),
               callBack: () => {
                 this.table.filter = this.$clone(this.$filter.values)
+                if(this.params.read.kanban && this.localShowAs === 'kanban')  {
+                  const filterName = this.params.read.kanban.column.filter.name || '';
+                  this.funnelId = this.table.filter[filterName || null];
+                }
+                
                 this.getDataTable(true, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
               }
             })
@@ -640,6 +639,12 @@ export default {
     //Request products with params from server table
     async getDataTable(refresh = false, filter = false, pagination = false) {
       //Call data table
+      if(this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban')  {
+        const filterName = this.params.read.kanban.column.filter.name || '';
+        this.funnelId = String(this.table.filter[filterName]);
+        await this.$refs.kanban.init();
+        return;
+      }
       this.getData({
             pagination: {...this.table.pagination, ...(pagination || {})},
             filter: {...this.table.filter, ...(filter || {})}
