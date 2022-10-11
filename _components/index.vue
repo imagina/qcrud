@@ -54,14 +54,14 @@
           <template v-slot:header="props">
             <q-tr :props="props">
               <q-th
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
+                  v-for="col in parseColumnsByRow(props.cols, props.row)"
+                  :key="col.name"
+                  :props="props"
               >
                 <div v-if="col.name === 'selectColumn'">
-                  <q-checkbox 
-                    v-model="selectedRowsAll"
-                    @input="selectAllFields"
+                  <q-checkbox
+                      v-model="selectedRowsAll"
+                      @input="selectAllFields"
                   />
                 </div>
                 {{ col.label }}
@@ -71,14 +71,15 @@
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td
-                  v-for="(col, keyCol) in props.cols"
+                  v-for="(col, keyCol) in parseColumnsByRow(props.cols, props.row)"
                   :key="col.name"
                   :props="props"
+                  :class="col.bgColor ? 'bg-'+col.bgColor : ''"
               >
                 <!-- Select row -->
                 <div v-if="col.name === 'selectColumn'">
-                  <q-checkbox v-model="selectedRows" 
-                    :val="props.key"
+                  <q-checkbox v-model="selectedRows"
+                              :val="props.key"
                   />
                 </div>
                 <!-- Button table collapsable -->
@@ -123,14 +124,26 @@
                       </div>
                     </q-item>
                   </q-btn-dropdown>
-                  <!--Label-->
+
                   <label v-else>
+
                     {{ col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled') }}
                   </label>
                 </div>
                 <!--Default columns-->
                 <div v-else>
-                  <div @click="rowclick(col,props.row)" :class="isActionableColumn(col) ? 'cursor-pointer': ''">
+                  <!--Badge-->
+                  <div v-if="col.bgTextColor && col.value"
+                       @click="rowclick(col,props.row)"
+                       :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                  >
+                    <q-badge :color="col.bgTextColor">
+                      {{ col.value }}
+                    </q-badge>
+                  </div>
+                  <!--Label-->
+                  <div v-else @click="rowclick(col,props.row)"
+                       :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')">
                     {{ col.value }}
                   </div>
                 </div>
@@ -149,9 +162,9 @@
                         {{ relationConfig('label') }}
                       </div>
                       <!-- Table -->
-                      <q-table 
-                        :data="relation.data"
-                        :columns="relationConfig('columns')"
+                      <q-table
+                          :data="relation.data"
+                          :columns="relationConfig('columns')"
                       >
                         <template v-slot:body-cell="props">
                           <q-td :props="props">
@@ -190,7 +203,7 @@
                      :style="`background-image: url('${itemImage(props.row)}')`"></div>
                 <!--Fields-->
                 <q-list dense>
-                  <q-item v-for="col in props.cols" :key="col.name" style="padding: 3px 0" v-if="col.name != 'actions'">
+                  <q-item v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name" style="padding: 3px 0" v-if="col.name != 'actions'">
                     <q-item-section>
                       <!--Field name-->
                       <q-item-label class="ellipsis">
@@ -224,7 +237,22 @@
                           </q-btn-dropdown>
                         </div>
                         <!--Default columns-->
-                        <div v-else> {{ col.value || '-' }}</div>
+                        <div v-else>
+                          <!--Badge-->
+                          <div v-if="col.bgTextColor && col.value"
+                               @click="rowclick(col,props.row)"
+                               :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                          >
+                            <q-badge :color="col.bgTextColor">
+                              {{ col.value }}
+                            </q-badge>
+                          </div>
+                          <!--Label-->
+                          <div v-else @click="rowclick(col,props.row)"
+                               :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')">
+                            {{ col.value }}
+                          </div>
+                        </div>
                       </q-item-label>
                     </q-item-section>
                   </q-item>
@@ -652,13 +680,13 @@ export default {
           refresh)
     },
     //Row click
-    async rowclick(col,row){
+    async rowclick(col, row) {
       // if is an actionable column
-      if(this.isActionableColumn(col)){
+      if (this.isActionableColumn(col)) {
         //if the col has an action callback
-        if(col.action){
+        if (col.action) {
           await col.action(row)
-        } else{
+        } else {
           //finding the default action
           let defaultAction = this.fieldActions(col).find(action => {
             return action.default ?? false
@@ -692,7 +720,7 @@ export default {
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
       params.params.filter.order = {
-        field: pagination.sortBy || 'id',
+        field: pagination.sortBy ? this.$helper.convertStringToSnakeCase(pagination.sortBy) : 'id',
         way: (pagination.descending != undefined) ? (pagination.descending ? 'desc' : 'asc') : 'desc'
       }
 
@@ -881,7 +909,7 @@ export default {
         {//Edit action
           icon: 'fas fa-pen',
           color: 'green',
-          default: defaultAction ? false: true,
+          default: defaultAction ? false : true,
           label: this.$tr('isite.cms.label.edit'),
           vIf: this.permitAction(field).edit,
           action: (item) => {
@@ -891,10 +919,10 @@ export default {
         {//Copy disclosure link action
           label: this.$tr('isite.cms.label.copyDisclosureLink'),
           format: (item) => {
-            return { vIf: item.url ? true : false }
+            return {vIf: item.url ? true : false}
           },
           icon: "fas fa-copy",
-          action: (item) => this.$helper.copyToClipboard(item.url,'isite.cms.messages.copyDisclosureLink'),
+          action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
         },
         {//Delete action
           icon: 'fas fa-trash-alt',
@@ -1023,22 +1051,24 @@ export default {
       }).catch(error => this.loading = false)
     },
     //Table default column actionable
-    isActionableColumn(col){
+    isActionableColumn(col) {
 
       //if the columns has an action callback
-      if(col.action) return true;
+      if (col.action) return true;
 
       //default columns
-      return ['title','name','id'].includes(col.name)
+      return ['title', 'name', 'id'].includes(col.name)
     },
+    //Select all fields
     selectAllFields() {
-      if(this.selectedRowsAll) {
+      if (this.selectedRowsAll) {
         const ids = this.table.data.map((item, index) => item.id);
         this.selectedRows = ids;
         return;
       }
       this.selectedRows = [];
     },
+    // actions Table 
     actionsTable() {
       if(this.readShowAs === 'folders') {
         this.localShowAs = this.localShowAs === 'folders' ? 'table' : 'folders';
@@ -1051,6 +1081,15 @@ export default {
       }
       this.localShowAs =  this.localShowAs === 'grid' ? 'table' : 'grid'
       this.$root.$on('crud.data.refresh', () => this.getDataTable(true));
+    },
+    //Parse columns by row
+    parseColumnsByRow(columns, row) {
+      return columns.map(column => {
+        return {
+          ...column,
+          ...((column.formatColumn && row) ? column.formatColumn(row) : {})
+        }
+      })
     }
   }
 }
