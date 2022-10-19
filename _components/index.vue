@@ -10,6 +10,7 @@
             :searchAction="params.read.searchAction"
             :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
             @new="handlerActionCreate()"
+            ref="pageActionRef"
         />
       </div>
       <!-- Bulk Actions -->
@@ -354,6 +355,9 @@ export default {
       funnelPageAction: computed(() => this.funnelId),
     };
   },
+  created() {
+    this.$helper.setDynamicSelectList({});
+  },
   mounted() {
     this.$nextTick(function () {
       this.init()
@@ -603,6 +607,7 @@ export default {
       this.localShowAs = this.readShowAs;
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
+      //Check if the section is kanban 
       if(this.readShowAs === 'kanban') {
         this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init());
       } else {
@@ -633,11 +638,10 @@ export default {
               fields: this.$clone(params.read.filters || {}),
               callBack: () => {
                 this.table.filter = this.$clone(this.$filter.values)
-                if(this.params.read.kanban && this.localShowAs === 'kanban')  {
+                if(this.params.read.kanban)  {
                   const filterName = this.params.read.kanban.column.filter.name || '';
                   this.funnelId = this.table.filter[filterName || null];
                 }
-                
                 this.getDataTable(true, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
               }
             })
@@ -1076,6 +1080,12 @@ export default {
       }
       if(this.readShowAs === 'kanban') {
         this.localShowAs = this.localShowAs === 'kanban' ? 'table' : 'kanban';
+        if(this.localShowAs === 'kanban') {
+          this.$refs.kanban.init();
+        }
+        if(this.localShowAs === 'table') {
+          this.getDataTable(true)
+        }
         this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init());
         return;
       }
