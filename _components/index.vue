@@ -353,6 +353,7 @@ export default {
   provide() {
     return {
       funnelPageAction: computed(() => this.funnelId),
+      fieldActions: this.fieldActions,
     };
   },
   created() {
@@ -896,7 +897,6 @@ export default {
       let defaultAction = actions.find(action => {
         return action.default ?? false;
       })
-
       //Add default actions
       actions = [...actions,
         //Export
