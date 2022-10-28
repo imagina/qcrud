@@ -1082,11 +1082,12 @@ export default {
         this.localShowAs = this.localShowAs === 'kanban' ? 'table' : 'kanban';
         if(this.localShowAs === 'kanban') {
           this.$refs.kanban.init();
+          this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init());
         }
         if(this.localShowAs === 'table') {
           this.getDataTable(true)
+          this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
         }
-        this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init());
         return;
       }
       this.localShowAs =  this.localShowAs === 'grid' ? 'table' : 'grid'
