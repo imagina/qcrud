@@ -116,7 +116,7 @@ export default {
       if (!data) return reject('Data is required')
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Get request params
-      let requestParams = Object.assign(params.params, {
+      let requestParams = Object.assign((params.params || {}), {
         attributes: helper.toSnakeCase(data, {notToSnakeCase: (params.notToSnakeCase || [])})
       })
       //Request
