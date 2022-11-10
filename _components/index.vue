@@ -417,20 +417,24 @@ export default {
     //Table actions
     tableActions() {
       //Default response
-      let response = [{
-        label: this.$tr(`isite.cms.message.${this.table.grid ? 'listView' : 'gribView'}`),
-        vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
-        props: {
-          icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
-        },
-        vIfAction: this.readShowAs === 'drag',
-        action: this.actionsTable,
-      }]
+      let response = [];
+      if(this.readShowAs !== 'kanban') {
+        response.push({
+          label: this.$tr(`isite.cms.message.${this.table.grid ? 'listView' : 'gribView'}`),
+          vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
+          props: {
+            icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
+          },
+          vIfAction: this.readShowAs === 'drag',
+          action: this.actionsTable,
+        })
+      };
       //Add search action
       if (this.params.read.search !== false) response.push('search')
 
       //Add create action
       if (this.params.create && this.params.hasPermission.create) response.push('new')
+      // se oculta page action
       if(this.localShowAs === 'kanban' && this.$refs.kanban) response.push(this.$refs.kanban.extraPageActions);
       //Response
       return response.filter((item) => !item.vIfAction)
@@ -610,7 +614,7 @@ export default {
       this.handlerUrlCrudAction()//Handler url action
       //Check if the section is kanban 
       if(this.readShowAs === 'kanban') {
-        this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init());
+        this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init(true));
       } else {
         this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
       }
@@ -1082,7 +1086,7 @@ export default {
         this.localShowAs = this.localShowAs === 'kanban' ? 'table' : 'kanban';
         if(this.localShowAs === 'kanban') {
           this.$refs.kanban.init();
-          this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init());
+          this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init(true));
         }
         if(this.localShowAs === 'table') {
           this.getDataTable(true)
