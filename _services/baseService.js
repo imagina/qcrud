@@ -18,13 +18,13 @@ export default {
    * @param data
    * @returns {Promise<any>}
    */
-  create(configName, data) {
+  create(configName, data, params = {}) {
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!data) return reject('Data is required')
       let urlApi = (config(configName) || configName)//Get url from config
-      let dataRequest = helper.toSnakeCase(data)
+      let dataRequest = helper.toSnakeCase(data, {notToSnakeCase: (params.notToSnakeCase || [])})
 
       //Request
       axios.post(urlApi, {attributes: dataRequest}).then(async response => {
@@ -116,7 +116,9 @@ export default {
       if (!data) return reject('Data is required')
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Get request params
-      let requestParams = Object.assign(params.params, {attributes: helper.toSnakeCase(data)})
+      let requestParams = Object.assign((params.params || {}), {
+        attributes: helper.toSnakeCase(data, {notToSnakeCase: (params.notToSnakeCase || [])})
+      })
       //Request
       axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
