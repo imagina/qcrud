@@ -679,6 +679,7 @@ export default {
       if(this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban')  {
         const filterName = this.params.read.kanban.column.filter.name || '';
         this.funnelId = String(this.table.filter[filterName]);
+        await this.$refs.kanban.setSearch(this.table.filter.search);
         await this.$refs.kanban.init();
         return;
       }
