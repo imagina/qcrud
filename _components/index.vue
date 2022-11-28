@@ -698,8 +698,10 @@ export default {
         params: propParams.read.requestParams || {}
       }
       //add params
-      if (!params.params.filter) params.params.filter = {}
+      if (!params.params.filter) params.params.filter = {};
       params.params.filter = {...params.params.filter, ...this.table.filter, ...filter}
+      this.removeEmptyFilters(params.params.filter);
+      //delete item[key];
       params.params.page = pagination.page;
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
@@ -1090,7 +1092,19 @@ export default {
           ...((column.formatColumn && row) ? column.formatColumn(row) : {})
         }
       })
-    }
+    },
+    removeEmptyFilters(filter) {
+      try {
+        Object.keys(filter).forEach((item) => {
+          if(!filter[item]) {
+            delete filter[item];
+          }
+        }) 
+      } catch (error) {
+        console.log(error);
+      }
+      
+    },
   }
 }
 </script>
