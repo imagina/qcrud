@@ -351,6 +351,7 @@ export default {
     return {
       getRelationData: this.getRelationData,
       fieldActions: this.fieldActions,
+      updateRelationData: this.updateRelationData,
     }
   },
   watch: {},
@@ -1021,6 +1022,14 @@ export default {
         this.relation.data = row[this.relationConfig('name')] || [];
       }
     },
+    updateRelationData(item) {
+      this.$crud.update(this.relationConfig('apiRoute'), item.id, item).then(response => {
+        //Change value status in data
+        console.log(response);
+      }).catch(error => {
+        console.log(error);
+      })
+    },
     //handler bulk action
     handlerBulkAction(act) {
       this.loading = true
@@ -1103,7 +1112,6 @@ export default {
       } catch (error) {
         console.log(error);
       }
-      
     },
   }
 }
