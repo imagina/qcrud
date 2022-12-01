@@ -8,7 +8,7 @@
             :extra-actions="tableActions"
             :excludeActions="params.read.noFilter ? ['filter'] : []"
             :searchAction="params.read.searchAction"
-            :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
+            :title="tableTitle" @search="val => search(val)"
             @new="handlerActionCreate()"
             ref="pageActionRef"
         />
@@ -399,6 +399,7 @@ export default {
       selectedRows: [],
       selectedRowsAll: false,
       funnelId: null,
+      searchKanban: null,
     }
   },
   computed: {
@@ -679,7 +680,7 @@ export default {
       if(this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban')  {
         const filterName = this.params.read.kanban.column.filter.name || '';
         this.funnelId = String(this.table.filter[filterName]);
-        await this.$refs.kanban.setSearch(this.table.filter.search);
+        await this.$refs.kanban.setSearch(this.searchKanban);
         await this.$refs.kanban.init();
         return;
       }
@@ -1106,7 +1107,12 @@ export default {
           ...((column.formatColumn && row) ? column.formatColumn(row) : {})
         }
       })
-    }
+    },
+    search(val) {
+      this.table.filter.search = val;
+      this.searchKanban = val; 
+      this.getDataTable();
+    },
   }
 }
 </script>
