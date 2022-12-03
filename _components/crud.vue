@@ -81,6 +81,12 @@ export default {
     },
     title: {defualt: false}
   },
+  // Dependency injection
+  provide() {
+    return {
+      update: this.update,
+    };
+  },
   components: {crudIndex, crudForm},
   watch: {
     value(newValue, oldValue) {
