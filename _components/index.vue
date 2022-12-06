@@ -334,6 +334,7 @@
 import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
+import _ from "lodash";
 
 export default {
   beforeDestroy() {
@@ -1025,7 +1026,6 @@ export default {
     updateRelationData(item) {
       this.$crud.update(this.relationConfig('apiRoute'), item.id, item).then(response => {
         //Change value status in data
-        console.log(response);
       }).catch(error => {
         console.log(error);
       })
@@ -1074,12 +1074,13 @@ export default {
         const folder = this.folderList.find(item => item.id === folderId);
         if(folder) folder.loading = value;
     },
-    getListOfDragableRelations(folderId, relationList) {
+    async getListOfDragableRelations(folderId, relationList) {
         try {
-            this.folderList.forEach((item) => {
-                if(item.id === folderId) {
+            this.folderList.forEach(async (item) => {  
+              if(item.id === folderId) {
                     item.reportList = relationList;
-                }         
+                }
+                item.reportList = await _.uniqBy(item.reportList, 'id');         
             })
         } catch (error) {
             console.error(error);
