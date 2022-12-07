@@ -132,7 +132,7 @@
                        @click="rowclick(col,props.row)"
                        :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
                   >
-                    <q-badge :color="col.bgTextColor">
+                    <q-badge :class="col.bgTextColor">
                       {{ col.value }}
                     </q-badge>
                   </div>
