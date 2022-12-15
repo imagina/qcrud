@@ -8,8 +8,9 @@
             :extra-actions="tableActions"
             :excludeActions="params.read.noFilter ? ['filter'] : []"
             :searchAction="params.read.searchAction"
-            :title="tableTitle" @search="val => {table.filter.search = val; getDataTable()}"
+            :title="tableTitle" @search="val => search(val)"
             @new="handlerActionCreate()"
+            ref="pageActionRef"
         />
       </div>
       <!-- Bulk Actions -->
@@ -29,7 +30,12 @@
       </div>
       <!--Content-->
       <div class="relative-position col-12" v-if="success">
-        <!-- Drag View-->
+        <!-- Kanban View-->
+        <kanban
+            v-show="localShowAs === 'kanban' && params.read.kanban"
+            :routes="params.read.kanban" 
+            ref="kanban"
+        /> 
         <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
           <recursiveItemDraggable :items="dataTableDraggable"/>
         </div>
@@ -317,7 +323,7 @@
           </template>
         </q-table>
         <!--Loading-->
-        <inner-loading :visible="loading"/>
+        <inner-loading :visible="localShowAs !== 'kanban' && loading"/>
       </div>
     </div>
     <!-- Export Component -->
@@ -327,6 +333,7 @@
 
 <script>
 //Components
+import { computed } from 'vue';
 import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 
@@ -343,6 +350,15 @@ export default {
     recursiveItemDraggable
   },
   watch: {},
+  provide() {
+    return {
+      funnelPageAction: computed(() => this.funnelId),
+      fieldActions: this.fieldActions,
+    };
+  },
+  created() {
+    this.$helper.setDynamicSelectList({});
+  },
   mounted() {
     this.$nextTick(function () {
       this.init()
@@ -382,6 +398,8 @@ export default {
       },
       selectedRows: [],
       selectedRowsAll: false,
+      funnelId: null,
+      searchKanban: null,
     }
   },
   computed: {
@@ -400,21 +418,25 @@ export default {
     //Table actions
     tableActions() {
       //Default response
-      let response = [{
-        label: this.$tr(`isite.cms.message.${this.table.grid ? 'listView' : 'gribView'}`),
-        vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
-        props: {
-          icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
-        },
-        vIfAction: this.readShowAs === 'drag',
-        action: () => this.localShowAs = this.localShowAs === 'grid' ? 'table' : 'grid',
-      }]
+      let response = [];
+      if(this.readShowAs !== 'kanban') {
+        response.push({
+          label: this.$tr(`isite.cms.message.${this.table.grid ? 'listView' : 'gribView'}`),
+          vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
+          props: {
+            icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
+          },
+          vIfAction: this.readShowAs === 'drag',
+          action: this.actionsTable,
+        })
+      };
       //Add search action
       if (this.params.read.search !== false) response.push('search')
 
       //Add create action
       if (this.params.create && this.params.hasPermission.create) response.push('new')
-
+      // se oculta page action
+      if(this.localShowAs === 'kanban' && this.$refs.kanban) response.push(this.$refs.kanban.extraPageActions);
       //Response
       return response.filter((item) => !item.vIfAction)
     },
@@ -588,9 +610,15 @@ export default {
     },
     //init form
     async init() {
+      this.localShowAs = this.readShowAs;
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
-      this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
+      //Check if the section is kanban 
+      if(this.readShowAs === 'kanban') {
+        this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init(true));
+      } else {
+        this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
+      }
       if (!this.params.read.filterName) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
@@ -616,6 +644,10 @@ export default {
               fields: this.$clone(params.read.filters || {}),
               callBack: () => {
                 this.table.filter = this.$clone(this.$filter.values)
+                if(this.params.read.kanban)  {
+                  const filterName = this.params.read.kanban.column.filter.name || '';
+                  this.funnelId = this.table.filter[filterName || null];
+                }
                 this.getDataTable(true, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
               }
             })
@@ -645,6 +677,13 @@ export default {
     //Request products with params from server table
     async getDataTable(refresh = false, filter = false, pagination = false) {
       //Call data table
+      if(this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban')  {
+        const filterName = this.params.read.kanban.column.filter.name || '';
+        this.funnelId = String(this.table.filter[filterName]);
+        await this.$refs.kanban.setSearch(this.searchKanban);
+        await this.$refs.kanban.init();
+        return;
+      }
       this.getData({
             pagination: {...this.table.pagination, ...(pagination || {})},
             filter: {...this.table.filter, ...(filter || {})}
@@ -740,7 +779,6 @@ export default {
         this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
         //Sync data to drag view
         this.dataTableDraggable = this.getDataTableDraggable;
-        this.localShowAs = this.readShowAs;
         //Close loading
         this.loading = false
       }).catch(error => {
@@ -866,7 +904,6 @@ export default {
       let defaultAction = actions.find(action => {
         return action.default ?? false;
       })
-
       //Add default actions
       actions = [...actions,
         //Export
@@ -1042,6 +1079,27 @@ export default {
       }
       this.selectedRows = [];
     },
+    // actions Table 
+    actionsTable() {
+      if(this.readShowAs === 'folders') {
+        this.localShowAs = this.localShowAs === 'folders' ? 'table' : 'folders';
+        return;
+      }
+      if(this.readShowAs === 'kanban') {
+        this.localShowAs = this.localShowAs === 'kanban' ? 'table' : 'kanban';
+        if(this.localShowAs === 'kanban') {
+          this.$refs.kanban.init();
+          this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init(true));
+        }
+        if(this.localShowAs === 'table') {
+          this.getDataTable(true)
+          this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
+        }
+        return;
+      }
+      this.localShowAs =  this.localShowAs === 'grid' ? 'table' : 'grid'
+      this.$root.$on('crud.data.refresh', () => this.getDataTable(true));
+    },
     //Parse columns by row
     parseColumnsByRow(columns, row) {
       return columns.map(column => {
@@ -1061,6 +1119,11 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+    search(val) {
+      this.table.filter.search = val;
+      this.searchKanban = val; 
+      this.getDataTable();
     },
   }
 }
