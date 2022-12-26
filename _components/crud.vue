@@ -81,6 +81,12 @@ export default {
     },
     title: {defualt: false}
   },
+  // Dependency injection
+  provide() {
+    return {
+      update: this.update,
+    };
+  },
   components: {crudIndex, crudForm},
   watch: {
     value(newValue, oldValue) {
@@ -217,16 +223,21 @@ export default {
     },
     //Emit value
     emitValue() {
-      this.$emit('input', this.dataCrudSelect.itemSelected)      
+      this.$emit('input', this.dataCrudSelect.itemSelected)
     },
     //select field props
     selectField() {
-      return {
+      let params = this.$clone(this.paramsProps)
+      //Instance the field config
+      const fieldConfig = {
         value: null,
-        type: 'treeSelect',
+        type: this.defaultConfig.filterByQuery ? 'select' : 'treeSelect',
         props: {
           label: (this.params ? this.params.create.title : ''),
-          options: this.$array.tree((this.dataCrudSelect.rootOptions || []), {label: 'label', id: 'value'}),
+          options: this.defaultConfig.filterByQuery ? [] : this.$array.tree((this.dataCrudSelect.rootOptions || []), {
+            label: 'label',
+            id: 'value'
+          }),
           clearable: false,
           appendToBody: true,
           sortValueBy: 'INDEX',
@@ -235,8 +246,22 @@ export default {
           loading: this.dataCrudSelect.loading,
           readonly: this.dataCrudSelect.loading,
           ...this.crudProps
+        },
+        loadOptions: !this.defaultConfig.filterByQuery ? false : {
+          apiRoute: params.apiRoute,
+          select: {
+            ...this.defaultConfig.options,
+            id: this.defaultConfig.options.value || 'id'
+          },
+          filterByQuery: true,
+          requestParams: {
+            ...(params.read.requestParams || {}),
+            ...(this.defaultConfig.requestParams || {})
+          }
         }
       }
+      //Repsonse
+      return fieldConfig
     }
   },
   methods: {
@@ -268,36 +293,44 @@ export default {
     //Return options if is crudSelect
     getIndexOptions() {
       if (this.type != 'select') return false
-      this.dataCrudSelect.loading = true
-      let params = this.$clone(this.paramsProps)
-      let responseOptions = []//Default Value
 
-      //Order params to request
-      let requestParams = {
-        refresh: true,
-        params: params.read.requestParams || {}
-      }
+      if (this.defaultConfig.filterByQuery) {
 
-      //Merge woth request params if exist
-      if (this.defaultConfig.requestParams) requestParams.params = {...requestParams.params, ...this.defaultConfig.requestParams}
+      } else {
+        this.dataCrudSelect.loading = true
+        let params = this.$clone(this.paramsProps)
+        let responseOptions = []//Default Value
 
-      //Request to get data
-      this.$crud.index(params.apiRoute, requestParams).then(response => {
+        //Order params to request
+        let requestParams = {
+          refresh: true,
+          params: params.read.requestParams || {}
+        }
 
-        //Set all items to response
-        response.data.forEach(item => {
-          responseOptions.push({
-            ...item,
-            label: item[this.defaultConfig.options.label],
-            value: item[this.defaultConfig.options.value].toString()
+        //Merge woth request params if exist
+        if (this.defaultConfig.requestParams) requestParams.params = {
+          ...requestParams.params,
+          ...this.defaultConfig.requestParams
+        }
+
+        //Request to get data
+        this.$crud.index(params.apiRoute, requestParams).then(response => {
+
+          //Set all items to response
+          response.data.forEach(item => {
+            responseOptions.push({
+              ...item,
+              label: item[this.defaultConfig.options.label],
+              value: item[this.defaultConfig.options.value].toString()
+            })
           })
-        })
-        this.dataCrudSelect.loading = false
-      }).catch(error => this.dataCrudSelect.loading = false)
+          this.dataCrudSelect.loading = false
+        }).catch(error => this.dataCrudSelect.loading = false)
 
-      //Set options
-      this.dataCrudSelect.rootOptions = responseOptions
-      this.dataCrudSelect.options = responseOptions
+        //Set options
+        this.dataCrudSelect.rootOptions = responseOptions
+        this.dataCrudSelect.options = responseOptions
+      }
     },
     //Filter options when is crudSelect
     filterOptions(val, update) {
