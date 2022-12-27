@@ -362,15 +362,11 @@ export default {
       getRelationData: this.getRelationData,
       fieldActions: this.fieldActions,
       updateRelationData: this.updateRelationData,
+      funnelPageAction: computed(() => this.funnelId),
+      fieldActions: this.fieldActions,
     }
   },
   watch: {},
-  provide() {
-    return {
-      funnelPageAction: computed(() => this.funnelId),
-      fieldActions: this.fieldActions,
-    };
-  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
@@ -1158,6 +1154,23 @@ export default {
       this.table.filter.search = val;
       this.searchKanban = val;
       this.getDataTable();
+    },
+    setRelationLoading(folderId, value) {
+        const folder = this.folderList.find(item => item.id === folderId);
+        if(folder) folder.loading = value;
+    },
+    async getListOfDragableRelations(folderId, relationList) {
+        try {
+            this.folderList.forEach(async (item) => {  
+              if(item.id === folderId) {
+                    item.reportList = relationList;
+                }
+                item.reportList = await _.uniqBy(item.reportList, 'id');         
+            })
+        } catch (error) {
+            console.error(error);
+            console.error('[folderStore:getListOfDragableRelations]');
+        }
     },
   }
 }
