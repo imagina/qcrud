@@ -144,7 +144,7 @@
                        @click="rowclick(col,props.row)"
                        :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
                   >
-                    <q-badge :color="col.bgTextColor">
+                    <q-badge :class="col.bgTextColor">
                       {{ col.value }}
                     </q-badge>
                   </div>
@@ -746,7 +746,6 @@ export default {
       if (!params.params.filter) params.params.filter = {};
       params.params.filter = {...params.params.filter, ...this.table.filter, ...filter}
       this.removeEmptyFilters(params.params.filter);
-      //delete item[key];
       params.params.page = pagination.page;
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
