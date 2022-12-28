@@ -31,6 +31,7 @@
       <div class="relative-position col-12" v-if="success">
         <folders
           :folderList="folderList"
+          :apiRouteOrderFolders="apiRouteOrderFolders"
           v-if="localShowAs === 'folders'" 
         />
         <!-- Drag View-->
@@ -610,6 +611,9 @@ export default {
       })
       //Response
       return response
+    },
+    apiRouteOrderFolders() {
+      return this.params.read?.apiRouteOrderFolders || null;
     }
   },
   methods: {
@@ -771,7 +775,7 @@ export default {
         //Set data to table
         this.table.data = this.$clone(dataTable);
         const folderList = foldersStore().transformDataToDragableForderList(dataTable);
-        this.folderList = folderList;
+        this.folderList =  _.orderBy(folderList, 'position', 'asc');
         this.table.pagination.page = this.$clone(response.meta.page.currentPage)
         this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
         this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
