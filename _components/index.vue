@@ -364,6 +364,7 @@ export default {
       updateRelationData: this.updateRelationData,
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
+      getFieldRelationActions: this.getFieldRelationActions
     }
   },
   watch: {},
@@ -1010,6 +1011,18 @@ export default {
           }
         }
       }, 500)
+    },
+    getFieldRelationActions() {
+      let actions = this.$clone(this.params.read.relation.actions || []);
+      let response = []
+
+      if (actions && actions.length) {
+        actions.forEach(action => {
+          response.push(action)
+        })
+      }
+      //response
+      return response
     },
     //return item image
     itemImage(item) {
