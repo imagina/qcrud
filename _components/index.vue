@@ -284,6 +284,7 @@
                     @click.prevent="getDataTable()"
                     round
                     color="blue-grey"
+                    active-color="primary"
                     :max="props.pagesNumber"
                     :max-pages="6"
                     :ellipses="false"
