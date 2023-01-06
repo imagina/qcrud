@@ -1066,9 +1066,10 @@ export default {
           params: this.relationConfig().requestParams ? this.relationConfig().requestParams(row) : {}
         }
         //Request
-        this.$crud.index(this.relationConfig('apiRoute'), requestParams).then(response => {
+        this.$crud.index(this.relationConfig('apiRoute'), requestParams)
+        .then(async (response) => {
           this.relation.data = this.$clone(response.data)
-          this.getListOfDragableRelations(row.id, response.data);
+          await this.getListOfDragableRelations(row.id, response.data);
           this.relation.loading = false
           this.setRelationLoading(row.id, false);
         }).catch(error => {
