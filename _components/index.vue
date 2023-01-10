@@ -513,8 +513,9 @@ export default {
           }
         }
       })
+
       //Force align first column
-      columns[0].align = 'left'
+      if(columns.length > 0) columns[0].align = 'left';
       // Collapsible action column
       const relationName = this.relationConfig('name');
       if ((this.relationConfig('name') || this.relationConfig('apiRoute')) && this.permisionRelation) {
