@@ -681,7 +681,9 @@ export default {
             //add filters to table filters
             Object.keys(params.read.filters).forEach(key => {
               let filter = params.read.filters[key]
-              this.$set(this.table.filter, (filter.name || key), filter.value)
+              if(key !== 'date') {
+                this.$set(this.table.filter, (filter.name || key), filter.value)
+              }
             })
             if (!this.params.read.filterName) this.filter.available = true//allow filters
           }
