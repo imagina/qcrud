@@ -681,7 +681,7 @@ export default {
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
         const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(this.$filter.values[filterName]);
+        this.funnelId = String(this.$filter.values[filterName] || null);
         await this.$refs.kanban.setSearch(this.searchKanban);
         await this.$refs.kanban.init();
         return;
