@@ -144,12 +144,12 @@
                        @click="rowclick(col,props.row)"
                        :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
                   >
-                    <q-badge :class="col.bgTextColor">
+                    <q-badge :class="col.bgTextColor" v-html="col.value">
                       {{ col.value }}
                     </q-badge>
                   </div>
                   <!--Label-->
-                  <div v-else @click="rowclick(col,props.row)"
+                  <div v-else @click="rowclick(col,props.row)" v-html="col.value"
                        :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')">
                     {{ col.value }}
                   </div>
