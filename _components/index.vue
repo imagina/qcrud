@@ -118,7 +118,7 @@
                     <!--Message change to-->
                     <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus({...props, col})" v-close-popup>
                       <div class="row items-center">
-                        <q-icon name="fas fa-pen" class="q-mr-sm" :color="!col.value ? 'green' : 'red'"/>
+                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col.value ? 'green' : 'red'"/>
                         {{
                           $tr('isite.cms.message.changeTo', {text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
                         }}
@@ -229,7 +229,7 @@
                             <q-item class="q-pa-sm cursor-pointer" v-close-popup
                                     @click.native="updateStatus({...props, col : col})">
                               <div class="row items-center">
-                                <q-icon name="fas fa-pen" class="q-mr-sm"
+                                <q-icon name="fa-light fa-pencil" class="q-mr-sm"
                                         :color="!col.value ? 'green' : 'red'"/>
                                 {{
                                   $tr('isite.cms.message.changeTo', {text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
@@ -422,16 +422,15 @@ export default {
       let response = [];
       if (this.readShowAs !== 'kanban') {
         response.push({
-          label: this.$tr(`isite.cms.message.${this.table.grid ? 'listView' : 'gribView'}`),
+          label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
           vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
           props: {
-            icon: !this.table.grid ? 'fas fa-grip-horizontal' : 'fas fa-list-ul'
+            icon: this.localShowAs != 'grid' ? 'fa-duotone fa-grid-horizontal' : 'fa-duotone fa-list'
           },
           vIfAction: this.readShowAs === 'drag',
           action: this.actionsTable,
         })
       }
-      ;
       //Add search action
       if (this.params.read.search !== false) response.push('search')
 
@@ -923,7 +922,7 @@ export default {
         {
           label: this.$tr('isite.cms.label.export'),
           vIf: this.exportParams,
-          icon: 'fas fa-file-download',
+          icon: 'fa-light fa-download',
           action: (item) => this.$refs.exportComponent.showReportItem({
             item: item,
             exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
@@ -931,7 +930,7 @@ export default {
           })
         },
         {//Edit action
-          icon: 'fas fa-pen',
+          icon: 'fa-light fa-pencil',
           color: 'green',
           default: defaultAction ? false : true,
           label: this.$tr('isite.cms.label.edit'),
@@ -945,11 +944,11 @@ export default {
           format: (item) => {
             return {vIf: item.url ? true : false}
           },
-          icon: "fas fa-copy",
+          icon: "fa-light fa-copy",
           action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
         },
         {//Delete action
-          icon: 'fas fa-trash-alt',
+          icon: 'fa-light fa-trash-can',
           color: 'red',
           label: this.$tr('isite.cms.label.delete'),
           vIf: this.permitAction(field).destroy,
