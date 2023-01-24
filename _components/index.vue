@@ -885,6 +885,14 @@ export default {
             parseInt(item.row[item.col.name]) ? 0 : 1
       }
 
+      //Validate if is translatable
+      if (item.col.isTranslatable) {
+        requestData[this.$store.state.qsiteApp.defaultLocale] = {
+          [item.col.name]: requestData[item.col.name]
+        }
+        delete requestData[item.col.name]
+      }
+
       //Request
       this.$crud.update(this.params.apiRoute, item.row.id, requestData).then(response => {
         //Change value status in data
@@ -1117,10 +1125,10 @@ export default {
     removeEmptyFilters(filter) {
       try {
         Object.keys(filter).forEach((item) => {
-          if(!filter[item]) {
+          if (!filter[item]) {
             delete filter[item];
           }
-        }) 
+        })
       } catch (error) {
         console.log(error);
       }
