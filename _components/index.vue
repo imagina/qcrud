@@ -28,8 +28,13 @@
           </div>
         </div>
       </div>
-      <!--Content-->
       <div class="relative-position col-12" v-if="success">
+        <folders
+          :folderList="folderList"
+          :apiRouteOrderFolders="apiRouteOrderFolders"
+          v-if="localShowAs === 'folders'" 
+        />
+        <!-- Drag View-->
         <!-- Kanban View-->
         <kanban
             v-show="localShowAs === 'kanban' && params.read.kanban"
@@ -42,12 +47,13 @@
         <!--Table/Grid View-->
         <q-table
             v-model:pagination="table.pagination"
-            v-if="['table','grid'].includes(localShowAs)"
+            v-if="['table','grid','folders'].includes(localShowAs)"
             :grid="localShowAs === 'grid'" :data="table.data"
             :columns="tableColumns"
             :pagination.sync="table.pagination"
             @request="getData"
             class="stick-table"
+            :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
             ref="tableComponent"
             card-container-class="q-col-gutter-md"
         >
@@ -138,12 +144,12 @@
                        @click="rowclick(col,props.row)"
                        :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
                   >
-                    <q-badge :class="col.bgTextColor">
+                    <q-badge :class="col.bgTextColor" v-html="col.value">
                       {{ col.value }}
                     </q-badge>
                   </div>
                   <!--Label-->
-                  <div v-else @click="rowclick(col,props.row)"
+                  <div v-else @click="rowclick(col,props.row)" v-html="col.value"
                        :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')">
                     {{ col.value }}
                   </div>
@@ -278,6 +284,7 @@
                     @click.prevent="getDataTable()"
                     round
                     color="blue-grey"
+                    active-color="primary"
                     :max="props.pagesNumber"
                     :max-pages="6"
                     :ellipses="false"
@@ -337,6 +344,8 @@
 import {computed} from 'vue';
 import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
+import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
+import _ from "lodash";
 
 export default {
   beforeDestroy() {
@@ -350,13 +359,17 @@ export default {
     masterExport,
     recursiveItemDraggable
   },
-  watch: {},
   provide() {
     return {
+      getRelationData: this.getRelationData,
+      fieldActions: this.fieldActions,
+      updateRelationData: this.updateRelationData,
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
-    };
+      getFieldRelationActions: this.getFieldRelationActions
+    }
   },
+  watch: {},
   created() {
     this.$helper.setDynamicSelectList({});
   },
@@ -399,6 +412,7 @@ export default {
       },
       selectedRows: [],
       selectedRowsAll: false,
+      folderList: [],
       funnelId: null,
       searchKanban: null,
     }
@@ -498,8 +512,9 @@ export default {
           }
         }
       })
+
       //Force align first column
-      columns[0].align = 'left'
+      if(columns.length > 0) columns[0].align = 'left';
       // Collapsible action column
       const relationName = this.relationConfig('name');
       if ((this.relationConfig('name') || this.relationConfig('apiRoute')) && this.permisionRelation) {
@@ -597,6 +612,9 @@ export default {
       })
       //Response
       return response
+    },
+    apiRouteOrderFolders() {
+      return this.params.read?.apiRouteOrderFolders || null;
     }
   },
   methods: {
@@ -662,7 +680,9 @@ export default {
             //add filters to table filters
             Object.keys(params.read.filters).forEach(key => {
               let filter = params.read.filters[key]
-              this.$set(this.table.filter, (filter.name || key), filter.value)
+              if(key !== 'date') {
+                this.$set(this.table.filter, (filter.name || key), filter.value)
+              }
             })
             if (!this.params.read.filterName) this.filter.available = true//allow filters
           }
@@ -726,7 +746,7 @@ export default {
         params: propParams.read.requestParams || {}
       }
       //add params
-      if (!params.params.filter) params.params.filter = {}
+      if (!params.params.filter) params.params.filter = {};
       params.params.filter = {...params.params.filter, ...this.table.filter, ...filter}
       this.removeEmptyFilters(params.params.filter);
       params.params.page = pagination.page;
@@ -755,7 +775,9 @@ export default {
         }
 
         //Set data to table
-        this.table.data = this.$clone(dataTable)
+        this.table.data = this.$clone(dataTable);
+        const folderList = foldersStore().transformDataToDragableForderList(dataTable);
+        this.folderList =  _.orderBy(folderList, 'position', 'asc');
         this.table.pagination.page = this.$clone(response.meta.page.currentPage)
         this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
         this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
@@ -1004,6 +1026,18 @@ export default {
         }
       }, 500)
     },
+    getFieldRelationActions() {
+      let actions = this.$clone(this.params.read.relation.actions || []);
+      let response = []
+
+      if (actions && actions.length) {
+        actions.forEach(action => {
+          response.push(action)
+        })
+      }
+      //response
+      return response
+    },
     //return item image
     itemImage(item) {
       //instance response
@@ -1035,21 +1069,33 @@ export default {
 
       if (this.relationConfig('apiRoute')) {
         this.relation.loading = true
+        this.setRelationLoading(row.id, true);
         //Request Params
         const requestParams = {
           refresh: true,
           params: this.relationConfig().requestParams ? this.relationConfig().requestParams(row) : {}
         }
         //Request
-        this.$crud.index(this.relationConfig('apiRoute'), requestParams).then(response => {
+        this.$crud.index(this.relationConfig('apiRoute'), requestParams)
+        .then(async (response) => {
           this.relation.data = this.$clone(response.data)
+          await this.getListOfDragableRelations(row.id, response.data);
           this.relation.loading = false
+          this.setRelationLoading(row.id, false);
         }).catch(error => {
           this.relation.loading = false
+          this.setRelationLoading(row.id, false);
         })
       } else {
         this.relation.data = row[this.relationConfig('name')] || [];
       }
+    },
+    updateRelationData(item) {
+      this.$crud.update(this.relationConfig('apiRoute'), item.id, item).then(response => {
+        //Change value status in data
+      }).catch(error => {
+        console.log(error);
+      })
     },
     //handler bulk action
     handlerBulkAction(act) {
@@ -1136,6 +1182,23 @@ export default {
       this.table.filter.search = val;
       this.searchKanban = val;
       this.getDataTable();
+    },
+    setRelationLoading(folderId, value) {
+        const folder = this.folderList.find(item => item.id === folderId);
+        if(folder) folder.loading = value;
+    },
+    async getListOfDragableRelations(folderId, relationList) {
+        try {
+            this.folderList.forEach(async (item) => {  
+              if(item.id === folderId) {
+                    item.reportList = relationList;
+                }
+                item.reportList = await _.uniqBy(item.reportList, 'id');         
+            })
+        } catch (error) {
+            console.error(error);
+            console.error('[folderStore:getListOfDragableRelations]');
+        }
     },
   }
 }
