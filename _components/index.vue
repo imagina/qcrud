@@ -10,6 +10,7 @@
             :searchAction="params.read.searchAction"
             :title="tableTitle" @search="val => search(val)"
             @new="handlerActionCreate()"
+            @refresh="getDataTable(true)"
             ref="pageActionRef"
         />
       </div>
@@ -30,17 +31,14 @@
       </div>
       <div class="relative-position col-12" v-if="success">
         <folders
-          :folderList="folderList"
-          :apiRouteOrderFolders="apiRouteOrderFolders"
-          v-if="localShowAs === 'folders'" 
+            :folderList="folderList"
+            :apiRouteOrderFolders="apiRouteOrderFolders"
+            v-if="localShowAs === 'folders'"
         />
-        <!-- Drag View-->
         <!-- Kanban View-->
-        <kanban
-            v-show="localShowAs === 'kanban' && params.read.kanban"
-            :routes="params.read.kanban"
-            ref="kanban"
-        />
+        <kanban v-show="localShowAs === 'kanban' && params.read.kanban"
+                :routes="params.read.kanban" ref="kanban"/>
+        <!-- Drag View-->
         <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
           <recursiveItemDraggable :items="dataTableDraggable"/>
         </div>
@@ -348,9 +346,6 @@ import foldersStore from '@imagina/qsite/_components/master/folders/store/folder
 import _ from "lodash";
 
 export default {
-  beforeDestroy() {
-    this.$root.$off('crud.data.refresh')
-  },
   props: {
     params: {default: false},
     title: {default: false}
@@ -362,7 +357,6 @@ export default {
   provide() {
     return {
       getRelationData: this.getRelationData,
-      fieldActions: this.fieldActions,
       updateRelationData: this.updateRelationData,
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
@@ -442,12 +436,15 @@ export default {
             icon: this.localShowAs != 'grid' ? 'fa-duotone fa-grid-horizontal' : 'fa-duotone fa-list'
           },
           vIfAction: this.readShowAs === 'drag',
-          action: this.actionsTable,
+          action: () => {
+            const alternativeShow = this.readShowAs != "table" ? this.readShowAs : 'grid'
+            this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
+            this.getDataTable(true)
+          },
         })
       }
       //Add search action
       if (this.params.read.search !== false) response.push('search')
-
       //Add create action
       if (this.params.create && this.params.hasPermission.create) response.push('new')
       // se oculta page action
@@ -514,7 +511,7 @@ export default {
       })
 
       //Force align first column
-      if(columns.length > 0) columns[0].align = 'left';
+      if (columns.length > 0) columns[0].align = 'left';
       // Collapsible action column
       const relationName = this.relationConfig('name');
       if ((this.relationConfig('name') || this.relationConfig('apiRoute')) && this.permisionRelation) {
@@ -556,8 +553,8 @@ export default {
         const subTitle = item[drag.subTitle?.field || ''];
         return {
           id: item.id,
-          title: drag.title?.format(title) || title,
-          subTitle: drag.subTitle?.format(subTitle) || subTitle,
+          title: drag.title?.format ? drag.title?.format(title) : title,
+          subTitle: drag.subTitle?.format ? drag.subTitle?.format(subTitle) : subTitle,
           children: [],
           actions: this.fieldActions(item),
         }
@@ -632,12 +629,6 @@ export default {
       this.localShowAs = this.readShowAs;
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
-      //Check if the section is kanban
-      if (this.readShowAs === 'kanban') {
-        this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init(true));
-      } else {
-        this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
-      }
       if (!this.params.read.filterName) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
@@ -680,7 +671,7 @@ export default {
             //add filters to table filters
             Object.keys(params.read.filters).forEach(key => {
               let filter = params.read.filters[key]
-              if(key !== 'date') {
+              if (key !== 'date') {
                 this.$set(this.table.filter, (filter.name || key), filter.value)
               }
             })
@@ -702,14 +693,15 @@ export default {
         const filterName = this.params.read.kanban.column.filter.name || '';
         this.funnelId = String(this.$filter.values[filterName] || null);
         await this.$refs.kanban.setSearch(this.searchKanban);
-        await this.$refs.kanban.init();
+        await this.$refs.kanban.init(refresh);
         return;
+      } else {
+        this.getData({
+              pagination: {...this.table.pagination, ...(pagination || {})},
+              filter: {...this.table.filter, ...(filter || {})}
+            },
+            refresh)
       }
-      this.getData({
-            pagination: {...this.table.pagination, ...(pagination || {})},
-            filter: {...this.table.filter, ...(filter || {})}
-          },
-          refresh)
     },
     //Row click
     async rowclick(col, row) {
@@ -777,7 +769,7 @@ export default {
         //Set data to table
         this.table.data = this.$clone(dataTable);
         const folderList = foldersStore().transformDataToDragableForderList(dataTable);
-        this.folderList =  _.orderBy(folderList, 'position', 'asc');
+        this.folderList = _.orderBy(folderList, 'position', 'asc');
         this.table.pagination.page = this.$clone(response.meta.page.currentPage)
         this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
         this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
@@ -1077,12 +1069,12 @@ export default {
         }
         //Request
         this.$crud.index(this.relationConfig('apiRoute'), requestParams)
-        .then(async (response) => {
-          this.relation.data = this.$clone(response.data)
-          await this.getListOfDragableRelations(row.id, response.data);
-          this.relation.loading = false
-          this.setRelationLoading(row.id, false);
-        }).catch(error => {
+            .then(async (response) => {
+              this.relation.data = this.$clone(response.data)
+              await this.getListOfDragableRelations(row.id, response.data);
+              this.relation.loading = false
+              this.setRelationLoading(row.id, false);
+            }).catch(error => {
           this.relation.loading = false
           this.setRelationLoading(row.id, false);
         })
@@ -1137,27 +1129,6 @@ export default {
       }
       this.selectedRows = [];
     },
-    // actions Table
-    actionsTable() {
-      if (this.readShowAs === 'folders') {
-        this.localShowAs = this.localShowAs === 'folders' ? 'table' : 'folders';
-        return;
-      }
-      if (this.readShowAs === 'kanban') {
-        this.localShowAs = this.localShowAs === 'kanban' ? 'table' : 'kanban';
-        if (this.localShowAs === 'kanban') {
-          this.$refs.kanban.init();
-          this.$root.$on('crud.data.refresh', async () => await this.$refs.kanban.init(true));
-        }
-        if (this.localShowAs === 'table') {
-          this.getDataTable(true)
-          this.$root.$on('crud.data.refresh', () => this.getDataTable(true))//Listen refresh event
-        }
-        return;
-      }
-      this.localShowAs = this.localShowAs === 'grid' ? 'table' : 'grid'
-      this.$root.$on('crud.data.refresh', () => this.getDataTable(true));
-    },
     //Parse columns by row
     parseColumnsByRow(columns, row) {
       return columns.map(column => {
@@ -1184,21 +1155,21 @@ export default {
       this.getDataTable();
     },
     setRelationLoading(folderId, value) {
-        const folder = this.folderList.find(item => item.id === folderId);
-        if(folder) folder.loading = value;
+      const folder = this.folderList.find(item => item.id === folderId);
+      if (folder) folder.loading = value;
     },
     async getListOfDragableRelations(folderId, relationList) {
-        try {
-            this.folderList.forEach(async (item) => {  
-              if(item.id === folderId) {
-                    item.reportList = relationList;
-                }
-                item.reportList = await _.uniqBy(item.reportList, 'id');         
-            })
-        } catch (error) {
-            console.error(error);
-            console.error('[folderStore:getListOfDragableRelations]');
-        }
+      try {
+        this.folderList.forEach(async (item) => {
+          if (item.id === folderId) {
+            item.reportList = relationList;
+          }
+          item.reportList = await _.uniqBy(item.reportList, 'id');
+        })
+      } catch (error) {
+        console.error(error);
+        console.error('[folderStore:getListOfDragableRelations]');
+      }
     },
   }
 }
