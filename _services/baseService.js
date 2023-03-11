@@ -131,6 +131,35 @@ export default {
   },
 
   /**
+   * Update the order of record item
+   * @param configName
+   * @param criteria
+   * @param data
+   * @param params {params : {}, remember: boolean}
+   * @returns {Promise<any>}
+   */
+  bulkOrder(configName, data, params = {params: {}}) {
+    return new Promise((resolve, reject) => {
+      //Validations
+      if (!configName) return reject('Config name is required')
+      if (!data) return reject('Data is required')
+      let urlApi = `${(config(configName) || configName)}/bulk/order`//Get url from config
+      //Get request params
+      let requestParams = Object.assign((params.params || {}), {
+        attributes: helper.toSnakeCase(data, {notToSnakeCase: (params.notToSnakeCase || [])})
+      })
+      //Request
+      axios.put(urlApi, requestParams).then(async response => {
+        await cache.remove({allKey: configName})//Clear api Route cache
+        this.clearCache()//Clear Cache
+        resolve(response.data)//Successful response
+      }).catch(error => {
+        reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
+      })
+    })
+  },
+
+  /**
    * Delete a item
    * @param configName
    * @param criteria
