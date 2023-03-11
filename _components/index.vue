@@ -39,8 +39,15 @@
         <kanban v-show="localShowAs === 'kanban' && params.read.kanban"
                 :routes="params.read.kanban" ref="kanban"/>
         <!-- Drag View-->
-        <div v-if="localShowAs === 'drag'" class="q-pt-sm q-pr-sm q-pl-md">
-          <recursiveItemDraggable :items="dataTableDraggable"/>
+        <div v-if="localShowAs === 'drag' && dataDraggable.length"
+             class="q-pt-sm q-pr-sm q-pl-md">
+          <recursiveItemDraggable :items="dataTableDraggable"
+                                  :nested="params.read.drag ? (params.read.drag.nested || false) : false"/>
+          <!--Save Action -->
+          <div class="text-right q-mt-md">
+            <q-btn :label="$tr('isite.cms.label.save')" color="green" unelevated rounded
+                   @click="saveOrder"/>
+          </div>
         </div>
         <!--Table/Grid View-->
         <q-table
@@ -744,9 +751,11 @@ export default {
       params.params.page = pagination.page;
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
-      params.params.filter.order = {
-        field: pagination.sortBy ? this.$helper.convertStringToSnakeCase(pagination.sortBy) : 'id',
-        way: (pagination.descending != undefined) ? (pagination.descending ? 'desc' : 'asc') : 'desc'
+      if (!params.params.filter && !params.params.filter.order) {
+        params.params.filter.order = {
+          field: pagination.sortBy ? this.$helper.convertStringToSnakeCase(pagination.sortBy) : 'id',
+          way: (pagination.descending != undefined) ? (pagination.descending ? 'desc' : 'asc') : 'desc'
+        }
       }
 
       //Merge with params from prop
@@ -1171,6 +1180,17 @@ export default {
         console.error('[folderStore:getListOfDragableRelations]');
       }
     },
+    //Save order when is draggable
+    saveOrder() {
+      this.loading = true
+      this.$crud.bulkOrder('apiRoutes.qgamification.activities', this.dataDraggable).then(response => {
+        this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
+        this.loading = false
+      }).catch(error => {
+        this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
+        this.loading = false
+      })
+    }
   }
 }
 </script>
