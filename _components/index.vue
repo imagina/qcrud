@@ -147,7 +147,25 @@
                       :isLoading="loading"
                     >
                       <template v-slot="data">
-                          <div v-html="data.data" /> 
+                        <div>
+                          <div v-if="col.bgTextColor && data.data"
+                            @click="rowclick(col,props.row)"
+                            :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                          >
+                            <q-badge :class="col.bgTextColor" v-html="data.data">
+                              {{ data.data }}
+                            </q-badge>
+                        </div>
+                        <!--Label-->
+                          <div 
+                            v-else 
+                            @click="rowclick(col,props.row)" 
+                            v-html="data.data"
+                            :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                          >
+                            {{ data.data }}
+                          </div>
+                        </div>
                       </template>
                     </Promised>
                   </div>
