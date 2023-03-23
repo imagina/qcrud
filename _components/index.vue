@@ -58,23 +58,23 @@
             card-container-class="q-col-gutter-md"
         >
           <!--Custom Columns-->
-          <template v-slot:header="props">
-            <q-tr :props="props">
-              <q-th
-                  v-for="col in parseColumnsByRow(props.cols, props.row)"
-                  :key="col.name"
-                  :props="props"
-              >
-                <div v-if="col.name === 'selectColumn'">
-                  <q-checkbox
-                      v-model="selectedRowsAll"
-                      @input="selectAllFields"
-                  />
-                </div>
-                {{ col.label }}
-              </q-th>
-            </q-tr>
-          </template>
+            <template v-slot:header="props">
+              <q-tr :props="props">
+                <q-th
+                    v-for="col in parseColumnsByRow(props.cols, props.row)"
+                    :key="col.name"
+                    :props="props"
+                >
+                  <div v-if="col.name === 'selectColumn'">
+                    <q-checkbox
+                        v-model="selectedRowsAll"
+                        @input="selectAllFields"
+                    />
+                  </div>
+                  {{ col.label }}
+                </q-th>
+              </q-tr>
+            </template>
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td
@@ -140,18 +140,53 @@
                 <!--Default columns-->
                 <div v-else>
                   <!--Badge-->
-                  <div v-if="col.bgTextColor && col.value"
+                  <div v-if="col.formatAsync">
+                    <Promised
+                      ref="promised"
+                      :promise="col.formatAsync(props.row)"
+                      :isLoading="loading"
+                    >
+                      <template v-slot="data">
+                        <div>
+                          <div v-if="col.bgTextColor && data.data"
+                            @click="rowclick(col,props.row)"
+                            :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                          >
+                            <q-badge :class="col.bgTextColor" v-html="data.data">
+                              {{ data.data }}
+                            </q-badge>
+                        </div>
+                        <!--Label-->
+                          <div 
+                            v-else 
+                            @click="rowclick(col,props.row)" 
+                            v-html="data.data"
+                            :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                          >
+                            {{ data.data }}
+                          </div>
+                        </div>
+                      </template>
+                    </Promised>
+                  </div>
+                  <div v-if="!col.formatAsync">
+                    <div v-if="col.bgTextColor && col.value"
                        @click="rowclick(col,props.row)"
                        :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
-                  >
-                    <q-badge :class="col.bgTextColor" v-html="col.value">
-                      {{ col.value }}
-                    </q-badge>
+                    >
+                      <q-badge :class="col.bgTextColor" v-html="col.value">
+                        {{ col.value }}
+                      </q-badge>
                   </div>
                   <!--Label-->
-                  <div v-else @click="rowclick(col,props.row)" v-html="col.value"
-                       :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')">
-                    {{ col.value }}
+                    <div 
+                      v-else 
+                      @click="rowclick(col,props.row)" 
+                      v-html="col.value"
+                      :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                    >
+                      {{ col.value }}
+                    </div>
                   </div>
                 </div>
               </q-td>
@@ -346,6 +381,7 @@ import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
+import Promised from '@imagina/qsite/_components/master/promised';
 
 export default {
   beforeDestroy() {
@@ -357,7 +393,8 @@ export default {
   },
   components: {
     masterExport,
-    recursiveItemDraggable
+    recursiveItemDraggable,
+    Promised
   },
   provide() {
     return {
