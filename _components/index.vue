@@ -145,11 +145,10 @@
                 <!--Default columns-->
                 <div v-else>
                   <!--Badge-->
-                  <div v-if="col.formatAsync">
-                    <Promised
-                      ref="promised"
-                      :promise="col.formatAsync(props.row)"
-                      :isLoading="loading"
+                  <div>
+                    <promiseTemplate
+                      :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
+                      :isLoading="col.formatAsync ? loading : false"
                     >
                       <template v-slot="data">
                         <div>
@@ -172,26 +171,7 @@
                           </div>
                         </div>
                       </template>
-                    </Promised>
-                  </div>
-                  <div v-if="!col.formatAsync">
-                    <div v-if="col.bgTextColor && col.value"
-                       @click="rowclick(col,props.row)"
-                       :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
-                    >
-                      <q-badge :class="col.bgTextColor" v-html="col.value">
-                        {{ col.value }}
-                      </q-badge>
-                  </div>
-                  <!--Label-->
-                    <div 
-                      v-else 
-                      @click="rowclick(col,props.row)" 
-                      v-html="col.value"
-                      :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
-                    >
-                      {{ col.value }}
-                    </div>
+                    </promiseTemplate>
                   </div>
                 </div>
               </q-td>
@@ -287,19 +267,32 @@
                         <!--Default columns-->
                         <div v-else>
                           <!--Badge-->
-                          <div v-if="col.bgTextColor && col.value"
-                               @click="rowclick(col,props.row)"
-                               :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                          <promiseTemplate
+                            :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
+                            :isLoading="col.formatAsync ? loading : false"
                           >
-                            <q-badge :color="col.bgTextColor">
-                              {{ col.value }}
-                            </q-badge>
-                          </div>
-                          <!--Label-->
-                          <div v-else @click="rowclick(col,props.row)"
-                               :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')">
-                            {{ col.value }}
-                          </div>
+                            <template v-slot="data">
+                              <div>
+                                <div v-if="col.bgTextColor && data.data"
+                                  @click="rowclick(col,props.row)"
+                                  :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                                >
+                                  <q-badge :class="col.bgTextColor" v-html="data.data">
+                                    {{ data.data }}
+                                  </q-badge>
+                              </div>
+                              <!--Label-->
+                                <div 
+                                  v-else 
+                                  @click="rowclick(col,props.row)" 
+                                  v-html="data.data"
+                                  :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                                >
+                                  {{ data.data }}
+                                </div>
+                              </div>
+                            </template>
+                          </promiseTemplate>
                         </div>
                       </q-item-label>
                     </q-item-section>
@@ -386,7 +379,6 @@ import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
-import Promised from '@imagina/qsite/_components/master/promised';
 
 export default {
   props: {
@@ -396,7 +388,6 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    Promised
   },
   provide() {
     return {
