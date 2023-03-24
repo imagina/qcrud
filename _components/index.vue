@@ -161,9 +161,9 @@
                             </q-badge>
                         </div>
                         <!--Label-->
-                          <div 
-                            v-else 
-                            @click="rowclick(col,props.row)" 
+                          <div
+                            v-else
+                            @click="rowclick(col,props.row)"
                             v-html="data.data"
                             :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                           >
@@ -282,9 +282,9 @@
                                   </q-badge>
                               </div>
                               <!--Label-->
-                                <div 
-                                  v-else 
-                                  @click="rowclick(col,props.row)" 
+                                <div
+                                  v-else
+                                  @click="rowclick(col,props.row)"
                                   v-html="data.data"
                                   :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                                 >
@@ -673,6 +673,8 @@ export default {
           callBack: () => this.handlerActionCreate()
         })
       }
+      //Call tour
+      this.$tour.start("admin_crud_index_tour")
       //Success
       this.success = true
     },
