@@ -61,6 +61,7 @@
             :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
             ref="tableComponent"
             card-container-class="q-col-gutter-md"
+            :hide-bottom="$store.state.qofflineMaster.isAppOffline"
         >
           <!--Custom Columns-->
             <template v-slot:header="props">
