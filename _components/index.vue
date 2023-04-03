@@ -782,7 +782,7 @@ export default {
       params.params.page = pagination.page;
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
-      if (!params.params.filter && !params.params.filter.order) {
+      if (!params.params.filter || !params.params.filter.order) {
         params.params.filter.order = {
           field: pagination.sortBy ? this.$helper.convertStringToSnakeCase(pagination.sortBy) : 'id',
           way: (pagination.descending != undefined) ? (pagination.descending ? 'desc' : 'asc') : 'desc'
