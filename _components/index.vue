@@ -64,6 +64,11 @@
             :hide-bottom="$store.state.qofflineMaster.isAppOffline"
         >
           <!--Custom Columns-->
+          <!--<template v-slot:top-right>
+            <q-input borderless dense debounce="300" v-model="filterData" placeholder="Search">
+              <q-icon slot="append" name="search" />
+            </q-input>
+          </template>-->
             <template v-slot:header="props">
               <q-tr :props="props">
                 <q-th
@@ -399,7 +404,16 @@ export default {
       getFieldRelationActions: this.getFieldRelationActions
     }
   },
-  watch: {},
+  watch: {
+    'isAppOffline': {
+      deep: true,
+      handler: function (newValue) {
+        setTimeout(() => {
+            this.getDataTable(!newValue);
+        }, 1800);
+      }
+    },
+  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
@@ -410,6 +424,7 @@ export default {
   },
   data() {
     return {
+      filterData: '',
       tableKey: null, // TableKey
       success: false,//Global status of component
       loading: true,//Loading
@@ -448,6 +463,9 @@ export default {
     }
   },
   computed: {
+    isAppOffline() {
+      return this.$store.state.qofflineMaster.isAppOffline;
+    },
     //Table Title
     permisionRelation() {
       return this.params.read.relation.permission ? this.$auth.hasAccess(this.params.read.relation.permission) : true;
@@ -648,6 +666,26 @@ export default {
     },
     apiRouteOrderFolders() {
       return this.params.read?.apiRouteOrderFolders || null;
+    },
+    filterDataTable() {
+      const filterData = this.table.data.filter(item => {
+        if(this.isAppOffline) {
+          //console.log('ingreso offline');
+          return Object.values(item).some(value => {
+            if(value) {
+              const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
+              if(search) {
+                return String(value).toLowerCase().includes(search)
+              } else {
+                return true;
+              }
+            }
+          })
+        }
+
+        return true;
+      });
+      return filterData;
     }
   },
   methods: {
@@ -768,7 +806,7 @@ export default {
       this.selectedRowsAll = false;
 
       //Refresh all data
-      if (refresh) this.$cache.remove({allKey: this.params.apiRoute})
+      if (refresh && !this.isAppOffline) this.$cache.remove({allKey: this.params.apiRoute})
 
       //Params to request
       let params = {
@@ -797,7 +835,7 @@ export default {
       }
 
       //Request
-      this.$crud.index(propParams.apiRoute, params).then(response => {
+      this.$crud.index(propParams.apiRoute, params, this.isAppOffline).then(response => {
         let dataTable = response.data
 
         //If is field change format
@@ -872,6 +910,10 @@ export default {
                 })
               } else {
                 //Request
+                if(this.isAppOffline) {
+                  this.table.data = this.table.data.filter(data => item.id !== data.id );
+                  this.loading = false;
+                }
                 this.$crud.delete(propParams.apiRoute, item.id).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
@@ -1190,9 +1232,12 @@ export default {
       }
     },
     search(val) {
+      console.log('hola2')
       this.table.filter.search = val;
       this.searchKanban = val;
-      this.getDataTable();
+      if(!this.isAppOffline) {
+        this.getDataTable();
+      }
     },
     setRelationLoading(folderId, value) {
       const folder = this.folderList.find(item => item.id === folderId);

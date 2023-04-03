@@ -43,12 +43,12 @@ export default {
    * @param params {params : {}, remember: boolean}
    * @returns {Promise<any>}
    */
-  index(configName, params = {}) {
+  index(configName, params = {}, isOffline = false) {
     return new Promise((resolve, reject) => {
       params = {params: {}, refresh: false, cacheTime: (3600 * 3), ...params}//Validate params params
       if (!configName) return reject('Config name is required')//Validate config name
       let urlApi = (config(configName) || configName)//Get url from config
-      let key = `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
+      let key = `${configName}::${isOffline ? 'offline' : `requestParams[${JSON.stringify(params.params)}]`}`//Key to cache
 
       remember.async({
         key: key,
