@@ -729,12 +729,13 @@ export default {
               name: params.read.filterName || this.$route.name,
               fields: this.$clone(params.read.filters || {}),
               callBack: () => {
+                const refresh = !this.params.read.kanban;
                 this.table.filter = this.$clone(this.$filter.values)
                 if (this.params.read.kanban) {
                   const filterName = this.params.read.kanban.column.filter.name || '';
                   this.funnelId = this.table.filter[filterName || null];
                 }
-                this.getDataTable(true, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
+                this.getDataTable(refresh, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
               }
             })
           }
