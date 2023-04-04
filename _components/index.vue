@@ -12,7 +12,7 @@
             @new="handlerActionCreate()"
             @refresh="getDataTable(true)"
             ref="pageActionRef"
-            tour-name="admin_crud_index_tour"
+            :tour-name="tourName"
         />
       </div>
       <!-- Bulk Actions -->
@@ -446,6 +446,7 @@ export default {
       folderList: [],
       funnelId: null,
       searchKanban: null,
+      tourName: 'admin_crud_index_tour'
     }
   },
   computed: {
@@ -1056,6 +1057,8 @@ export default {
               actionCrudData.action(response.data)
             })
           }
+        } else {
+          this.$tour.start(this.tourName)
         }
       }, 500)
     },
