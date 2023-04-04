@@ -894,14 +894,15 @@ export default {
             color: 'red',
             handler: () => {
               this.loading = true
-              let propParams = this.$clone(this.params)
+              let propParams = this.$clone(this.params);
+              let customParams = {params: {titleOffline: this.params.entityName || ''}};     
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField)//get data table
                 dataField.value.splice(item.__index, 1)//Remove field
 
                 //Request
-                this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
+                this.$crud.update(propParams.apiRoute, dataField.id, dataField, customParams).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
                   this.loading = false
@@ -915,7 +916,7 @@ export default {
                   this.table.data = this.table.data.filter(data => item.id !== data.id );
                   this.loading = false;
                 }
-                this.$crud.delete(propParams.apiRoute, item.id).then(response => {
+                this.$crud.delete(propParams.apiRoute, item.id, customParams).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
 
