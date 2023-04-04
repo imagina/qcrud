@@ -61,14 +61,7 @@
             :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
             ref="tableComponent"
             card-container-class="q-col-gutter-md"
-            :hide-bottom="$store.state.qofflineMaster.isAppOffline"
         >
-          <!--Custom Columns-->
-          <!--<template v-slot:top-right>
-            <q-input borderless dense debounce="300" v-model="filterData" placeholder="Search">
-              <q-icon slot="append" name="search" />
-            </q-input>
-          </template>-->
             <template v-slot:header="props">
               <q-tr :props="props">
                 <q-th
@@ -419,7 +412,7 @@ export default {
   },
   mounted() {
     this.$nextTick(function () {
-      this.init()
+      this.init();
     })
   },
   data() {
@@ -689,6 +682,40 @@ export default {
     }
   },
   methods: {
+    paginateAndSearch(data, search = null, page = 1, perPage = 10) {
+      if( !data ) return;
+      const filteredData = data.filter(item => {
+          return Object.values(item).some(value => {
+              if(value) {
+                search = search ? search.toLowerCase() : null;
+                if(search) {
+                  return String(value).toLowerCase().includes(search)
+                } else {
+                  return true;
+                }
+              }
+            })
+      });
+
+      const totalPages = Math.ceil(filteredData.length / perPage);
+      const startIndex = (page - 1) * perPage;
+      const endIndex = startIndex + perPage;
+      const currentPageData = filteredData.slice(startIndex, endIndex);
+
+      const response = {
+        data: currentPageData,
+        meta: {
+          page: {
+            total: filteredData.length,
+            perPage: perPage,
+            currentPage: page,
+            lastPage: totalPages
+          },
+        }
+      };
+
+      return response;
+    },
     countPage(props) {
       const page = props.pagination.page
       const rowsPerPage = props.pagination.rowsPerPage
@@ -798,7 +825,7 @@ export default {
       }
     },
     //Get products
-    getData({pagination, filter}, refresh = false) {
+    async getData({pagination, filter}, refresh = false) {
       let propParams = this.$clone(this.params)
       this.loading = true
 
@@ -836,8 +863,21 @@ export default {
       }
 
       //Request
-      this.$crud.index(propParams.apiRoute, params, this.isAppOffline).then(response => {
-        let dataTable = response.data
+      let response;
+      if(!this.isAppOffline) {
+          response = await this.$crud.index(propParams.apiRoute, params, this.isAppOffline)
+          .catch(error => {
+          this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+          console.error(error)
+          this.loading = false
+        })
+      } else {
+        response = await this.$cache.get.item(`${propParams.apiRoute}::offline`) || { data: [] };
+        response = await this.paginateAndSearch(response.data, (this.table.filter.search || ''), pagination.page);
+      }
+      const filteredData = response.data
+        
+        let dataTable = filteredData
 
         //If is field change format
         if (this.params.field) {
@@ -875,11 +915,6 @@ export default {
         this.dataTableDraggable = this.getDataTableDraggable;
         //Close loading
         this.loading = false
-      }).catch(error => {
-        this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-        console.error(error)
-        this.loading = false
-      })
     },
     //Delete category
     deleteItem(item) {
@@ -1237,9 +1272,7 @@ export default {
       console.log('hola2')
       this.table.filter.search = val;
       this.searchKanban = val;
-      if(!this.isAppOffline) {
-        this.getDataTable();
-      }
+      this.getDataTable();
     },
     setRelationLoading(folderId, value) {
       const folder = this.folderList.find(item => item.id === folderId);
