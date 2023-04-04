@@ -206,7 +206,6 @@ export default {
           refresh: true,
           params: {filter: {configName: this.paramsProps.extraFormFields}, titleOffline: this.modalProps.title || ''}
         }
-        console.log("Aquí ?")
         //Request
         this.$crud.index('apiRoutes.qsite.configs', requestParams).then(response => {
           //Add response to form
