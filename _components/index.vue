@@ -12,6 +12,7 @@
             @new="handlerActionCreate()"
             @refresh="getDataTable(true)"
             ref="pageActionRef"
+            tour-name="admin_crud_index_tour"
         />
       </div>
       <!-- Bulk Actions -->
@@ -675,8 +676,6 @@ export default {
           callBack: () => this.handlerActionCreate()
         })
       }
-      //Call tour
-      this.$tour.start("admin_crud_index_tour")
       //Success
       this.success = true
     },
