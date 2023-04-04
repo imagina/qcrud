@@ -61,9 +61,7 @@
             :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
             ref="tableComponent"
             card-container-class="q-col-gutter-md"
-            :hide-bottom="$store.state.qofflineMaster.isAppOffline"
         >
-          <!--Custom Columns-->
             <template v-slot:header="props">
               <q-tr :props="props">
                 <q-th
@@ -399,17 +397,27 @@ export default {
       getFieldRelationActions: this.getFieldRelationActions
     }
   },
-  watch: {},
+  watch: {
+    'isAppOffline': {
+      deep: true,
+      handler: function (newValue) {
+        setTimeout(() => {
+            this.getDataTable(!newValue);
+        }, 1800);
+      }
+    },
+  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
   mounted() {
     this.$nextTick(function () {
-      this.init()
+      this.init();
     })
   },
   data() {
     return {
+      filterData: '',
       tableKey: null, // TableKey
       success: false,//Global status of component
       loading: true,//Loading
@@ -448,6 +456,9 @@ export default {
     }
   },
   computed: {
+    isAppOffline() {
+      return this.$store.state.qofflineMaster.isAppOffline;
+    },
     //Table Title
     permisionRelation() {
       return this.params.read.relation.permission ? this.$auth.hasAccess(this.params.read.relation.permission) : true;
@@ -648,9 +659,63 @@ export default {
     },
     apiRouteOrderFolders() {
       return this.params.read?.apiRouteOrderFolders || null;
+    },
+    filterDataTable() {
+      const filterData = this.table.data.filter(item => {
+        if(this.isAppOffline) {
+          //console.log('ingreso offline');
+          return Object.values(item).some(value => {
+            if(value) {
+              const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
+              if(search) {
+                return String(value).toLowerCase().includes(search)
+              } else {
+                return true;
+              }
+            }
+          })
+        }
+
+        return true;
+      });
+      return filterData;
     }
   },
   methods: {
+    paginateAndSearch(data, search = null, page = 1, perPage = 10) {
+      if( !data ) return;
+      const filteredData = data.filter(item => {
+          return Object.values(item).some(value => {
+              if(value) {
+                search = search ? search.toLowerCase() : null;
+                if(search) {
+                  return String(value).toLowerCase().includes(search)
+                } else {
+                  return true;
+                }
+              }
+            })
+      });
+
+      const totalPages = Math.ceil(filteredData.length / perPage);
+      const startIndex = (page - 1) * perPage;
+      const endIndex = startIndex + perPage;
+      const currentPageData = filteredData.slice(startIndex, endIndex);
+
+      const response = {
+        data: currentPageData,
+        meta: {
+          page: {
+            total: filteredData.length,
+            perPage: perPage,
+            currentPage: page,
+            lastPage: totalPages
+          },
+        }
+      };
+
+      return response;
+    },
     countPage(props) {
       const page = props.pagination.page
       const rowsPerPage = props.pagination.rowsPerPage
@@ -691,12 +756,13 @@ export default {
               name: params.read.filterName || this.$route.name,
               fields: this.$clone(params.read.filters || {}),
               callBack: () => {
+                const refresh = !this.params.read.kanban;
                 this.table.filter = this.$clone(this.$filter.values)
                 if (this.params.read.kanban) {
                   const filterName = this.params.read.kanban.column.filter.name || '';
                   this.funnelId = this.table.filter[filterName || null];
                 }
-                this.getDataTable(true, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
+                this.getDataTable(refresh, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
               }
             })
           }
@@ -759,7 +825,7 @@ export default {
       }
     },
     //Get products
-    getData({pagination, filter}, refresh = false) {
+    async getData({pagination, filter}, refresh = false) {
       let propParams = this.$clone(this.params)
       this.loading = true
 
@@ -768,7 +834,7 @@ export default {
       this.selectedRowsAll = false;
 
       //Refresh all data
-      if (refresh) this.$cache.remove({allKey: this.params.apiRoute})
+      if (refresh && !this.isAppOffline) this.$cache.remove({allKey: this.params.apiRoute})
 
       //Params to request
       let params = {
@@ -782,7 +848,7 @@ export default {
       params.params.page = pagination.page;
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
-      if (!params.params.filter.order) {
+      if (!params.params.filter || !params.params.filter.order) {
         params.params.filter.order = {
           field: pagination.sortBy ? this.$helper.convertStringToSnakeCase(pagination.sortBy) : 'id',
           way: (pagination.descending != undefined) ? (pagination.descending ? 'desc' : 'asc') : 'desc'
@@ -797,8 +863,21 @@ export default {
       }
 
       //Request
-      this.$crud.index(propParams.apiRoute, params).then(response => {
-        let dataTable = response.data
+      let response;
+      if(!this.isAppOffline) {
+          response = await this.$crud.index(propParams.apiRoute, params, this.isAppOffline)
+          .catch(error => {
+          this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+          console.error(error)
+          this.loading = false
+        })
+      } else {
+        response = await this.$cache.get.item(`${propParams.apiRoute}::offline`) || { data: [] };
+        response = await this.paginateAndSearch(response.data, (this.table.filter.search || ''), pagination.page);
+      }
+      const filteredData = response.data
+        
+        let dataTable = filteredData
 
         //If is field change format
         if (this.params.field) {
@@ -836,11 +915,6 @@ export default {
         this.dataTableDraggable = this.getDataTableDraggable;
         //Close loading
         this.loading = false
-      }).catch(error => {
-        this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-        console.error(error)
-        this.loading = false
-      })
     },
     //Delete category
     deleteItem(item) {
@@ -873,6 +947,10 @@ export default {
                 })
               } else {
                 //Request
+                if(this.isAppOffline) {
+                  this.table.data = this.table.data.filter(data => item.id !== data.id );
+                  this.loading = false;
+                }
                 this.$crud.delete(propParams.apiRoute, item.id, customParams).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
@@ -1191,6 +1269,7 @@ export default {
       }
     },
     search(val) {
+      console.log('hola2')
       this.table.filter.search = val;
       this.searchKanban = val;
       this.getDataTable();
