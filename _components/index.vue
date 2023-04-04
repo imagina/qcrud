@@ -63,23 +63,23 @@
             card-container-class="q-col-gutter-md"
         >
           <!--Custom Columns-->
-            <template v-slot:header="props">
-              <q-tr :props="props">
-                <q-th
-                    v-for="col in parseColumnsByRow(props.cols, props.row)"
-                    :key="col.name"
-                    :props="props"
-                >
-                  <div v-if="col.name === 'selectColumn'">
-                    <q-checkbox
-                        v-model="selectedRowsAll"
-                        @input="selectAllFields"
-                    />
-                  </div>
-                  {{ col.label }}
-                </q-th>
-              </q-tr>
-            </template>
+          <template v-slot:header="props">
+            <q-tr :props="props">
+              <q-th
+                  v-for="col in parseColumnsByRow(props.cols, props.row)"
+                  :key="col.name"
+                  :props="props"
+              >
+                <div v-if="col.name === 'selectColumn'">
+                  <q-checkbox
+                      v-model="selectedRowsAll"
+                      @input="selectAllFields"
+                  />
+                </div>
+                {{ col.label }}
+              </q-th>
+            </q-tr>
+          </template>
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td
@@ -107,7 +107,7 @@
                   />
                 </div>
                 <!--Actions column-->
-                <div v-if="col.name == 'actions'">
+                <div class="crudIndexActionsColumn" v-if="col.name == 'actions'">
                   <btn-menu
                       :actions="fieldActions(col)"
                       :action-data="props.row"
@@ -147,25 +147,25 @@
                   <!--Badge-->
                   <div>
                     <promiseTemplate
-                      :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
-                      :isLoading="col.formatAsync ? loading : false"
+                        :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
+                        :isLoading="col.formatAsync ? loading : false"
                     >
                       <template v-slot="data">
                         <div>
                           <div v-if="col.bgTextColor && data.data"
-                            @click="rowclick(col,props.row)"
-                            :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                               @click="rowclick(col,props.row)"
+                               :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
                           >
                             <q-badge :class="col.bgTextColor" v-html="data.data">
                               {{ data.data }}
                             </q-badge>
-                        </div>
-                        <!--Label-->
+                          </div>
+                          <!--Label-->
                           <div
-                            v-else
-                            @click="rowclick(col,props.row)"
-                            v-html="data.data"
-                            :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                              v-else
+                              @click="rowclick(col,props.row)"
+                              v-html="data.data"
+                              :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                           >
                             {{ data.data }}
                           </div>
@@ -268,25 +268,25 @@
                         <div v-else>
                           <!--Badge-->
                           <promiseTemplate
-                            :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
-                            :isLoading="col.formatAsync ? loading : false"
+                              :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
+                              :isLoading="col.formatAsync ? loading : false"
                           >
                             <template v-slot="data">
                               <div>
                                 <div v-if="col.bgTextColor && data.data"
-                                  @click="rowclick(col,props.row)"
-                                  :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                                     @click="rowclick(col,props.row)"
+                                     :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
                                 >
                                   <q-badge :class="col.bgTextColor" v-html="data.data">
                                     {{ data.data }}
                                   </q-badge>
-                              </div>
-                              <!--Label-->
+                                </div>
+                                <!--Label-->
                                 <div
-                                  v-else
-                                  @click="rowclick(col,props.row)"
-                                  v-html="data.data"
-                                  :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                                    v-else
+                                    @click="rowclick(col,props.row)"
+                                    v-html="data.data"
+                                    :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                                 >
                                   {{ data.data }}
                                 </div>
@@ -405,6 +405,7 @@ export default {
   mounted() {
     this.$nextTick(function () {
       this.init()
+      this.$tour.start("admin_crud_index_tour")
     })
   },
   data() {
@@ -468,7 +469,8 @@ export default {
           label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
           vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
           props: {
-            icon: this.localShowAs != 'grid' ? 'fa-duotone fa-grid-horizontal' : 'fa-duotone fa-list'
+            icon: this.localShowAs != 'grid' ? 'fa-duotone fa-grid-horizontal' : 'fa-duotone fa-list',
+            id: 'crudIndexViewAction'
           },
           vIfAction: this.readShowAs === 'drag',
           action: () => {
