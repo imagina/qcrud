@@ -204,7 +204,7 @@ export default {
         //Request params
         let requestParams = {
           refresh: true,
-          params: {filter: {configName: this.paramsProps.extraFormFields}}
+          params: {filter: {configName: this.paramsProps.extraFormFields}, titleOffline: this.modalProps.title || ''}
         }
         //Request
         this.$crud.index('apiRoutes.qsite.configs', requestParams).then(response => {
@@ -261,7 +261,7 @@ export default {
 
         let params = {//Params to request
           refresh: true,
-          params: propParams.update.requestParams || {}
+          params: propParams.update.requestParams || {},
         }
 
         //add filter
@@ -310,6 +310,7 @@ export default {
         let propParams = this.$clone(this.paramsProps)
         let formData = this.$clone(await this.getDataForm())
         let requestInfo = {response: false, error: false}//Default request response
+        let customParams = {params: {titleOffline: this.modalProps.title || ''}}
 
         //Request
         await new Promise((resolve, reject) => {
@@ -324,7 +325,7 @@ export default {
             })
           } else {
             //Do request
-            this.$crud.create(propParams.apiRoute, formData).then(response => {
+            this.$crud.create(propParams.apiRoute, formData, customParams).then(response => {
               requestInfo.response = response
               return resolve(true)
             }).catch(error => {
@@ -369,6 +370,11 @@ export default {
         let criteria = this.$clone(this.itemId)
         let requestInfo = {response: false, error: false}//Default request response
         let formData = this.$clone(await this.getDataForm())
+        let customParams = {params: {titleOffline: this.modalProps.title || ''}}
+        //let customParams = propParams.update.requestParams.params || {};
+
+        //Add offline params
+        //propParams.update.requestParams.params = {...customParams, titleOffline: this.modalProps.title || ''}
 
         //If is field update criteria
         if (this.paramsProps.field && this.dataField.id) criteria = this.dataField.id
@@ -377,7 +383,7 @@ export default {
         await new Promise((resolve, reject) => {
           if (propParams.update.method) {
             //Call custom method
-            propParams.update.method(criteria, formData).then(response => {
+            propParams.update.method(criteria, formData, customParams).then(response => {
               requestInfo.response = response
               return resolve(true)
             }).catch(error => {
@@ -385,7 +391,7 @@ export default {
               return resolve(true)
             })
           } else {
-            this.$crud.update(propParams.apiRoute, criteria, formData).then(response => {
+            this.$crud.update(propParams.apiRoute, criteria, formData, customParams).then(response => {
               requestInfo.response = response
               return resolve(true)
             }).catch(error => {
