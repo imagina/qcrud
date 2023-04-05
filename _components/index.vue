@@ -378,6 +378,7 @@ import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
+import paginateCacheOffline from '@imagina/qsite/_plugins/paginateCacheOffline.js';
 
 export default {
   props: {
@@ -682,40 +683,6 @@ export default {
     }
   },
   methods: {
-    paginateAndSearch(data, search = null, page = 1, perPage = 10) {
-      if( !data ) return;
-      const filteredData = data.filter(item => {
-          return Object.values(item).some(value => {
-              if(value) {
-                search = search ? search.toLowerCase() : null;
-                if(search) {
-                  return String(value).toLowerCase().includes(search)
-                } else {
-                  return true;
-                }
-              }
-            })
-      });
-
-      const totalPages = Math.ceil(filteredData.length / perPage);
-      const startIndex = (page - 1) * perPage;
-      const endIndex = startIndex + perPage;
-      const currentPageData = filteredData.slice(startIndex, endIndex);
-
-      const response = {
-        data: currentPageData,
-        meta: {
-          page: {
-            total: filteredData.length,
-            perPage: perPage,
-            currentPage: page,
-            lastPage: totalPages
-          },
-        }
-      };
-
-      return response;
-    },
     countPage(props) {
       const page = props.pagination.page
       const rowsPerPage = props.pagination.rowsPerPage
@@ -824,6 +791,25 @@ export default {
         }
       }
     },
+    async requestDataTable(apiRoute, params, pagination) {
+      try {
+        if(this.isAppOffline) {
+            const cachePaginate = await paginateCacheOffline(apiRoute, this.table.filter.search, pagination.page, pagination.rowsPerPage);
+            if(cachePaginate.data.length > 0) {
+              return cachePaginate;
+            }
+        } 
+        return await this.$crud.index(apiRoute, params, this.isAppOffline)
+            .catch(error => {
+            this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+            console.error(error)
+            this.loading = false
+        })
+      } catch (error) {
+        console.log(error);
+        this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+      }
+    },
     //Get products
     async getData({pagination, filter}, refresh = false) {
       let propParams = this.$clone(this.params)
@@ -861,60 +847,45 @@ export default {
           params.params[key] = Object.assign({}, params.params[key], propParams.read.params[key])
         })
       }
-
       //Request
-      let response;
-      if(!this.isAppOffline) {
-          response = await this.$crud.index(propParams.apiRoute, params, this.isAppOffline)
-          .catch(error => {
-          this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-          console.error(error)
-          this.loading = false
-        })
-      } else {
-        response = await this.$cache.get.item(`${propParams.apiRoute}::offline`) || { data: [] };
-        response = await this.paginateAndSearch(response.data, (this.table.filter.search || ''), pagination.page);
+      const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
+      let dataTable = response.data
+      //If is field change format
+      if (this.params.field) {
+         dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
+        this.dataField = response.data[0]
       }
-      const filteredData = response.data
-        
-        let dataTable = filteredData
 
-        //If is field change format
-        if (this.params.field) {
-          dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
-          this.dataField = response.data[0]
-        }
+      //Set data to table
+      this.table.data = this.$clone(dataTable);
+      const folderList = foldersStore().transformDataToDragableForderList(dataTable);
+      this.folderList = _.orderBy(folderList, 'position', 'asc');
+      this.table.pagination.page = this.$clone(response.meta.page.currentPage)
+      this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
+      this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
+      this.table.pagination.sortBy = this.$clone(pagination.sortBy)
+      this.table.pagination.descending = this.$clone(pagination.descending)
 
-        //Set data to table
-        this.table.data = this.$clone(dataTable);
-        const folderList = foldersStore().transformDataToDragableForderList(dataTable);
-        this.folderList = _.orderBy(folderList, 'position', 'asc');
-        this.table.pagination.page = this.$clone(response.meta.page.currentPage)
-        this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
-        this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
-        this.table.pagination.sortBy = this.$clone(pagination.sortBy)
-        this.table.pagination.descending = this.$clone(pagination.descending)
+      //Sync master filter
+      if (this.params.read.filterName) {
+        //Set search param
+        this.$filter.addValues({search: params.params.filter.search})
+        //Set pagination
+        this.$filter.setPagination({
+          page: this.$clone(response.meta.page.currentPage),
+          rowsPerPage: this.$clone(response.meta.page.perPage),
+          lastPage: this.$clone(response.meta.page.lastPage),
+        })
+        //Sync local
+        this.table.filter.search = this.$clone(params.params.filter.search)
+      }
 
-        //Sync master filter
-        if (this.params.read.filterName) {
-          //Set search param
-          this.$filter.addValues({search: params.params.filter.search})
-          //Set pagination
-          this.$filter.setPagination({
-            page: this.$clone(response.meta.page.currentPage),
-            rowsPerPage: this.$clone(response.meta.page.perPage),
-            lastPage: this.$clone(response.meta.page.lastPage),
-          })
-          //Sync local
-          this.table.filter.search = this.$clone(params.params.filter.search)
-        }
-
-        //Dispatch event hook
-        this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
-        //Sync data to drag view
-        this.dataTableDraggable = this.getDataTableDraggable;
-        //Close loading
-        this.loading = false
+      //Dispatch event hook
+      this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
+      //Sync data to drag view
+      this.dataTableDraggable = this.getDataTableDraggable;
+      //Close loading
+      this.loading = false
     },
     //Delete category
     deleteItem(item) {
