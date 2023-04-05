@@ -797,14 +797,30 @@ export default {
             const cachePaginate = await paginateCacheOffline(apiRoute, this.table.filter.search, pagination.page, pagination.rowsPerPage);
             if(cachePaginate.data.length > 0) {
               return cachePaginate;
+            } else {
+              return await this.$crud.index(apiRoute, params)
+                .catch(error => {
+                this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+                console.error(error)
+                this.loading = false
+              })
             }
-        } 
-        return await this.$crud.index(apiRoute, params, this.isAppOffline)
+        }
+        const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
             .catch(error => {
             this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
             console.error(error)
             this.loading = false
         })
+        
+        return response || {
+          data: [], 
+          meta: {
+            page: {
+              currentPage: 1,
+              total: 0,
+            },
+          }};
       } catch (error) {
         console.log(error);
         this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
