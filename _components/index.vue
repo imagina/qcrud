@@ -65,7 +65,10 @@
         >
           <!--Custom Columns-->
           <template v-slot:header="props">
-            <q-tr :props="props">
+            <q-tr 
+              :props="props"
+              class="tw-bg-white"
+            >
               <q-th
                   v-for="col in parseColumnsByRow(props.cols, props.row)"
                   :key="col.name"
@@ -82,7 +85,13 @@
             </q-tr>
           </template>
           <template v-slot:body="props">
-            <q-tr :props="props">
+            <q-tr 
+              :props="props"
+              :class="{
+                'tw-bg-yellow-400': props.row.offline,
+                'tw-bg-white': !props.row.offline
+              }"
+            >
               <q-td
                   v-for="(col, keyCol) in parseColumnsByRow(props.cols, props.row)"
                   :key="col.name"
@@ -112,6 +121,9 @@
                   <btn-menu
                       :actions="fieldActions(col)"
                       :action-data="props.row"
+                      :class="{
+                        'btn-menu-offline': props.row.offline
+                      }"
                   />
                 </div>
                 <!-- status columns -->
@@ -416,6 +428,7 @@ export default {
   mounted() {
     this.$nextTick(function () {
       this.init()
+      this.$root.$on('crud.data.refresh', () => this.getDataTable(true))
       this.$tour.start("admin_crud_index_tour")
     })
   },
@@ -1300,6 +1313,8 @@ export default {
 
 <style lang="stylus">
 #componentCrudIndex
+  .btn-menu-offline
+    @apply tw-bg-yellow-400 !important
   #backend-page
     .q-table__top, .q-table__middle, .q-table__bottom
       border-radius $custom-radius
@@ -1342,17 +1357,14 @@ export default {
 
   .stick-table
     th:last-child, td:last-child
-      background-color white
       position: sticky
       right: 0
       z-index: 1
 
     th:first-child, td:first-child
-      background-color white
       position: sticky
       left: 0
       z-index: 1
-
   .default-card-grid
     .default-card-grid_item-image
       width 100%
@@ -1390,5 +1402,5 @@ export default {
     border-radius $custom-radius
 
 #dialogFilters
-  min-height max-content !important
+  min-height max-content !important 
 </style>
