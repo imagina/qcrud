@@ -3,6 +3,7 @@ import {remember} from '@imagina/qsite/_plugins/remember'
 import {helper} from '@imagina/qsite/_plugins/helper'
 import cache from '@imagina/qsite/_plugins/cache'
 import config from '@imagina/qsite/_config/master/index'
+import apiResponse from '@imagina/qcrud/_plugins/apiResponse'
 
 //Replace params in apiRoute
 function replaceParamsApiRoute(apiRoute, params) {
@@ -59,13 +60,17 @@ export default {
             await axios.get(urlApi, {params: params.params}).then(response => {
               resolve(response)//Response
             }).catch(error => {
-              console.error('[base-service-index-callback]Error::', error)
-              reject(error.response)//Response
+              apiResponse.handleError(error, () => {
+                console.error('[base-service-index-callback]Error::', error)
+              })
+              reject(error.response || error)//Response
             })
           })
         }
       }).then(response => resolve(response)).catch(error => {
-        console.error('[base-service-index]Error::', error)
+        apiResponse.handleError(error, () => {
+          console.error('[base-service-index]Remember-Error::', error)
+        })
         reject(error)
       })
     })
@@ -92,8 +97,13 @@ export default {
         refresh: params.refresh,
         callBack: () => {
           return new Promise(async (resolve, reject) => {
-            let response = await axios.get(urlApi, {params: params.params}).catch(error => reject(error.response))
-            resolve(response)//Response
+            axios.get(urlApi, {params: params.params}).then(response => {
+              resolve(response)//Response
+            }).catch(error => {
+              apiResponse.handleError(error, () => {
+                reject(error.response || error)
+              })
+            })
           })
         }
       }).then(response => resolve(response)).catch(error => reject(error))

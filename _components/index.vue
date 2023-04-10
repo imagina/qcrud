@@ -816,9 +816,11 @@ export default {
             } else {
               return await this.$crud.index(apiRoute, params)
                 .catch(error => {
-                this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-                console.error(error)
-                this.loading = false
+                  this.$apiResponse.handleError(error, () => {
+                    this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+                    console.error(error)
+                    this.loading = false
+                  })
               })
             }
         }
@@ -1135,6 +1137,8 @@ export default {
             //Request and call action
             this.$crud.show(this.params.apiRoute, actionValue, requestParams).then(response => {
               actionCrudData.action(response.data)
+            }).catch(error => {
+              this.$apiResponse.handleError(error, () => {})
             })
           }
         } else {
@@ -1192,15 +1196,16 @@ export default {
           params: this.relationConfig().requestParams ? this.relationConfig().requestParams(row) : {}
         }
         //Request
-        this.$crud.index(this.relationConfig('apiRoute'), requestParams)
-            .then(async (response) => {
-              this.relation.data = this.$clone(response.data)
-              await this.getListOfDragableRelations(row.id, response.data);
-              this.relation.loading = false
-              this.setRelationLoading(row.id, false);
-            }).catch(error => {
+        this.$crud.index(this.relationConfig('apiRoute'), requestParams).then(async (response) => {
+          this.relation.data = this.$clone(response.data)
+          await this.getListOfDragableRelations(row.id, response.data);
           this.relation.loading = false
           this.setRelationLoading(row.id, false);
+        }).catch(error => {
+          this.$apiResponse.handleError(error, () => {
+            this.relation.loading = false
+            this.setRelationLoading(row.id, false);
+          })
         })
       } else {
         this.relation.data = row[this.relationConfig('name')] || [];
