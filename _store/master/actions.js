@@ -1,5 +1,6 @@
 /*Services*/
 import crud from '@imagina/qcrud/_services/baseService'
+import apiResponse from "@imagina/qcrud/_plugins/apiResponse";
 
 //Get and Save data as INDEX method
 export function INDEX({commit, state}, params) {
@@ -15,7 +16,9 @@ export function INDEX({commit, state}, params) {
       commit('SET_INDEX_DATA', dataIndex)//Commit data index
       resolve(response)//Return response
     }).catch(error => {
-      reject(error)
+      apiResponse.handleError(error, () => {
+        reject(error)
+      })
     })
   })
 }

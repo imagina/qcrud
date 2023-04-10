@@ -217,7 +217,11 @@ export default {
           }
           //Response
           resolve(response.data || [])
-        }).catch(error => resolve(false))
+        }).catch(error => {
+          this.$apiResponse.handleError(error, () => {
+            resolve(false)
+          })
+        })
       })
     },
     //Order fields of params
@@ -276,9 +280,11 @@ export default {
             this.loading = false//hide loading
             resolve(true)
           }).catch(error => {
-            this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-            this.loading = false//hide loading
-            reject(false)
+            this.$apiResponse.handleError(error, () => {
+              this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+              this.loading = false//hide loading
+              reject(false)
+            })
           })
         } else { //Request if exist field
           //Request
@@ -296,9 +302,11 @@ export default {
             this.loading = false//hide loading
             resolve(true)
           }).catch(error => {
-            this.$alert.error(this.$tr('isite.cms.message.errorRequest'))
-            this.loading = false//hide loading
-            reject(false)
+            this.$apiResponse.handleError(error, () => {
+              this.$alert.error(this.$tr('isite.cms.message.errorRequest'))
+              this.loading = false//hide loading
+              reject(false)
+            })
           })
         }
       })
