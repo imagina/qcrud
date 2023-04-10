@@ -267,7 +267,7 @@ export default {
   methods: {
     showEventListener() {
       const el = document.querySelector(".btnCreateCrud");
-      if(el) {
+      if (el) {
         el.addEventListener("click", this.showCreateModal);
       }
     },
@@ -325,7 +325,11 @@ export default {
             })
           })
           this.dataCrudSelect.loading = false
-        }).catch(error => this.dataCrudSelect.loading = false)
+        }).catch(error => {
+          this.$apiResponse.handleError(error, () => {
+            this.dataCrudSelect.loading = false
+          })
+        })
 
         //Set options
         this.dataCrudSelect.rootOptions = responseOptions
