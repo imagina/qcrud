@@ -923,6 +923,7 @@ export default {
     },
     //Delete category
     deleteItem(item) {
+      console.log(this.params);
       this.$alert.error({
         mode: 'modal',
         title: `ID: ${item.id}`,
@@ -935,7 +936,7 @@ export default {
             handler: () => {
               this.loading = true
               let propParams = this.$clone(this.params);
-              let customParams = {params: {titleOffline: this.params.entityName || ''}};     
+              let customParams = {params: {titleOffline: this.$tr(this.title) || ''}};     
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField)//get data table
