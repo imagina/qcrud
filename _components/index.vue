@@ -4,147 +4,91 @@
     <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
       <!--Page Actions-->
       <div class="q-my-md">
-        <page-actions
-            :extra-actions="tableActions"
-            :excludeActions="params.read.noFilter ? ['filter'] : []"
-            :searchAction="params.read.searchAction"
-            :title="tableTitle" @search="val => search(val)"
-            @new="handlerActionCreate()"
-            @refresh="getDataTable(true)"
-            ref="pageActionRef"
-            :tour-name="tourName"
-        />
+        <page-actions :extra-actions="tableActions" :excludeActions="params.read.noFilter ? ['filter'] : []"
+          :searchAction="params.read.searchAction" :title="tableTitle" @search="val => search(val)"
+          @new="handlerActionCreate()" @refresh="getDataTable(true)" ref="pageActionRef" :tour-name="tourName" />
       </div>
       <!-- Bulk Actions -->
       <div v-if="selectedRows.length" id="selectedRows"
-           class="bg-primary text-white row justify-between items-center q-px-md q-mb-md q-py-sm">
+        class="bg-primary text-white row justify-between items-center q-px-md q-mb-md q-py-sm">
         <!-- Label -->
         <div class="col-12 col-md-4">
-          <b>{{ $tr('isite.cms.selectedRows', {num: selectedRows.length}) }}</b>
+          <b>{{ $tr('isite.cms.selectedRows', { num: selectedRows.length }) }}</b>
         </div>
         <!--Actions-->
         <div class="col-12 col-md-8">
           <div class="row q-gutter-sm justify-end">
             <q-btn v-for="(act, keyAct) in bulkActions" :key="keyAct" v-bind="act.props"
-                   @click="handlerBulkAction(act)"/>
+              @click="handlerBulkAction(act)" />
           </div>
         </div>
       </div>
       <div class="relative-position col-12" v-if="success">
-        <folders
-            :folderList="folderList"
-            :apiRouteOrderFolders="apiRouteOrderFolders"
-            v-if="localShowAs === 'folders'"
-        />
+        <folders :folderList="folderList" :apiRouteOrderFolders="apiRouteOrderFolders" v-if="localShowAs === 'folders'" />
         <!-- Kanban View-->
-        <kanban v-show="localShowAs === 'kanban' && params.read.kanban"
-                :routes="params.read.kanban" ref="kanban"/>
+        <kanban v-show="localShowAs === 'kanban' && params.read.kanban" :routes="params.read.kanban" ref="kanban" />
         <!-- Drag View-->
-        <div v-if="localShowAs === 'drag' && dataDraggable.length"
-             class="q-pt-sm q-pr-sm q-pl-md">
+        <div v-if="localShowAs === 'drag' && dataDraggable.length" class="q-pt-sm q-pr-sm q-pl-md">
           <recursiveItemDraggable :items="dataTableDraggable"
-                                  :nested="params.read.drag ? (params.read.drag.nested || false) : false"/>
+            :nested="params.read.drag ? (params.read.drag.nested || false) : false" />
           <!--Save Action -->
           <div class="text-right q-mt-md">
-            <q-btn :label="$tr('isite.cms.label.save')" color="green" unelevated rounded
-                   @click="saveOrder"/>
+            <q-btn :label="$tr('isite.cms.label.save')" color="green" unelevated rounded @click="saveOrder" />
           </div>
         </div>
         <!--Table/Grid View-->
-        <q-table
-            v-model:pagination="table.pagination"
-            v-if="['table','grid','folders'].includes(localShowAs)"
-            :grid="localShowAs === 'grid'" :data="table.data"
-            :columns="tableColumns"
-            :pagination.sync="table.pagination"
-            @request="getData"
-            class="stick-table"
-            :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
-            ref="tableComponent"
-            card-container-class="q-col-gutter-md"
-        >
+        <q-table v-model:pagination="table.pagination" v-if="['table', 'grid', 'folders'].includes(localShowAs)"
+          :grid="localShowAs === 'grid'" :data="table.data" :columns="tableColumns" :pagination.sync="table.pagination"
+          @request="getData" class="stick-table" :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
+          ref="tableComponent" card-container-class="q-col-gutter-md">
           <!--Custom Columns-->
           <template v-slot:header="props">
-            <q-tr 
-              :props="props"
-              class="tw-bg-white"
-            >
-              <q-th
-                  v-for="col in parseColumnsByRow(props.cols, props.row)"
-                  :key="col.name"
-                  :props="props"
-              >
+            <q-tr :props="props" class="tw-bg-white">
+              <q-th v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name" :props="props">
                 <div v-if="col.name === 'selectColumn'">
-                  <q-checkbox
-                      v-model="selectedRowsAll"
-                      @input="selectAllFields"
-                  />
+                  <q-checkbox v-model="selectedRowsAll" @input="selectAllFields" />
                 </div>
                 {{ col.label }}
               </q-th>
             </q-tr>
           </template>
           <template v-slot:body="props">
-            <q-tr 
-              :props="props"
-              :class="{
-                'tw-bg-yellow-400': props.row.offline,
-                'tw-bg-white': !props.row.offline
-              }"
-            >
-              <q-td
-                  v-for="(col, keyCol) in parseColumnsByRow(props.cols, props.row)"
-                  :key="col.name"
-                  :props="props"
-                  :class="col.bgColor ? 'bg-'+col.bgColor : ''"
-              >
+            <q-tr :props="props" :class="{
+              'tw-bg-yellow-400': props.row.offline,
+              'tw-bg-white': !props.row.offline
+            }">
+              <q-td v-for="(col, keyCol) in parseColumnsByRow(props.cols, props.row)" :key="col.name" :props="props"
+                :class="col.bgColor ? 'bg-' + col.bgColor : ''">
                 <!-- Select row -->
                 <div v-if="col.name === 'selectColumn'">
-                  <q-checkbox v-model="selectedRows"
-                              :val="props.key"
-                  />
+                  <q-checkbox v-model="selectedRows" :val="props.key" />
                 </div>
                 <!-- Button table collapsable -->
                 <div v-if="col.name === 'expandibleColumn'">
-                  <q-btn
-                      size="sm"
-                      flat
-                      round
-                      color="blue-grey"
-                      :icon="tableCollapseIcon(props.key)"
-                      @click="toggleRelationContent(props)"
-
-                  />
+                  <q-btn size="sm" flat round color="blue-grey" :icon="tableCollapseIcon(props.key)"
+                    @click="toggleRelationContent(props)" />
                 </div>
                 <!--Actions column-->
                 <div class="crudIndexActionsColumn" v-if="col.name == 'actions'">
-                  <btn-menu
-                      :actions="fieldActions(col)"
-                      :action-data="props.row"
-                      :class="{
-                        'btn-menu-offline': props.row.offline
-                      }"
-                  />
+                  <btn-menu :actions="fieldActions(col)" :action-data="props.row" :class="{
+                    'btn-menu-offline': props.row.offline
+                  }" />
                 </div>
                 <!-- status columns -->
-                <div v-else-if="(['status','active'].indexOf(col.name) != -1) || col.asStatus"
-                     class="text-left">
+                <div v-else-if="(['status', 'active'].indexOf(col.name) != -1) || col.asStatus" class="text-left">
                   <!--Action-->
-                  <q-btn-dropdown
-                      :color="col.value ? 'green' : 'red'"
-                      flat
-                      padding="sm none"
-                      class="text-caption"
-                      :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
-                      no-caps
-                      v-if="permitAction(props.row).edit"
-                  >
+                  <q-btn-dropdown :color="col.value ? 'green' : 'red'" flat padding="sm none" class="text-caption"
+                    :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')" no-caps
+                    v-if="permitAction(props.row).edit">
                     <!--Message change to-->
-                    <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus({...props, col})" v-close-popup>
+                    <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus({ ...props, col })" v-close-popup>
                       <div class="row items-center">
-                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col.value ? 'green' : 'red'"/>
+                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col.value ? 'green' : 'red'" />
                         {{
-                          $tr('isite.cms.message.changeTo', {text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
+                          $tr('isite.cms.message.changeTo', {
+                            text: (col.value ? $tr('isite.cms.label.disabled') :
+                              $tr('isite.cms.label.enabled'))
+                          })
                         }}
                       </div>
                     </q-item>
@@ -159,27 +103,19 @@
                 <div v-else>
                   <!--Badge-->
                   <div>
-                    <promiseTemplate
-                        :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
-                        :isLoading="col.formatAsync ? loading : false"
-                    >
+                    <promiseTemplate :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
+                      :isLoading="col.formatAsync ? loading : false">
                       <template v-slot="data">
                         <div>
-                          <div v-if="col.bgTextColor && data.data"
-                               @click="rowclick(col,props.row)"
-                               :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
-                          >
+                          <div v-if="col.bgTextColor && data.data" @click="rowclick(col, props.row)"
+                            :class="(col.textColor ? ' text-' + col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')">
                             <q-badge :class="col.bgTextColor" v-html="data.data">
                               {{ data.data }}
                             </q-badge>
                           </div>
                           <!--Label-->
-                          <div
-                              v-else
-                              @click="rowclick(col,props.row)"
-                              v-html="data.data"
-                              :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
-                          >
+                          <div v-else @click="rowclick(col, props.row)" v-html="data.data"
+                            :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-' + col.textColor : '')">
                             {{ data.data }}
                           </div>
                         </div>
@@ -198,21 +134,16 @@
                     <div v-if="relation.data.length" class="col-12 q-mb-md shadow-3">
                       <!--Label-->
                       <div v-if="relationConfig('label')"
-                           class="q-py-sm q-px-sm text-blue-grey text-h4 text-weight-bold text-subtitle1 ellipsis title-content text-center">
+                        class="q-py-sm q-px-sm text-blue-grey text-h4 text-weight-bold text-subtitle1 ellipsis title-content text-center">
                         {{ relationConfig('label') }}
                       </div>
                       <!-- Table -->
-                      <q-table
-                          :data="relation.data"
-                          :columns="relationConfig('columns')"
-                      >
+                      <q-table :data="relation.data" :columns="relationConfig('columns')">
                         <template v-slot:body-cell="props">
                           <q-td :props="props">
                             <!--Actions-->
-                            <btn-menu v-if="props.col.name == 'actions'"
-                                      :actions="relationConfig('actions')"
-                                      :action-data="props.row"
-                            />
+                            <btn-menu v-if="props.col.name == 'actions'" :actions="relationConfig('actions')"
+                              :action-data="props.row" />
                             <!-- Default Value -->
                             <label v-else>{{ props.value }}</label>
                           </q-td>
@@ -220,9 +151,9 @@
                       </q-table>
                     </div>
                     <!-- Empty result -->
-                    <not-result v-else/>
+                    <not-result v-else />
                     <!-- Inner loading -->
-                    <inner-loading :visible="relation.loading"/>
+                    <inner-loading :visible="relation.loading" />
                   </div>
                 </q-expansion-item>
               </q-td>
@@ -233,18 +164,17 @@
             <div :class="`${gridParams.colClass}`">
               <!--Card Component-->
               <component v-if="gridParams.component" :is="gridParams.component" :row="props.row"
-                         :permit-action="permitAction(props.row)" :field-actions="fieldActions(props)"
-                         @update="params.update.to ? false : $emit('update', props.row)"
-                         @delete="deleteItem(props.row)"/>
+                :permit-action="permitAction(props.row)" :field-actions="fieldActions(props)"
+                @update="params.update.to ? false : $emit('update', props.row)" @delete="deleteItem(props.row)" />
               <!--Default Card -->
               <q-card v-else class="box default-card-grid" style="padding-top: 5px">
                 <!--item image-->
                 <div class="default-card-grid_item-image" v-if="itemImage(props.row)"
-                     :style="`background-image: url('${itemImage(props.row)}')`"></div>
+                  :style="`background-image: url('${itemImage(props.row)}')`"></div>
                 <!--Fields-->
                 <q-list dense>
                   <q-item v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name" style="padding: 3px 0"
-                          v-if="col.name != 'actions'">
+                    v-if="col.name != 'actions'">
                     <q-item-section>
                       <!--Field name-->
                       <q-item-label class="ellipsis">
@@ -252,26 +182,27 @@
                           <!--Label-->
                           <div> {{ col.label }} {{ col.name == 'id' ? col.value : '' }}</div>
                           <!--Actions-->
-                          <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props)" :action-data="props.row"/>
+                          <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props)" :action-data="props.row" />
                         </div>
-                        <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm"/>
+                        <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm" />
                       </q-item-label>
                       <!--Field value-->
                       <q-item-label v-if="col.name != 'id'" class="ellipsis text-grey-6">
                         <!-- status columns -->
-                        <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
-                             class="text-left">
+                        <div v-if="(['status', 'active'].includes(col.name)) || col.asStatus" class="text-left">
                           <q-btn-dropdown :color="col.value ? 'green' : 'red'" flat padding="sm none"
-                                          :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
-                                          class="text-caption" no-caps>
+                            :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
+                            class="text-caption" no-caps>
                             <!--Message change to-->
                             <q-item class="q-pa-sm cursor-pointer" v-close-popup
-                                    @click.native="updateStatus({...props, col : col})">
+                              @click.native="updateStatus({ ...props, col: col })">
                               <div class="row items-center">
-                                <q-icon name="fa-light fa-pencil" class="q-mr-sm"
-                                        :color="!col.value ? 'green' : 'red'"/>
+                                <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col.value ? 'green' : 'red'" />
                                 {{
-                                  $tr('isite.cms.message.changeTo', {text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled'))})
+                                  $tr('isite.cms.message.changeTo', {
+                                    text: (col.value ? $tr('isite.cms.label.disabled') :
+                                      $tr('isite.cms.label.enabled'))
+                                  })
                                 }}
                               </div>
                             </q-item>
@@ -280,27 +211,19 @@
                         <!--Default columns-->
                         <div v-else>
                           <!--Badge-->
-                          <promiseTemplate
-                              :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
-                              :isLoading="col.formatAsync ? loading : false"
-                          >
+                          <promiseTemplate :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
+                            :isLoading="col.formatAsync ? loading : false">
                             <template v-slot="data">
                               <div>
-                                <div v-if="col.bgTextColor && data.data"
-                                     @click="rowclick(col,props.row)"
-                                     :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
-                                >
+                                <div v-if="col.bgTextColor && data.data" @click="rowclick(col, props.row)"
+                                  :class="(col.textColor ? ' text-' + col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')">
                                   <q-badge :class="col.bgTextColor" v-html="data.data">
                                     {{ data.data }}
                                   </q-badge>
                                 </div>
                                 <!--Label-->
-                                <div
-                                    v-else
-                                    @click="rowclick(col,props.row)"
-                                    v-html="data.data"
-                                    :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
-                                >
+                                <div v-else @click="rowclick(col, props.row)" v-html="data.data"
+                                  :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-' + col.textColor : '')">
                                   {{ data.data }}
                                 </div>
                               </div>
@@ -317,87 +240,55 @@
           <!-- pagination -->
           <template #bottom="props">
             <div
-                :class="`bottonCrud full-width flex items-center ${windowSize == 'mobile' ? 'justify-center' : 'justify-between'}`">
+              :class="`bottonCrud full-width flex items-center ${windowSize == 'mobile' ? 'justify-center' : 'justify-between'}`">
               <div :class="`text-blue-grey ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
                 {{ $tr('isite.cms.label.showing') }} {{ countPage(props) }} {{ $trp('isite.cms.label.entry') }}
               </div>
               <div class="col-12 q-ml-sm q-mr-lg flex flex-center">
-                <q-pagination
-                    id="crudPaginationComponent"
-                    v-if="showPagination(props)"
-                    v-model="table.pagination.page"
-                    :value="props.pagination"
-                    @click.prevent="getDataTable()"
-                    round
-                    color="blue-grey"
-                    active-color="primary"
-                    :max="props.pagesNumber"
-                    :max-pages="6"
-                    :ellipses="false"
-                    :boundary-numbers="false"
-                    unelevated
-                />
+                <q-pagination id="crudPaginationComponent" v-if="showPagination(props)" v-model="table.pagination.page"
+                  :value="props.pagination" @click.prevent="getDataTable()" round color="blue-grey" active-color="primary"
+                  :max="props.pagesNumber" :max-pages="6" :ellipses="false" :boundary-numbers="false" unelevated />
               </div>
               <div class="flex items-center">
                 <div class="flex items-center">
                   <div>{{ $tr('isite.cms.label.show') }}</div>
-                  <q-select
-                      v-model="table.pagination.rowsPerPage"
-                      :options="rowsPerPageOption"
-                      @input="getDataTable()"
-                      options-cover
-                      dense
-                      class="q-mx-sm text-caption"
-                      outlined
-                  />
+                  <q-select v-model="table.pagination.rowsPerPage" :options="rowsPerPageOption" @input="getDataTable()"
+                    options-cover dense class="q-mx-sm text-caption" outlined />
                   <div>{{ $trp('isite.cms.label.entry') }}</div>
                 </div>
                 <div class="actionsBtnPag">
-                  <q-btn
-                      icon="chevron_left"
-                      color="primary"
-                      round
-                      dense
-                      flat
-                      :disable="props.isFirstPage"
-                      @click="props.prevPage"
-                  />
-                  <q-btn
-                      icon="chevron_right"
-                      color="primary"
-                      round
-                      dense
-                      flat
-                      :disable="props.isLastPage"
-                      @click="props.nextPage"
-                  />
+                  <q-btn icon="chevron_left" color="primary" round dense flat :disable="props.isFirstPage"
+                    @click="props.prevPage" />
+                  <q-btn icon="chevron_right" color="primary" round dense flat :disable="props.isLastPage"
+                    @click="props.nextPage" />
                 </div>
               </div>
             </div>
           </template>
         </q-table>
         <!--Loading-->
-        <inner-loading :visible="localShowAs !== 'kanban' && loading"/>
+        <inner-loading :visible="localShowAs !== 'kanban' && loading" />
       </div>
     </div>
     <!-- Export Component -->
-    <master-export v-model="exportParams" ref="exportComponent" export-item/>
+    <master-export v-model="exportParams" ref="exportComponent" export-item />
   </div>
 </template>
 
 <script>
 //Components
-import {computed} from 'vue';
+import { computed } from 'vue';
 import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
 import paginateCacheOffline from '@imagina/qsite/_plugins/paginateCacheOffline.js';
+import cacheOffline from '@imagina/qsite/_plugins/cacheOffline';
 
 export default {
   props: {
-    params: {default: false},
-    title: {default: false}
+    params: { default: false },
+    title: { default: false }
   },
   components: {
     masterExport,
@@ -417,7 +308,7 @@ export default {
       deep: true,
       handler: function (newValue) {
         setTimeout(() => {
-            this.getDataTable(!newValue);
+          this.getDataTable(!newValue);
         }, 1800);
       }
     },
@@ -552,7 +443,7 @@ export default {
         if (!key) return relation
         //Add action column
         if (relation.actions.length && !relation.columns.find(item => item.name == 'actions')) {
-          relation.columns.push({name: 'actions', label: this.$tr('isite.cms.form.actions'), align: 'center'},)
+          relation.columns.push({ name: 'actions', label: this.$tr('isite.cms.form.actions'), align: 'center' },)
         }
         //Response
         return relation[key];
@@ -589,7 +480,7 @@ export default {
       }
       //Select column
       if (this.bulkActions.length) {
-        columns.unshift({name: 'selectColumn', label: '', align: 'center'})
+        columns.unshift({ name: 'selectColumn', label: '', align: 'center' })
       }
       //Response
       return columns
@@ -681,12 +572,12 @@ export default {
     },
     filterDataTable() {
       const filterData = this.table.data.filter(item => {
-        if(this.isAppOffline) {
+        if (this.isAppOffline) {
           //console.log('ingreso offline');
           return Object.values(item).some(value => {
-            if(value) {
+            if (value) {
               const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
-              if(search) {
+              if (search) {
                 return String(value).toLowerCase().includes(search)
               } else {
                 return true;
@@ -784,10 +675,10 @@ export default {
         return;
       } else {
         this.getData({
-              pagination: {...this.table.pagination, ...(pagination || {})},
-              filter: {...this.table.filter, ...(filter || {})}
-            },
-            refresh)
+          pagination: { ...this.table.pagination, ...(pagination || {}) },
+          filter: { ...this.table.filter, ...(filter || {}) }
+        },
+          refresh)
       }
     },
     //Row click
@@ -809,43 +700,44 @@ export default {
     },
     async requestDataTable(apiRoute, params, pagination) {
       try {
-        if(this.isAppOffline) {
-            const cachePaginate = await paginateCacheOffline(apiRoute, this.table.filter.search, pagination.page, pagination.rowsPerPage);
-            if(cachePaginate.data.length > 0) {
-              return cachePaginate;
-            } else {
-              return await this.$crud.index(apiRoute, params)
-                .catch(error => {
-                  this.$apiResponse.handleError(error, () => {
-                    this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-                    console.error(error)
-                    this.loading = false
-                  })
+        if (this.isAppOffline) {
+          const cachePaginate = await paginateCacheOffline(apiRoute, this.table.filter.search, pagination.page, pagination.rowsPerPage);
+          if (cachePaginate.data.length > 0) {
+            return cachePaginate;
+          } else {
+            return await this.$crud.index(apiRoute, params)
+              .catch(error => {
+                this.$apiResponse.handleError(error, () => {
+                  this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
+                  console.error(error)
+                  this.loading = false
+                })
               })
-            }
+          }
         }
         const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
-            .catch(error => {
-            this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+          .catch(error => {
+            this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
             console.error(error)
             this.loading = false
-        })
-        
+          })
+
         return response || {
-          data: [], 
+          data: [],
           meta: {
             page: {
               currentPage: 1,
               total: 0,
             },
-          }};
+          }
+        };
       } catch (error) {
         console.log(error);
-        this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+        this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
       }
     },
     //Get products
-    async getData({pagination, filter}, refresh = false) {
+    async getData({ pagination, filter }, refresh = false) {
       let propParams = this.$clone(this.params)
       this.loading = true
 
@@ -854,7 +746,7 @@ export default {
       this.selectedRowsAll = false;
 
       //Refresh all data
-      if (refresh && !this.isAppOffline) this.$cache.remove({allKey: this.params.apiRoute})
+      if (refresh && !this.isAppOffline) this.$cache.remove({ allKey: this.params.apiRoute })
 
       //Params to request
       let params = {
@@ -863,7 +755,7 @@ export default {
       }
       //add params
       if (!params.params.filter) params.params.filter = {};
-      params.params.filter = {...params.params.filter, ...this.table.filter, ...filter}
+      params.params.filter = { ...params.params.filter, ...this.table.filter, ...filter }
       this.removeEmptyFilters(params.params.filter);
       params.params.page = pagination.page;
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
@@ -886,7 +778,7 @@ export default {
       let dataTable = response.data
       //If is field change format
       if (this.params.field) {
-         dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
+        dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
         this.dataField = response.data[0]
       }
 
@@ -903,7 +795,7 @@ export default {
       //Sync master filter
       if (this.params.read.filterName) {
         //Set search param
-        this.$filter.addValues({search: params.params.filter.search})
+        this.$filter.addValues({ search: params.params.filter.search })
         //Set pagination
         this.$filter.setPagination({
           page: this.$clone(response.meta.page.currentPage),
@@ -915,7 +807,7 @@ export default {
       }
 
       //Dispatch event hook
-      this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
+      this.$hook.dispatchEvent('wasListed', { entityName: this.params.entityName })
       //Sync data to drag view
       this.dataTableDraggable = this.getDataTableDraggable;
       //Close loading
@@ -923,53 +815,55 @@ export default {
     },
     //Delete category
     deleteItem(item) {
-      console.log(this.params);
       this.$alert.error({
         mode: 'modal',
         title: `ID: ${item.id}`,
         message: this.$tr('isite.cms.message.deleteRecord'),
         actions: [
-          {label: this.$tr('isite.cms.label.cancel'), color: 'grey'},
+          { label: this.$tr('isite.cms.label.cancel'), color: 'grey' },
           {
             label: this.$tr('isite.cms.label.delete'),
             color: 'red',
-            handler: () => {
+            handler: async () => {
               this.loading = true
               let propParams = this.$clone(this.params);
-              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title)} - ${item.id}` || ''}};     
+              let customParams = { params: { titleOffline: `Delete ${this.$tr(this.title)} - ${item.id}` || '' } };
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField)//get data table
                 dataField.value.splice(item.__index, 1)//Remove field
-
                 //Request
                 this.$crud.update(propParams.apiRoute, dataField.id, dataField, customParams).then(response => {
-                  this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
+                  this.$alert.info({ message: this.$tr('isite.cms.message.recordDeleted') })
                   this.getDataTable(true)
                   this.loading = false
                 }).catch(error => {
-                  this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
+                  this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
                   this.loading = false
                 })
               } else {
                 //Request
-                if(this.isAppOffline) {
-                  this.table.data = this.table.data.filter(data => item.id !== data.id );
+                if (this.isAppOffline) {
+                  this.table.data = this.table.data.filter(data => item.id !== data.id);
                   this.loading = false;
                 }
                 this.$crud.delete(propParams.apiRoute, item.id, customParams).then(response => {
-                  this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
+                  this.$alert.info({ message: this.$tr('isite.cms.message.recordDeleted') })
                   this.getDataTable(true)
 
                   //Dispatch event hook
-                  this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                  this.$hook.dispatchEvent('wasDeleted', { entityName: this.params.entityName })
 
                   //Close loading
                   this.loading = false
                 }).catch(error => {
-                  this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
+                  this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
                   this.loading = false
                 })
+
+                if (this.isAppOffline) {
+                  await cacheOffline.deleteItem(item.id);
+                }
               }
             }
           }
@@ -982,7 +876,7 @@ export default {
       let destroy = true//Default action destroy
       //Get options form field
       let options = (field && field.options) ?
-          ((typeof field.options == 'string') ? JSON.parse(field.options) : field.options) : {}
+        ((typeof field.options == 'string') ? JSON.parse(field.options) : field.options) : {}
       //Validate if field is master record
       let isMasterRecord = (options.masterRecord && parseInt(options.masterRecord)) ? true : false
       //Check to permit action edit
@@ -998,7 +892,7 @@ export default {
       if (isMasterRecord && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.destroy')) destroy = false
 
       //Response
-      return {edit: edit, destroy: destroy}
+      return { edit: edit, destroy: destroy }
     },
     //Call custom action
     async callCustomAction(action, row, key = false) {
@@ -1010,7 +904,7 @@ export default {
       }
       //Check if has redirect to route
       if (action.route) {
-        this.$router.push({name: action.route, params: row || {}})
+        this.$router.push({ name: action.route, params: row || {} })
       }
     },
     //Update item status
@@ -1020,7 +914,7 @@ export default {
       let requestData = {
         id: item.row.id,
         [item.col.name]: (typeof item.row[item.col.name] == "boolean") ? !item.row[item.col.name] :
-            parseInt(item.row[item.col.name]) ? 0 : 1
+          parseInt(item.row[item.col.name]) ? 0 : 1
       }
 
       //Validate if is translatable
@@ -1040,10 +934,10 @@ export default {
           return itemData//Response
         }))
         this.loading = false
-        this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
+        this.$alert.info({ message: this.$tr('isite.cms.message.recordUpdated') })
       }).catch(error => {
         this.loading = false
-        this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
+        this.$alert.error({ message: this.$tr('isite.cms.message.recordNoUpdated') })
       })
     },
     //Return field actions
@@ -1057,44 +951,44 @@ export default {
       })
       //Add default actions
       actions = [...actions,
-        //Export
-        {
-          label: this.$tr('isite.cms.label.export'),
-          vIf: this.exportParams,
-          icon: 'fa-light fa-download',
-          action: (item) => this.$refs.exportComponent.showReportItem({
-            item: item,
-            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
-            filter: {id: item.id}
-          })
-        },
-        {//Edit action
-          icon: 'fa-light fa-pencil',
-          color: 'green',
-          default: defaultAction ? false : true,
-          label: this.$tr('isite.cms.label.edit'),
-          vIf: this.permitAction(field).edit,
-          action: (item) => {
-            this.$emit('update', item)
-          }
-        },
-        {//Copy disclosure link action
-          label: this.$tr('isite.cms.label.copyDisclosureLink'),
-          format: (item) => {
-            return {vIf: item.url ? true : false}
-          },
-          icon: "fa-light fa-copy",
-          action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
-        },
-        {//Delete action
-          icon: 'fa-light fa-trash-can',
-          color: 'red',
-          label: this.$tr('isite.cms.label.delete'),
-          vIf: this.permitAction(field).destroy,
-          action: (item) => {
-            this.deleteItem(item)
-          }
+      //Export
+      {
+        label: this.$tr('isite.cms.label.export'),
+        vIf: this.exportParams,
+        icon: 'fa-light fa-download',
+        action: (item) => this.$refs.exportComponent.showReportItem({
+          item: item,
+          exportParams: { fileName: `${this.exportParams.fileName}-${item.id}` },
+          filter: { id: item.id }
+        })
+      },
+      {//Edit action
+        icon: 'fa-light fa-pencil',
+        color: 'green',
+        default: defaultAction ? false : true,
+        label: this.$tr('isite.cms.label.edit'),
+        vIf: this.permitAction(field).edit,
+        action: (item) => {
+          this.$emit('update', item)
         }
+      },
+      {//Copy disclosure link action
+        label: this.$tr('isite.cms.label.copyDisclosureLink'),
+        format: (item) => {
+          return { vIf: item.url ? true : false }
+        },
+        icon: "fa-light fa-copy",
+        action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
+      },
+      {//Delete action
+        icon: 'fa-light fa-trash-can',
+        color: 'red',
+        label: this.$tr('isite.cms.label.delete'),
+        vIf: this.permitAction(field).destroy,
+        action: (item) => {
+          this.deleteItem(item)
+        }
+      }
       ]
 
       //Order field actions
@@ -1139,7 +1033,7 @@ export default {
             this.$crud.show(this.params.apiRoute, actionValue, requestParams).then(response => {
               actionCrudData.action(response.data)
             }).catch(error => {
-              this.$apiResponse.handleError(error, () => {})
+              this.$apiResponse.handleError(error, () => { })
             })
           }
         } else {
@@ -1306,10 +1200,10 @@ export default {
     saveOrder() {
       this.loading = true
       this.$crud.bulkOrder('apiRoutes.qgamification.activities', this.dataDraggable).then(response => {
-        this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
+        this.$alert.info({ message: this.$tr('isite.cms.message.recordUpdated') })
         this.loading = false
       }).catch(error => {
-        this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
+        this.$alert.error({ message: this.$tr('isite.cms.message.recordNoUpdated') })
         this.loading = false
       })
     }
@@ -1408,5 +1302,5 @@ export default {
     border-radius $custom-radius
 
 #dialogFilters
-  min-height max-content !important 
+  min-height max-content !important
 </style>
