@@ -303,16 +303,6 @@ export default {
       getFieldRelationActions: this.getFieldRelationActions
     }
   },
-  watch: {
-    'isAppOffline': {
-      deep: true,
-      handler: function (newValue) {
-        setTimeout(() => {
-          this.getDataTable(!newValue);
-        }, 1800);
-      }
-    },
-  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
@@ -626,6 +616,7 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
+            console.warn(">>>> setfilter from CRUD")
             await this.$filter.setFilter({
               name: params.read.filterName || this.$route.name,
               fields: this.$clone(params.read.filters || {}),
