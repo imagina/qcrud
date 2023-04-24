@@ -51,11 +51,10 @@ export default {
       if (!configName) return reject('Config name is required')//Validate config name
       let urlApi = (config(configName) || configName)//Get url from config
       let key = `${configName}::${isOffline ? 'offline' : `requestParams[${JSON.stringify(params.params)}]`}`//Key to cache
-
       remember.async({
         key: key,
         seconds: params.cacheTime,
-        refresh: params.refresh,
+        refresh: window.navigator.onLine ? params.refresh : false,
         callBack: () => {
           return new Promise(async (resolve, reject) => {
             await axios.get(urlApi, {params: params.params}).then(response => {
@@ -95,7 +94,7 @@ export default {
       remember.async({
         key: key,
         seconds: params.cacheTime,
-        refresh: params.refresh,
+        refresh: window.navigator.onLine ? params.refresh : false,
         callBack: () => {
           return new Promise(async (resolve, reject) => {
             axios.get(urlApi, {params: params.params}).then(response => {

@@ -596,7 +596,7 @@ export default {
       this.localShowAs = this.readShowAs;
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
-      if (!this.params.read.filterName) this.getDataTable()//Get data
+      if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
         this.$eventBus.$emit('setMobileMainAction', {
@@ -737,7 +737,7 @@ export default {
       this.selectedRowsAll = false;
 
       //Refresh all data
-      if (refresh && !this.isAppOffline) this.$cache.remove({ allKey: this.params.apiRoute })
+      if (refresh) this.$cache.remove({ allKey: this.params.apiRoute })
 
       //Params to request
       let params = {
