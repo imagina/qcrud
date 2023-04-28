@@ -406,7 +406,6 @@ export default {
   mounted() {
     this.$nextTick(function () {
       this.init()
-      this.$tour.start("admin_crud_index_tour")
     })
   },
   data() {
