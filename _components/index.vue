@@ -309,7 +309,7 @@ export default {
   mounted() {
     this.$nextTick(function () {
       this.init()
-      this.$root.$on('crud.data.refresh', () => this.getDataTable(true))
+      this.$root.$on('crud.data.refresh', () => this.getDataTable(true) )
       this.$tour.start("admin_crud_index_tour")
     })
   },
