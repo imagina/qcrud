@@ -42,7 +42,7 @@
           @request="getData" class="stick-table" :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
           ref="tableComponent" card-container-class="q-col-gutter-md">
           <!--Custom Columns-->
-          <template v-slot:header="props">
+          <template v-slot:header="props" v-if="!isAppOffline">
             <q-tr :props="props" class="tw-bg-white">
               <q-th v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name" :props="props">
                 <div v-if="col.name === 'selectColumn'">
@@ -60,7 +60,7 @@
               <q-td v-for="(col, keyCol) in parseColumnsByRow(props.cols, props.row)" :key="col.name" :props="props"
                 :class="col.bgColor ? 'bg-' + col.bgColor : ''">
                 <!-- Select row -->
-                <div v-if="col.name === 'selectColumn'">
+                <div v-if="col.name === 'selectColumn' && !isAppOffline">
                   <q-checkbox v-model="selectedRows" :val="props.key" />
                 </div>
                 <!-- Button table collapsable -->
