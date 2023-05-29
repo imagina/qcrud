@@ -1,7 +1,16 @@
 <template>
   <!--Modal with form to category-->
-  <master-modal :id="paramsProps.modalId || 'modalFormCrud'" v-model="show" v-bind="modalProps"
-                @hide="componentStore.remove()" custom-position :persistent="true">
+  <master-modal 
+    :id="paramsProps.modalId || 'modalFormCrud'" 
+    v-model="show" 
+    v-bind="modalProps"
+    @hide="componentStore.remove()" 
+    custom-position 
+    :persistent="true"
+    :revisionsBtn="itemId ? true : false"
+    :revisionableType="moduleName"
+    :revisionableId="Number(itemId)"
+  >
     <div class="modal-crud">
       <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
         <div class="relative-position col-12">
@@ -47,6 +56,9 @@
 </template>
 
 <script>
+import getModulesInfo from '@imagina/qsite/_components/master/revisions/store/actions/getModulesInfo.ts'
+import storeRevision from '@imagina/qsite/_components/master/revisions/store/index.ts'
+
 export default {
   props: {
     value: {default: false},
@@ -82,8 +94,9 @@ export default {
     }
   },
   mounted() {
-    this.$nextTick(function () {
+    this.$nextTick(async function () {
       this.show = this.value
+      await getModulesInfo();
     })
   },
   data() {
@@ -93,10 +106,19 @@ export default {
       locale: {fields: {options: {}}, fieldsTranslatable: {}, form: {}},
       loading: true,
       dataField: [],
-      paramsProps: false
+      paramsProps: false,
     }
   },
   computed: {
+    moduleName() {
+      const data = this.$helper.getInfoFromPermission(this.params.permission);
+      const moduleInfo = storeRevision.modulesList.find(item => item.name.toLowerCase() === data.module.toLowerCase()) || {};
+      if(moduleInfo.children) {
+        const children = moduleInfo.children.find(item => item.name.toLowerCase() === data.entity.toLowerCase()) || {};
+        return children.path;
+      }
+      return moduleInfo.path;
+    },
     //modal props
     modalProps() {
       //Validate params props
@@ -177,6 +199,9 @@ export default {
     }
   },
   methods: {
+    capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    },
     //Init form
     async initForm() {
       this.success = false//successful
