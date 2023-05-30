@@ -58,6 +58,7 @@
 <script>
 import getModulesInfo from '@imagina/qsite/_components/master/revisions/store/actions/getModulesInfo.ts'
 import storeRevision from '@imagina/qsite/_components/master/revisions/store/index.ts'
+import _ from 'lodash'
 
 export default {
   props: {
@@ -85,11 +86,14 @@ export default {
       deep: true,
       handler: function (newValue) {
         //Merge params
+        const formRight = {...(this.paramsProps.formRight || {}), ...(this.params.formRight || {})};
+        const formLeft = {...(this.paramsProps.formLeft || {}), ...(this.params.formLeft || {})};
         this.paramsProps = this.$clone({
           ...this.params,
-          formRight: {...(this.paramsProps.formRight || {}), ...(this.params.formRight || {})},
-          formLeft: {...(this.paramsProps.formLeft || {}), ...(this.params.formLeft || {})},
+          formRight,
+          formLeft,
         })
+        storeRevision.fields = {...formLeft, ...formRight};
       }
     }
   },
@@ -114,7 +118,9 @@ export default {
       const data = this.$helper.getInfoFromPermission(this.params.permission);
       const moduleInfo = storeRevision.modulesList.find(item => item.name.toLowerCase() === data.module.toLowerCase()) || {};
       if(moduleInfo.children) {
-        const children = moduleInfo.children.find(item => item.name.toLowerCase() === data.entity.toLowerCase()) || {};
+        const children = moduleInfo.children.find(item =>
+          _.includes(this.getPluralForms(item.name.toLowerCase()), data.entity.toLowerCase())
+        ) || {};
         return children.path;
       }
       return moduleInfo.path;
@@ -199,6 +205,13 @@ export default {
     }
   },
   methods: {
+    getPluralForms(word) {
+      if (_.endsWith(word, 's')) {
+        return [word];
+      } else {
+        return [word, `${word}s`];
+      }
+    },
     capitalizeFirstLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
     },
