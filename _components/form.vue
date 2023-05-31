@@ -7,7 +7,7 @@
     @hide="componentStore.remove()" 
     custom-position 
     :persistent="true"
-    :revisionsBtn="itemId ? true : false"
+    :revisionsBtn="isUpdate"
     :revisionableType="moduleName"
     :revisionableId="Number(itemId)"
   >
@@ -68,6 +68,11 @@ export default {
     params: {default: false}
   },
   components: {},
+  provide() {
+    return {
+      setForm: this.setForm
+    }
+  },
   watch: {
     value(newValue) {
       this.show = this.value
@@ -548,6 +553,9 @@ export default {
 
       //Response
       return response
+    },
+    setForm(data) {
+      this.locale.formTemplate = data;
     },
   }
 }
