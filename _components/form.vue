@@ -119,7 +119,7 @@ export default {
       const moduleInfo = storeRevision.modulesList.find(item => item.name.toLowerCase() === data.module.toLowerCase()) || {};
       if(moduleInfo.children) {
         const children = moduleInfo.children.find(item =>
-          _.includes(this.getPluralForms(item.name.toLowerCase()), data.entity.toLowerCase())
+          item.name.toLowerCase() === this.params.entityName.toLowerCase()
         ) || {};
         return children.path;
       }
@@ -205,16 +205,6 @@ export default {
     }
   },
   methods: {
-    getPluralForms(word) {
-      if (_.endsWith(word, 's')) {
-        return [word];
-      } else {
-        return [word, `${word}s`];
-      }
-    },
-    capitalizeFirstLetter(string) {
-      return string.charAt(0).toUpperCase() + string.slice(1);
-    },
     //Init form
     async initForm() {
       this.success = false//successful
