@@ -123,8 +123,10 @@ export default {
       const data = this.$helper.getInfoFromPermission(this.params.permission);
       const moduleInfo = storeRevision.modulesList.find(item => item.name.toLowerCase() === data.module.toLowerCase()) || {};
       if(moduleInfo.children) {
-        const children = moduleInfo.children.find(item =>
-          item.name.toLowerCase() === this.params.entityName.toLowerCase()
+        const children = moduleInfo.children.find(item => {
+            const entityName = this.params.entityName ? this.params.entityName : '';
+            return item.name.toLowerCase() === entityName.toLowerCase();
+          }
         ) || {};
         return children.path;
       }
