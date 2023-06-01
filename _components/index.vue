@@ -370,6 +370,9 @@
     </div>
     <!-- Export Component -->
     <master-export v-model="exportParams" ref="exportComponent" export-item/>
+    <revisions 
+      ref="revisions"
+     />
   </div>
 </template>
 
@@ -378,7 +381,9 @@
 import {computed} from 'vue';
 import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
-import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
+import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js';
+import storeRevision from '@imagina/qsite/_components/master/revisions/store/index.ts';
+import getModulesInfo from '@imagina/qsite/_components/master/revisions/store/actions/getModulesInfo.ts'
 import _ from "lodash";
 
 export default {
@@ -396,7 +401,8 @@ export default {
       updateRelationData: this.updateRelationData,
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
-      getFieldRelationActions: this.getFieldRelationActions
+      getFieldRelationActions: this.getFieldRelationActions,
+      getData: this.getDataTable,
     }
   },
   watch: {},
@@ -404,8 +410,11 @@ export default {
     this.$helper.setDynamicSelectList({});
   },
   mounted() {
-    this.$nextTick(function () {
+    this.$nextTick(async function () {
       this.init()
+      await getModulesInfo();
+      storeRevision.fields = {...this.params.formLeft, ...this.params.formRight };
+      storeRevision.apiRoute = this.params.apiRoute;
     })
   },
   data() {
@@ -449,6 +458,19 @@ export default {
     }
   },
   computed: {
+    moduleName() {
+      const data = this.$helper.getInfoFromPermission(this.params.permission);
+      const moduleInfo = storeRevision.modulesList.find(item => item.name.toLowerCase() === data.module.toLowerCase()) || {};
+      if(moduleInfo.children) {
+        const children = moduleInfo.children.find(item => {
+            const entityName = this.params.entityName ? this.params.entityName : '';
+            return item.name.toLowerCase() === entityName.toLowerCase();
+          }
+        ) || {};
+        return children.path;
+      }
+      return moduleInfo.path;
+    },
     //Table Title
     permisionRelation() {
       return this.params.read.relation.permission ? this.$auth.hasAccess(this.params.read.relation.permission) : true;
@@ -1003,6 +1025,14 @@ export default {
           },
           icon: "fa-light fa-copy",
           action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
+        },
+        {//revision
+          icon: 'fa-light fa-timeline-arrow',
+          color: 'red',
+          label: this.$tr('isite.cms.revision'),
+          action: (item) => {
+            this.$refs.revisions.openModal(this.moduleName, item.id);
+          }
         },
         {//Delete action
           icon: 'fa-light fa-trash-can',

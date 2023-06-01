@@ -7,9 +7,6 @@
     @hide="componentStore.remove()" 
     custom-position 
     :persistent="true"
-    :revisionsBtn="isUpdate"
-    :revisionableType="moduleName"
-    :revisionableId="Number(itemId)"
   >
     <div class="modal-crud">
       <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
@@ -51,14 +48,11 @@
           </q-form>
         </div>
       </div>
-    </div>
+    </div> 
   </master-modal>
 </template>
 
 <script>
-import getModulesInfo from '@imagina/qsite/_components/master/revisions/store/actions/getModulesInfo.ts'
-import storeRevision from '@imagina/qsite/_components/master/revisions/store/index.ts'
-import _ from 'lodash'
 
 export default {
   props: {
@@ -98,14 +92,12 @@ export default {
           formRight,
           formLeft,
         })
-        storeRevision.fields = {...formLeft, ...formRight};
       }
     }
   },
   mounted() {
     this.$nextTick(async function () {
       this.show = this.value
-      await getModulesInfo();
     })
   },
   data() {
@@ -119,19 +111,6 @@ export default {
     }
   },
   computed: {
-    moduleName() {
-      const data = this.$helper.getInfoFromPermission(this.params.permission);
-      const moduleInfo = storeRevision.modulesList.find(item => item.name.toLowerCase() === data.module.toLowerCase()) || {};
-      if(moduleInfo.children) {
-        const children = moduleInfo.children.find(item => {
-            const entityName = this.params.entityName ? this.params.entityName : '';
-            return item.name.toLowerCase() === entityName.toLowerCase();
-          }
-        ) || {};
-        return children.path;
-      }
-      return moduleInfo.path;
-    },
     //modal props
     modalProps() {
       //Validate params props
