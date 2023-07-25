@@ -46,10 +46,10 @@ export default {
    */
   index(configName, params = {}) {
     return new Promise((resolve, reject) => {
-      params = {params: {}, refresh: false, cacheTime: (3600 * 3), ...params}//Validate params params
+      params = {params: {}, refresh: false, cacheTime: (3600 * 3), cacheKey: null, ...params}//Validate params params
       if (!configName) return reject('Config name is required')//Validate config name
       let urlApi = (config(configName) || configName)//Get url from config
-      let key = `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
+      let key = params.cacheKey || `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
 
       remember.async({
         key: key,
