@@ -158,10 +158,13 @@ export default {
 
             //Validate if change some item from form
             if (!emitForm)
-              for (var itemName in formData)
-                if (JSON.stringify(formDataStore[itemName]) !== JSON.stringify(formData[itemName]))
+              for (var itemName in formData) {
+                if (Array.isArray(formData[itemName]) && Array.isArray(formDataStore[itemName])) {
+                  emitForm = !this.$helper.arraysAreEqual(formDataStore[itemName], formData[itemName])
+                } else if (JSON.stringify(formDataStore[itemName]) !== JSON.stringify(formData[itemName])) {
                   emitForm = true
-
+                }
+              }
             //Emit form data
             if (emitForm)
               this.$store.dispatch('qcrudComponent/SET_DATA_COMPONENT', {
@@ -469,7 +472,6 @@ export default {
           if ((fieldName == 'slug') && formTemplate.slug) slug = formTemplate.slug
           if (slug) this.locale.formTemplate.slug = this.$clone(this.$helper.getSlug(slug))
         }
-
         //Add categories
         if ((fieldName == 'categoryId') && (this.locale.formTemplate.categories != undefined)) {
           //Get component
