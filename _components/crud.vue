@@ -369,7 +369,7 @@ export default {
         if (this.params.update.to) this.$router.push({name: this.params.update.to, params: item})
         //Edit by method
         else if (this.params.update.method) this.params.update.method(item)
-        else {
+        else if(this.params.update) {
           this.itemIdToEdit = item.id
           this.showModal = true
         }

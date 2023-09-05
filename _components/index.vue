@@ -616,7 +616,6 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
-            console.warn(">>>> setfilter from CRUD")
             await this.$filter.setFilter({
               name: params.read.filterName || this.$route.name,
               fields: this.$clone(params.read.filters || {}),
@@ -1165,7 +1164,6 @@ export default {
       }
     },
     search(val) {
-      console.log('hola2')
       this.table.filter.search = val;
       this.searchKanban = val;
       this.getDataTable();
