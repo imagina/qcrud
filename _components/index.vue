@@ -187,7 +187,7 @@
                         <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm" />
                       </q-item-label>
                       <!--Field value-->
-                      <q-item-label v-if="col.name != 'id'" class="ellipsis text-grey-6">
+                      <q-item-label v-if="col.name != 'id'" class="text-grey-6">
                         <!-- status columns -->
                         <div v-if="(['status', 'active'].includes(col.name)) || col.asStatus" class="text-left">
                           <q-btn-dropdown :color="col.value ? 'green' : 'red'" flat padding="sm none"
@@ -226,6 +226,7 @@
                                   :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-' + col.textColor : '')">
                                   {{ data.data }}
                                 </div>
+                                <q-tooltip>{{ data.data }}</q-tooltip>
                               </div>
                             </template>
                           </promiseTemplate>
