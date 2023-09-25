@@ -13,6 +13,7 @@
             @refresh="getDataTable(true)"
             ref="pageActionRef"
             :tour-name="tourName"
+            :filters="filters"
         />
       </div>
       <!-- Bulk Actions -->
@@ -445,7 +446,8 @@ export default {
       folderList: [],
       funnelId: null,
       searchKanban: null,
-      tourName: 'admin_crud_index_tour'
+      tourName: 'admin_crud_index_tour',
+      filters: false
     }
   },
   computed: {
@@ -700,6 +702,7 @@ export default {
                 this.getDataTable(refresh, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
               }
             })
+            this.filters = this.$clone(this.$filter)
           }
         }
 
