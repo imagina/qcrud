@@ -471,7 +471,7 @@ export default {
           label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
           vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
           props: {
-            icon: this.localShowAs != 'grid' ? 'fa-duotone fa-grid-horizontal' : 'fa-duotone fa-list',
+            icon: this.localShowAs != 'grid' ? 'fa-light fa-grid-horizontal' : 'fa-light fa-list',
             id: 'crudIndexViewAction'
           },
           vIfAction: this.readShowAs === 'drag',
