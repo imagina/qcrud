@@ -246,7 +246,7 @@
                         <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm"/>
                       </q-item-label>
                       <!--Field value-->
-                      <q-item-label v-if="col.name != 'id'" class="ellipsis text-grey-6">
+                      <q-item-label v-if="col.name != 'id'" class="text-grey-6">
                         <!-- status columns -->
                         <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
                              class="text-left">
@@ -288,10 +288,11 @@
                                     v-else
                                     @click="rowclick(col,props.row)"
                                     v-html="data.data"
-                                    :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                                    :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                                 >
                                   {{ data.data }}
                                 </div>
+                                <q-tooltip>{{ data.data }}</q-tooltip>
                               </div>
                             </template>
                           </promiseTemplate>
@@ -472,7 +473,7 @@ export default {
           label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
           vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
           props: {
-            icon: this.localShowAs != 'grid' ? 'fa-duotone fa-grid-horizontal' : 'fa-duotone fa-list',
+            icon: this.localShowAs != 'grid' ? 'fa-light fa-grid-horizontal' : 'fa-light fa-list',
             id: 'crudIndexViewAction'
           },
           vIfAction: this.readShowAs === 'drag',
@@ -1060,7 +1061,8 @@ export default {
             this.$crud.show(this.params.apiRoute, actionValue, requestParams).then(response => {
               actionCrudData.action(response.data)
             }).catch(error => {
-              this.$apiResponse.handleError(error, () => {})
+              this.$apiResponse.handleError(error, () => {
+              })
             })
           }
         } else {
