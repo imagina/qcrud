@@ -13,7 +13,6 @@
             @refresh="getDataTable(true)"
             ref="pageActionRef"
             :tour-name="tourName"
-            :filters="filters"
         />
       </div>
       <!-- Bulk Actions -->
@@ -382,6 +381,7 @@ import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
+import _filterPlugin from '@imagina/qsite/_plugins/filter'
 
 export default {
   props: {
@@ -398,7 +398,8 @@ export default {
       updateRelationData: this.updateRelationData,
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
-      getFieldRelationActions: this.getFieldRelationActions
+      getFieldRelationActions: this.getFieldRelationActions,
+      filterPlugin: computed(() => this.filterPlugin)
     }
   },
   watch: {},
@@ -448,7 +449,8 @@ export default {
       funnelId: null,
       searchKanban: null,
       tourName: 'admin_crud_index_tour',
-      filters: false
+      filters: false,
+      filterPlugin: _filterPlugin.getNewInstance()
     }
   },
   computed: {
@@ -690,20 +692,20 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
-            await this.$filter.setFilter({
+            await this.filterPlugin.setFilter({
               name: params.read.filterName || this.$route.name,
               fields: this.$clone(params.read.filters || {}),
               callBack: () => {
                 const refresh = !this.params.read.kanban;
-                this.table.filter = this.$clone(this.$filter.values)
+                this.table.filter = this.$clone(this.filterPlugin.values)
                 if (this.params.read.kanban) {
                   const filterName = this.params.read.kanban.column.filter.name || '';
                   this.funnelId = this.table.filter[filterName || null];
                 }
-                this.getDataTable(refresh, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
+                console.dir(this.filterPlugin.values)
+                this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
               }
             })
-            this.filters = this.$clone(this.$filter)
           }
         }
 
@@ -734,7 +736,7 @@ export default {
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
         const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(this.$filter.values[filterName] || null);
+        this.funnelId = String(this.filterPlugin.values[filterName] || null);
         await this.$refs.kanban.setSearch(this.searchKanban);
         await this.$refs.kanban.init(refresh);
         return;
@@ -824,9 +826,9 @@ export default {
         //Sync master filter
         if (this.params.read.filterName) {
           //Set search param
-          this.$filter.addValues({search: params.params.filter.search})
+          this.filterPlugin.addValues({search: params.params.filter.search})
           //Set pagination
-          this.$filter.setPagination({
+          this.filterPlugin.setPagination({
             page: this.$clone(response.meta.page.currentPage),
             rowsPerPage: this.$clone(response.meta.page.perPage),
             lastPage: this.$clone(response.meta.page.lastPage),
