@@ -450,7 +450,7 @@ export default {
       searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
-      filterPlugin: _filterPlugin.getNewInstance()
+      filterPlugin: false
     }
   },
   computed: {
@@ -670,6 +670,7 @@ export default {
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
+      await this.setFilterPlugin();
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
       if (!this.params.read.filterName) this.getDataTable()//Get data
@@ -684,6 +685,18 @@ export default {
       //Success
       this.success = true
     },
+    setFilterPlugin(){
+      if(this.params?.read){
+        if (this.params.read?.filterName || this.params.read.filters) {
+          console.log('%c filterPlugin:'+this.$route.name, 'color:red')
+          this.filterPlugin =  _filterPlugin.getNewInstance(this.$route.name)
+          // this.filterPlugin =  _filterPlugin.getNewInstance(this.params.entityName)
+          return
+        }
+      }
+      console.log('%c useGlobalFilter', 'color:red')
+      this.filterPlugin = this.$filter
+    },
     //Order filters
     orderFilters() {
       return new Promise(async (resolve, reject) => {
@@ -692,20 +705,29 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
-            await this.filterPlugin.setFilter({
-              name: params.read.filterName || this.$route.name,
-              fields: this.$clone(params.read.filters || {}),
-              callBack: () => {
-                const refresh = !this.params.read.kanban;
-                this.table.filter = this.$clone(this.filterPlugin.values)
-                if (this.params.read.kanban) {
-                  const filterName = this.params.read.kanban.column.filter.name || '';
-                  this.funnelId = this.table.filter[filterName || null];
+            console.log('%c Filters', 'color: red')
+            console.dir(params.read.filters)
+            if((Object.keys(params.read.filters).length)){
+              await this.filterPlugin.setFilter({
+                name: params.read.filterName || this.$route.name,
+                fields: this.$clone(params.read.filters || {}),
+                callBack: () => {
+                  const refresh = !this.params.read.kanban;
+                  this.table.filter = this.$clone(this.filterPlugin.values)
+                  if (this.params.read.kanban) {
+                    const filterName = this.params.read.kanban.column.filter.name || '';
+                    this.funnelId = this.table.filter[filterName || null];
+                  }
+                  console.log('%c callBack filters', 'color: yellow')
+                  console.dir(this.filterPlugin.values)
+                  this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
                 }
-                console.dir(this.filterPlugin.values)
-                this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
-              }
-            })
+              })
+            } else {
+              console.log('%c Filters but empty', 'color: red')
+            }
+          } else {
+            console.log('%c No Filters', 'color: red')
           }
         }
 
