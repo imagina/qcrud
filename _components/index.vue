@@ -688,13 +688,19 @@ export default {
     setFilterPlugin(){
       if(this.params?.read){
         if (this.params.read?.filterName || this.params.read.filters) {
-          console.log('%c filterPlugin:'+this.$route.name, 'color:red')
-          this.filterPlugin =  _filterPlugin.getNewInstance(this.$route.name)
-          // this.filterPlugin =  _filterPlugin.getNewInstance(this.params.entityName)
+          let cacheName;
+          if (this.params.read?.filterCacheName){
+            cacheName = this.params.read?.filterCacheName;
+          } else {
+            const entityName = this.params.entityName ?? ''
+            cacheName = `${this.$route.name}_${entityName}`
+          }
+
+          this.filterPlugin =  _filterPlugin.getInstance(cacheName)
           return
         }
       }
-      console.log('%c useGlobalFilter', 'color:red')
+      // use the global filter
       this.filterPlugin = this.$filter
     },
     //Order filters
@@ -705,8 +711,6 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
-            console.log('%c Filters', 'color: red')
-            console.dir(params.read.filters)
             if((Object.keys(params.read.filters).length)){
               await this.filterPlugin.setFilter({
                 name: params.read.filterName || this.$route.name,
@@ -718,16 +722,10 @@ export default {
                     const filterName = this.params.read.kanban.column.filter.name || '';
                     this.funnelId = this.table.filter[filterName || null];
                   }
-                  console.log('%c callBack filters', 'color: yellow')
-                  console.dir(this.filterPlugin.values)
                   this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
                 }
               })
-            } else {
-              console.log('%c Filters but empty', 'color: red')
             }
-          } else {
-            console.log('%c No Filters', 'color: red')
           }
         }
 
