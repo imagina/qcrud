@@ -351,6 +351,7 @@ export default {
           this.show = false
           //this.initForm()
           this.$emit('created', formData)
+          if(this.params.create?.callback) this.params.create.callback(requestInfo.response)
         } else {
           this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
           this.loading = false//login hide
@@ -412,6 +413,7 @@ export default {
           this.show = false
           //this.initForm()
           this.$emit('updated', requestInfo.response.data)
+          if(this.params.update?.callback) this.params.update.callback(requestInfo.response)
         } else {
           this.loading = false
           this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
