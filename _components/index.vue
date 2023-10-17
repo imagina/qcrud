@@ -702,6 +702,7 @@ export default {
       }
       // use the global filter
       this.filterPlugin = this.$filter
+      this.filterPlugin.reset()
     },
     //Order filters
     orderFilters() {
