@@ -5,14 +5,15 @@
       <!--Page Actions-->
       <div class="q-my-md">
         <page-actions
-            :extra-actions="tableActions"
-            :excludeActions="params.read.noFilter ? ['filter'] : []"
-            :searchAction="params.read.searchAction"
-            :title="tableTitle" @search="val => search(val)"
-            @new="handlerActionCreate()"
-            @refresh="getDataTable(true)"
-            ref="pageActionRef"
-            :tour-name="tourName"
+          :extra-actions="tableActions"
+          :excludeActions="params.read.noFilter ? ['filter'] : []"
+          :searchAction="params.read.searchAction"
+          :title="tableTitle" 
+          @search="val => search(val)"
+          @new="handlerActionCreate()"
+          @refresh="getDataTable(true)"
+          ref="pageActionRef"
+          :tour-name="tourName"
         />
       </div>
       <!-- Bulk Actions -->
@@ -104,7 +105,6 @@
                       color="blue-grey"
                       :icon="tableCollapseIcon(props.key)"
                       @click="toggleRelationContent(props)"
-
                   />
                 </div>
                 <!--Actions column-->
@@ -245,7 +245,7 @@
                         <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm"/>
                       </q-item-label>
                       <!--Field value-->
-                      <q-item-label v-if="col.name != 'id'" class="ellipsis text-grey-6">
+                      <q-item-label v-if="col.name != 'id'" class="text-grey-6">
                         <!-- status columns -->
                         <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
                              class="text-left">
@@ -287,10 +287,11 @@
                                     v-else
                                     @click="rowclick(col,props.row)"
                                     v-html="data.data"
-                                    :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                                    :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                                 >
                                   {{ data.data }}
                                 </div>
+                                <q-tooltip>{{ data.data }}</q-tooltip>
                               </div>
                             </template>
                           </promiseTemplate>
@@ -477,7 +478,6 @@ export default {
           action: () => {
             const alternativeShow = this.readShowAs != "table" ? this.readShowAs : 'grid'
             this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
-            this.getDataTable(true)
           },
         })
       }
@@ -746,6 +746,7 @@ export default {
     async rowclick(col, row) {
       // if is an actionable column
       if (this.isActionableColumn(col)) {
+        
         //if the col has an action callback
         if (col.action) {
           await col.action(row)
@@ -754,7 +755,6 @@ export default {
           let defaultAction = this.fieldActions(col).find(action => {
             return action.default ?? false
           })
-
           if (defaultAction.action) await defaultAction.action(row)
         }
       }
@@ -974,18 +974,7 @@ export default {
         return action.default ?? false;
       })
       //Add default actions
-      actions = [...actions,
-        //Export
-        {
-          label: this.$tr('isite.cms.label.export'),
-          vIf: this.exportParams,
-          icon: 'fa-light fa-download',
-          action: (item) => this.$refs.exportComponent.showReportItem({
-            item: item,
-            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
-            filter: {id: item.id}
-          })
-        },
+      actions = [
         {//Edit action
           icon: 'fa-light fa-pencil',
           color: 'green',
@@ -1012,7 +1001,19 @@ export default {
           action: (item) => {
             this.deleteItem(item)
           }
-        }
+        },
+         //Export
+         {
+          label: this.$tr('isite.cms.label.export'),
+          vIf: this.exportParams,
+          icon: 'fa-light fa-download',
+          action: (item) => this.$refs.exportComponent.showReportItem({
+            item: item,
+            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
+            filter: {id: item.id}
+          })
+        },
+        ...actions
       ]
 
       //Order field actions
@@ -1057,7 +1058,8 @@ export default {
             this.$crud.show(this.params.apiRoute, actionValue, requestParams).then(response => {
               actionCrudData.action(response.data)
             }).catch(error => {
-              this.$apiResponse.handleError(error, () => {})
+              this.$apiResponse.handleError(error, () => {
+              })
             })
           }
         } else {
