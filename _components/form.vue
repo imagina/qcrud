@@ -7,33 +7,42 @@
       <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
         <div class="relative-position col-12">
           <!--Forms-->
-          <p
-            v-if="showInformationAboutTheForm"
-            class="q-mb-lg"
-          >
-            {{ showInformationAboutTheForm }}
-          </p>
+          <dynamic-field
+            v-if="fieldBanner"
+            :field="fieldBanner"
+          />
           <q-form 
             autocorrect="off" 
             autocomplete="off" 
             ref="formContent" 
             class="row q-col-gutter-md col-12"
-            @submit="(!isUpdate && !field) ?  createItem() : updateItem()" v-if="success"
+            @submit="(!isUpdate && !field) ?  createItem() : updateItem()" 
+            v-if="success"
             @validation-error="$alert.error($tr('isite.cms.message.formInvalid'))"
           >
             <!--Language-->
-            <div :class="locale.languages && (locale.languages.length >= 2) ? 'col-12' : 'q-pa-none'"
-                 v-show="locale.fieldsTranslatable && Object.keys(locale.fieldsTranslatable).length">
-              <locales v-model="locale" ref="localeComponent" :form="$refs.formContent"/>
+            <div 
+              :class="locale.languages && (locale.languages.length >= 2) ? 'col-12' : 'q-pa-none'"
+              v-show="locale.fieldsTranslatable && Object.keys(locale.fieldsTranslatable).length"
+            >
+              <locales 
+                v-model="locale" 
+                ref="localeComponent" 
+                :form="$refs.formContent"
+              />
             </div>
 
             <!--Form-->
-            <div v-for="(pos,key) in ['formLeft','formRight']" :key="pos"
-                 v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
-                 :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`">
+            <div 
+              v-for="(pos,key) in ['formLeft','formRight']" :key="pos"
+              v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
+              :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`"
+            >
               <div>
                 <!--Fields-->
-                <div v-for="(field, key) in  customFieldProps[pos]" :key="key" :ref="key">
+                <div 
+                  v-for="(field, key) in customFieldProps[pos]" :key="key" :ref="key"
+                >
                   <!--Dynamic fake field-->
                   <dynamic-field 
                     v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
@@ -154,8 +163,21 @@ export default {
       if (this.itemId === false) return false
       return true
     },
-    showInformationAboutTheForm() {
-      return  this.paramsProps?.update?.aboutTheForm
+    fieldBanner() {
+      const description = this.isUpdate 
+        ? this.paramsProps?.update?.description 
+        : this.paramsProps?.create?.description
+
+      if (!description) return null
+
+      return  {
+        type: 'banner',
+        props: {
+          color: 'blue-grey-4',
+          icon: 'fas fa-exclamation-triangle',
+          message: description
+        }
+      }
     },
     //Actions to store component
     componentStore() {
@@ -584,6 +606,3 @@ export default {
   }
 }
 </script>
-
-<style lang="stylus">
-</style>
