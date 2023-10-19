@@ -155,7 +155,7 @@
                         <div>
                           <div v-if="col.bgTextColor && data.data"
                                @click="rowclick(col,props.row)"
-                               :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                               :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
                           >
                             <q-badge :class="col.bgTextColor" v-html="data.data">
                               {{ data.data }}
@@ -166,10 +166,16 @@
                               v-else
                               @click="rowclick(col,props.row)"
                               v-html="data.data"
-                              :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                              :class="(isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                           >
                             {{ data.data }}
                           </div>
+                          <q-tooltip>
+                            {{ data.data }}
+                            <label v-if="isActionableColumn(col)" class="text-weight-bold">
+                              <br> {{$tr('isite.cms.label.clickToAction')}}
+                            </label>
+                          </q-tooltip>
                         </div>
                       </template>
                     </promiseTemplate>
@@ -276,7 +282,7 @@
                               <div>
                                 <div v-if="col.bgTextColor && data.data"
                                      @click="rowclick(col,props.row)"
-                                     :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')"
+                                     :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
                                 >
                                   <q-badge :class="col.bgTextColor" v-html="data.data">
                                     {{ data.data }}
@@ -287,11 +293,16 @@
                                     v-else
                                     @click="rowclick(col,props.row)"
                                     v-html="data.data"
-                                    :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                                    :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                                 >
                                   {{ data.data }}
                                 </div>
-                                <q-tooltip>{{ data.data }}</q-tooltip>
+                                <q-tooltip>
+                                  {{ data.data }}
+                                  <label v-if="isActionableColumn(col)" class="text-weight-bold">
+                                    <br> {{$tr('isite.cms.label.clickToAction')}}
+                                  </label>
+                                </q-tooltip>
                               </div>
                             </template>
                           </promiseTemplate>
@@ -471,7 +482,7 @@ export default {
           label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
           vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
           props: {
-            icon: this.localShowAs != 'grid' ? 'fa-duotone fa-grid-horizontal' : 'fa-duotone fa-list',
+            icon: this.localShowAs != 'grid' ? 'fa-light fa-grid-horizontal' : 'fa-light fa-list',
             id: 'crudIndexViewAction'
           },
           vIfAction: this.readShowAs === 'drag',
@@ -1326,6 +1337,13 @@ export default {
 
   #selectedRows
     border-radius $custom-radius
+
+  .cursor-actionable
+    color #2067b0
+    cursor pointer
+    max-width max-content
+    &:hover
+      border-bottom: 2px dotted #2067b0
 
 #dialogFilters
   min-height max-content !important
