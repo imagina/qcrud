@@ -5,14 +5,15 @@
       <!--Page Actions-->
       <div class="q-my-md">
         <page-actions
-            :extra-actions="tableActions"
-            :excludeActions="params.read.noFilter ? ['filter'] : []"
-            :searchAction="params.read.searchAction"
-            :title="tableTitle" @search="val => search(val)"
-            @new="handlerActionCreate()"
-            @refresh="getDataTable(true)"
-            ref="pageActionRef"
-            :tour-name="tourName"
+          :extra-actions="tableActions"
+          :excludeActions="params.read.noFilter ? ['filter'] : []"
+          :searchAction="params.read.searchAction"
+          :title="tableTitle" 
+          @search="val => search(val)"
+          @new="handlerActionCreate()"
+          @refresh="getDataTable(true)"
+          ref="pageActionRef"
+          :tour-name="tourName"
         />
       </div>
       <!-- Bulk Actions -->
@@ -104,7 +105,6 @@
                       color="blue-grey"
                       :icon="tableCollapseIcon(props.key)"
                       @click="toggleRelationContent(props)"
-
                   />
                 </div>
                 <!--Actions column-->
@@ -493,7 +493,6 @@ export default {
           action: () => {
             const alternativeShow = this.readShowAs != "table" ? this.readShowAs : 'grid'
             this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
-            this.getDataTable(true)
           },
         })
       }
@@ -784,6 +783,7 @@ export default {
     async rowclick(col, row) {
       // if is an actionable column
       if (this.isActionableColumn(col)) {
+        
         //if the col has an action callback
         if (col.action) {
           await col.action(row)
@@ -792,7 +792,6 @@ export default {
           let defaultAction = this.fieldActions(col).find(action => {
             return action.default ?? false
           })
-
           if (defaultAction.action) await defaultAction.action(row)
         }
       }
@@ -1012,18 +1011,7 @@ export default {
         return action.default ?? false;
       })
       //Add default actions
-      actions = [...actions,
-        //Export
-        {
-          label: this.$tr('isite.cms.label.export'),
-          vIf: this.exportParams,
-          icon: 'fa-light fa-download',
-          action: (item) => this.$refs.exportComponent.showReportItem({
-            item: item,
-            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
-            filter: {id: item.id}
-          })
-        },
+      actions = [
         {//Edit action
           icon: 'fa-light fa-pencil',
           color: 'green',
@@ -1050,7 +1038,19 @@ export default {
           action: (item) => {
             this.deleteItem(item)
           }
-        }
+        },
+         //Export
+         {
+          label: this.$tr('isite.cms.label.export'),
+          vIf: this.exportParams,
+          icon: 'fa-light fa-download',
+          action: (item) => this.$refs.exportComponent.showReportItem({
+            item: item,
+            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
+            filter: {id: item.id}
+          })
+        },
+        ...actions
       ]
 
       //Order field actions
