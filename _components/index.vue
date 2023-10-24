@@ -6,7 +6,7 @@
       <div class="q-my-md">
         <page-actions
           :extra-actions="tableActions"
-          :excludeActions="params.read.noFilter ? ['filter'] : []"
+          :excludeActions="excludeActions"
           :searchAction="params.read.searchAction"
           :title="tableTitle" 
           @search="val => search(val)"
@@ -461,7 +461,8 @@ export default {
       searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
-      filterPlugin: false
+      filterPlugin: false,
+      excludeActions: []
     }
   },
   computed: {
@@ -680,6 +681,15 @@ export default {
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
+
+      if(this.params.read?.excludeActions){
+        this.excludeActions = this.params.read.excludeActions
+      }
+
+      if(this.params.read?.noFilter){
+        this.excludeActions.push('filter')
+      }
+
       await this.setFilterPlugin();
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
