@@ -12,8 +12,8 @@
                    @input="emitValue" @click.native="showEventListener">
       <!--Before options slot-->
       <div slot="before-options">
-        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
-               :label="`${params.create.title || ''}`" v-if="params.create"/>
+        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green" no-caps
+               :label="`${paramsProps.create.title || ''}`" v-if="params.create"/>
       </div>
     </dynamic-field>
 
