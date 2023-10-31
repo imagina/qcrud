@@ -1,0 +1,124 @@
+import {TableTabs, TableSchema} from '@site/src/components/table/table.jsx';
+import {componentCrud, createParams, readParams, readActionsParams, readGridParams, updateParams} from './schemes/schemeQcrud.jsx'
+
+# Qcrud
+
+## crud
+
+There is three components that build a CRUD component used on pages
+
+<TableTabs tabsContent={componentCrud} />
+
+### Create Params
+
+<TableSchema columnNames={["Name", "Content"]} data={createParams} />
+
+### Read Params
+
+<TableSchema columnNames={["Name", "Content"]} data={readParams} />
+
+#### Read Actions Params
+
+<TableSchema columnNames={["Name", "Content"]} data={readActionsParams} />
+
+#### Read Grid Params
+
+<TableSchema columnNames={["Name", "Content"]} data={readGridParams} />
+
+### Update Params
+
+<TableSchema columnNames={["Name", "Content"]} data={updateParams} />
+
+### Example
+
+  ```js
+  <template></template>
+  <script>
+    export default {
+      data() {
+        return {
+          crudId: this.$uid()
+        }
+      },
+      computed: {
+        crudData() {
+          return {
+            crudId: this.crudId,
+            entityName: config("main.qblog.entityNames.category"),
+            apiRoute: 'apiRoutes.qblog.categories',
+            permission: 'iblog.categories',
+            extraFormFields: 'iblog.crud-fields.categories',
+            create: {
+              title: this.$tr('qblog.layout.newCategory'),
+            },
+            read: {
+              columns: [
+                {name: 'id', label: this.$tr('ui.form.id'), field: 'id', style: 'width: 50px'},
+                {name: 'name', label: this.$tr('ui.form.title'), field: 'title', align: 'rigth'},
+                //...
+              ],
+              requestParams: {include: 'parent'}
+            },
+            update: {
+              title: this.$tr('qblog.layout.updateCategory'),
+              requestParams: {include: 'parent'}
+            },
+            delete: true,
+            formLeft: {
+              id: {value: ''},
+              userId: {value: this.$store.state.quserAuth.userId},
+              title: {
+                value: '',
+                type: 'input',
+                isTranslatable: true,
+                props : {
+                  label: `${this.$tr('ui.form.title')}*`,
+                  rules: [
+                    val => !!val || this.$tr('ui.message.fieldRequired')
+                  ],
+                },
+              },
+              //...
+            },
+            formRight: {
+              status: {
+                value: '1',
+                type: 'select',
+                isTranslatable: false,
+                props: {
+                  label: `${this.$tr('ui.form.status')}*`,
+                  options: [
+                    {label: this.$tr('ui.label.enabled'), value: '1'},
+                    {label: this.$tr('ui.label.disabled'), value: '0'}
+                  ],
+                  rules: [
+                    val => !!val || this.$tr('ui.message.fieldRequired')
+                  ],
+                }
+              },
+              //...
+            },
+          }
+        },
+        //Crud info
+        crudInfo() {
+          return this.$store.state.qcrudComponent.component[this.crudId] || {}
+        }
+      },
+    }
+  </script>
+  ```
+
+### Usage
+Already is included in [boot-core-components](/docs/VueJs/modules/QSite/QsiteBoot#core-components) not need import tu use
+
+```jsx
+<!---Component CRUD-->
+<crud :crud-data="import('@imagina/qblog/_crud/categories')" ref="crudComponent" :title="$tr($route.meta.title)"/>
+```
+
+## index
+Render the `Read` CRUD section as a [q-table](https://quasar.dev/vue-components/table) component
+
+## form
+Render the `Create` and `Update` section as a Form on modal component
