@@ -25,3 +25,16 @@ jobs:
           user_email: 'carlosdevia@imaginacolombia.com'
           user_name: 'imagina'
           commit_message: '+Added: Qcrud Doc'
+
+      - name: Publish documentation (Qcrud/Components)
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.REPO_DOCS_KEY }}
+        with:
+          source_file: '_docs/Components'
+          destination_repo: 'imagina/docs-weygo'
+          destination_branch: 'main'
+          destination_folder: './docs/VueJs/'
+          user_email: 'carlosdevia@imaginacolombia.com'
+          user_name: 'imagina'
+          commit_message: '+Added: Qcrud Components Doc'
