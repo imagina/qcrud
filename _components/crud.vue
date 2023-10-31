@@ -12,8 +12,8 @@
                    @input="emitValue" @click.native="showEventListener">
       <!--Before options slot-->
       <div slot="before-options">
-        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
-               :label="`${params.create.title || ''}`" v-if="params.create"/>
+        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green" no-caps
+               :label="`${paramsProps.create.title || ''}`" v-if="params.create"/>
       </div>
     </dynamic-field>
 
@@ -361,14 +361,15 @@ export default {
     update(item) {
       //Validate if can update
       if (this.hasPermission.edit) {
+        let params = this.paramsProps
         //Set custom item crud fields
         if (item.crudFields) this.itemCrudFields = this.$clone(item.crudFields)
         //Set data to update
         if (item.id.field) this.fieldData = item.id.field
         //Go to edit
-        if (this.params.update.to) this.$router.push({name: this.params.update.to, params: item})
+        if (params.update.to) this.$router.push({name: params.update.to, params: item})
         //Edit by method
-        else if (this.params.update.method) this.params.update.method(item)
+        else if (params.update.method) params.update.method(item)
         else {
           this.itemIdToEdit = item.id
           this.showModal = true
