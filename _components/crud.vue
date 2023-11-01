@@ -218,6 +218,14 @@ export default {
         crudData.formRight = {}
       }
 
+      if(this.showType('select')){
+        crudData.create.callback = (data) => {
+          //Set the last created item:
+          if(data && !this.dataCrudSelect.itemSelected){
+            this.setValueSelect(data)
+          }
+        }
+      }
       //Response
       return crudData
     },
@@ -435,8 +443,8 @@ export default {
       return response
     },
     //Set value to select
-    setValueSelect() {
-      let newValue = this.$clone(this.value)
+    setValueSelect(data = false) {
+      let newValue = data ? data : this.$clone(this.value)
       if (Array.isArray(newValue)) {
         let responseSelected = []
         newValue.forEach(item => responseSelected.push(item.toString()))
