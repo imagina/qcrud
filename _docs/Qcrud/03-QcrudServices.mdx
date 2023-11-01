@@ -1,0 +1,14 @@
+import {TableTabs, TableSchema} from '@site/src/components/table/table.jsx';
+import {services, genericParams} from './scheme.jsx'
+
+# Qcrud | Services
+
+## baseServices
+
+`baseServices` contains the main CRUD service methods to maintain a consistent structure for all requests.
+
+<TableTabs tabsContent={services} />
+
+## CRUD Params
+
+<TableSchema columnNames={["Name", "Content"]} data={genericParams} />
