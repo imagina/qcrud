@@ -25,7 +25,9 @@
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
                  @created="(response) => formEmmit('created', response)"
-                 @updated="formEmmit('updated')"/>
+                 @updated="formEmmit('updated')"
+                 @createdData="(response) => onCreate(response)"
+                 />
     </div>
 
     <!--=== Dialog permission deny ===-->
@@ -217,20 +219,6 @@ export default {
         crudData.formRight = {}
       }
 
-      if(this.showType('select')){
-        crudData.create.callback = (data) => {
-          //Set the last created item:
-          if(data){
-            if(Array.isArray(this.dataCrudSelect.itemSelected)){ //multiple
-              if(!this.dataCrudSelect.itemSelected.lenght){
-                this.setValueSelect([data.id])
-              }
-            } else if(!this.dataCrudSelect.itemSelected){
-              this.setValueSelect(data)
-            }
-          }
-        }
-      }
       //Response
       return crudData
     },
@@ -458,6 +446,20 @@ export default {
         this.dataCrudSelect.itemSelected = newValue ? newValue : newValue
       else
         this.dataCrudSelect.itemSelected = newValue ? newValue.toString() : newValue
+    },
+    //Set value with last created item:
+    onCreate(data){
+      if(this.showType('select')){
+        if(data){
+          if(Array.isArray(this.dataCrudSelect.itemSelected)){ //multiple
+            if(!this.dataCrudSelect.itemSelected[0]){
+              this.setValueSelect([data.id])
+            }
+          } else if(!this.dataCrudSelect.itemSelected){
+            this.setValueSelect(data)
+          }
+        }
+      }
     }
   }
 }
