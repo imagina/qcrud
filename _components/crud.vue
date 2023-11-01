@@ -6,7 +6,6 @@
     <!--=== Button to Create ===-->
     <q-btn class="btnJustCreate btn-small" v-bind="defaultProps" rounded unelevated
            @click="create()" v-if="showType('button-create')"/>
-
     <!--=== Select to List and Create ===-->
     <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
                    @input="emitValue" @click.native="showEventListener">
@@ -221,8 +220,14 @@ export default {
       if(this.showType('select')){
         crudData.create.callback = (data) => {
           //Set the last created item:
-          if(data && !this.dataCrudSelect.itemSelected){
-            this.setValueSelect(data)
+          if(data){
+            if(Array.isArray(this.dataCrudSelect.itemSelected)){ //multiple
+              if(!this.dataCrudSelect.itemSelected.lenght){
+                this.setValueSelect([data.id])
+              }
+            } else if(!this.dataCrudSelect.itemSelected){
+              this.setValueSelect(data)
+            }
           }
         }
       }
