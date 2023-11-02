@@ -6,7 +6,6 @@
     <!--=== Button to Create ===-->
     <q-btn class="btnJustCreate btn-small" v-bind="defaultProps" rounded unelevated
            @click="create()" v-if="showType('button-create')"/>
-
     <!--=== Select to List and Create ===-->
     <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
                    @input="emitValue" @click.native="showEventListener">
@@ -26,7 +25,9 @@
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
                  @created="(response) => formEmmit('created', response)"
-                 @updated="formEmmit('updated')"/>
+                 @updated="formEmmit('updated')"
+                 @createdData="(response) => onCreate(response)"
+                 />
     </div>
 
     <!--=== Dialog permission deny ===-->
@@ -435,8 +436,8 @@ export default {
       return response
     },
     //Set value to select
-    setValueSelect() {
-      let newValue = this.$clone(this.value)
+    setValueSelect(data = false) {
+      let newValue = data ? data : this.$clone(this.value)
       if (Array.isArray(newValue)) {
         let responseSelected = []
         newValue.forEach(item => responseSelected.push(item.toString()))
@@ -445,6 +446,20 @@ export default {
         this.dataCrudSelect.itemSelected = newValue ? newValue : newValue
       else
         this.dataCrudSelect.itemSelected = newValue ? newValue.toString() : newValue
+    },
+    //Set value with last created item:
+    onCreate(data){
+      if(this.showType('select')){
+        if(data){
+          if(Array.isArray(this.dataCrudSelect.itemSelected)){ //multiple
+            if(!this.dataCrudSelect.itemSelected[0]){
+              this.setValueSelect([data.id])
+            }
+          } else if(!this.dataCrudSelect.itemSelected){
+            this.setValueSelect(data)
+          }
+        }
+      }
     }
   }
 }

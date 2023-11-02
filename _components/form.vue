@@ -409,6 +409,7 @@ export default {
           this.show = false
           //this.initForm()
           this.$emit('created', formData)
+          this.$emit('createdData', requestInfo.response.data)
           if(this.params.create?.callback) this.params.create.callback(requestInfo.response.data)
         } else {
           this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
