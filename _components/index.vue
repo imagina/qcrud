@@ -170,8 +170,8 @@
                           >
                             {{ data.data }}
                           </div>
-                          <q-tooltip>
-                            {{ data.data }}
+                          <q-tooltip v-if="col.tooltip == undefined || col.tooltip">
+                            {{ col.tooltip || data.data }}
                             <label v-if="isActionableColumn(col)" class="text-weight-bold">
                               <br> {{$tr('isite.cms.label.clickToAction')}}
                             </label>

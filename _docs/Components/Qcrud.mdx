@@ -55,6 +55,7 @@ There is three components that build a CRUD component used on pages
               columns: [
                 {name: 'id', label: this.$tr('ui.form.id'), field: 'id', style: 'width: 50px'},
                 {name: 'name', label: this.$tr('ui.form.title'), field: 'title', align: 'rigth'},
+                {name: 'phone', label: this.$tr('ui.form.phone'), align: 'left', format: val => '<i class="fa-light fa-phone">', tooltip: this.$tr('ui.form.tooltip'), action: (item) => this.getPhoneNumber(item) }
                 //...
               ],
               requestParams: {include: 'parent'}
