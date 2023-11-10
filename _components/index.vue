@@ -1334,13 +1334,6 @@ export default {
   #selectedRows
     border-radius $custom-radius
 
-  .cursor-actionable
-    color #2067b0
-    cursor pointer
-    max-width max-content
-    &:hover
-      border-bottom: 2px dotted #2067b0
-
 #dialogFilters
   min-height max-content !important
 </style>
