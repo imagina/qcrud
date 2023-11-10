@@ -1,13 +1,20 @@
 import {TableTabs, TableSchema} from '@site/src/components/table/table.jsx';
-import {componentCrud, createParams, readParams, readActionsParams, readGridParams, updateParams} from './schemes/schemeQcrud.jsx'
+import {componentCrud, crudTypes, crudDataConfig, createParams, readParams, readActionsParams, readGridParams, updateParams, readColumnParams} from './schemes/schemeQcrud.jsx'
 
 # Qcrud
-
-## crud
 
 There is three components that build a CRUD component used on pages
 
 <TableTabs tabsContent={componentCrud} />
+
+## Crud Types
+
+<TableSchema columnNames={["Name", "Description"]} data={crudTypes} />
+
+## CrudData Configuration
+This configuration should be instantiated as a Vue file with a specific structure.
+
+<TableSchema columnNames={["Name", "Content"]} data={crudDataConfig} />
 
 ### Create Params
 
@@ -16,6 +23,10 @@ There is three components that build a CRUD component used on pages
 ### Read Params
 
 <TableSchema columnNames={["Name", "Content"]} data={readParams} />
+
+#### Read Columns Params
+
+<TableSchema columnNames={["Name", "Content"]} data={readColumnParams} />
 
 #### Read Actions Params
 
