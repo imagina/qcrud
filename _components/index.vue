@@ -8,7 +8,7 @@
           :extra-actions="tableActions"
           :excludeActions="params.read.noFilter ? ['filter'] : []"
           :searchAction="params.read.searchAction"
-          :title="tableTitle" 
+          :title="tableTitle"
           @search="val => search(val)"
           @new="handlerActionCreate()"
           @refresh="getDataTable(true)"
@@ -139,7 +139,6 @@
                   </q-btn-dropdown>
 
                   <label v-else>
-
                     {{ col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled') }}
                   </label>
                 </div>
@@ -170,11 +169,8 @@
                           >
                             {{ data.data }}
                           </div>
-                          <q-tooltip>
-                            {{ data.data }}
-                            <label v-if="isActionableColumn(col)" class="text-weight-bold">
-                              <br> {{$tr('isite.cms.label.clickToAction')}}
-                            </label>
+                          <q-tooltip v-if="col.tooltip == undefined || col.tooltip">
+                            {{ col.tooltip || data.data }}
                           </q-tooltip>
                         </div>
                       </template>
@@ -783,7 +779,7 @@ export default {
     async rowclick(col, row) {
       // if is an actionable column
       if (this.isActionableColumn(col)) {
-        
+
         //if the col has an action callback
         if (col.action) {
           await col.action(row)
@@ -1363,13 +1359,6 @@ export default {
 
   #selectedRows
     border-radius $custom-radius
-
-  .cursor-actionable
-    color #2067b0
-    cursor pointer
-    max-width max-content
-    &:hover
-      border-bottom: 2px dotted #2067b0
 
 #dialogFilters
   min-height max-content !important
