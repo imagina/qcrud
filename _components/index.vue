@@ -378,6 +378,7 @@
     </div>
     <!-- Export Component -->
     <master-export v-model="exportParams" ref="exportComponent" export-item/>
+    <qreable ref="qreableComponent" @created="getDataTable(true)" />
   </div>
 </template>
 
@@ -388,6 +389,7 @@ import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
+import qreable from "@imagina/qqreable/_components/qreable.vue"
 
 export default {
   props: {
@@ -397,6 +399,7 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
+    qreable
   },
   provide() {
     return {
@@ -569,6 +572,62 @@ export default {
       //Select column
       if (this.bulkActions.length) {
         columns.unshift({name: 'selectColumn', label: '', align: 'center'})
+      }
+
+      //Verify if includes qrs
+      if(this.params?.read?.requestParams?.include?.includes('qrs')) {
+        //Create column QR, if exist in include
+        const columnQr = {
+          name: 'qr', label: 'QR',
+          align: 'left',
+          format: val => '<i class="fa-light fa-qrcode" style="font-size: 20px">',
+          tooltip: this.$tr('iqreable.cms.label.view'),
+          action: (item) => {
+            //Check if there is a related QR code that is in the 'mainqr' zone
+            const qrData = item.qrs?.find(i => i.zone === 'mainqr');
+            if(qrData) {
+
+              //Display a modal with the QR code image
+              this.$refs.qreableComponent.show(qrData);
+            } else {
+              //Get the module
+              const route = this.$helper.getInfoFromPermission(this.$route.meta.permission)
+              //Set the values to create the QR code
+              const createQr = {
+                title: item.title ?? item.name ?? 'New QR',
+                zone: 'mainqr',
+                content: item.url,
+                entity_type: {
+                  ...route,
+                  entity: this.params.entityName
+                },
+                entity_id: item.id
+              }
+
+              //Ask for user confirmation for QR code creation
+              this.$alert.warning({
+                mode: 'modal',
+                title: this.$trp('iqreable.cms.label.createQr'),
+                message: this.$tr('iqreable.cms.messages.sureCreateQr'),
+                actions: [
+                  {label: this.$tr('isite.cms.label.cancel'), color: 'grey-8'},
+                  {
+                    label: this.$tr('isite.cms.label.accept'),
+                    color: 'green',
+                    handler: () => {
+                      this.loading = true
+                      //request Params to Generate QR
+                      this.$refs.qreableComponent.generate(createQr)
+                    }
+                  },
+                ]
+              })
+            }
+          }
+        }
+
+        //Set the QR column and place it in position 1 of the array
+        columns.splice(1, 0, columnQr)
       }
       //Response
       return columns
