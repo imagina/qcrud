@@ -125,6 +125,26 @@ export const createParams = [
     'method',
     { type: <code>Function</code>, description: 'Method to manually create the request. This should return a promise response.'},
   ],
+  [
+    'customFormProps',
+    {
+      type: <code>Object</code>,
+      description: 'This attribute allows you to customize the form properties when creating a new element.',
+      example: <CodeBlock language="js">
+        {
+          `create: {
+  customFormProps: {
+    type: {
+      props: {
+        readonly: true
+      }
+    }
+  }
+}`
+        }
+      </CodeBlock>
+    }
+  ],
 ]
 
 export const readParams = [
@@ -192,7 +212,27 @@ export const updateParams = [
   [
     'method',
     { type: <code>Function</code>, description: 'Method to manually create the request. This should return a promise response.' },
-  ]
+  ],
+  [
+    'customFormProps',
+    {
+      type: <code>Object</code>,
+      description: 'This attribute allows you to customize the form properties when updating a new element.',
+      example: <CodeBlock>
+        {
+          `update: {
+  customFormProps: {
+    type: {
+      props: {
+        readonly: true
+      }
+    }
+  }
+}`
+        }
+      </CodeBlock>
+    }
+  ],
 ]
 
 export const readActionsParams = [
