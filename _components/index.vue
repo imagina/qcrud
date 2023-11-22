@@ -380,6 +380,8 @@
     <master-export v-model="exportParams" ref="exportComponent" export-item/>
     <!-- Qreable Component -->
     <qreable ref="qreableComponent" @created="getDataTable(true)" />
+    <!-- Share-link Component-->
+    <share-link ref="shareLinkComponent" />
   </div>
 </template>
 
@@ -1011,13 +1013,14 @@ export default {
             this.$emit('update', item)
           }
         },
-        {//Copy disclosure link action
-          label: this.$tr('isite.cms.label.copyDisclosureLink'),
+        {//Share action
+          label: this.$tr('isite.cms.label.share'),
           format: (item) => {
-            return {vIf: item.url ? true : false}
+            return {vIf: (item.url || item.embed) ? true : false}
           },
-          icon: "fa-light fa-copy",
-          action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
+          color: 'info',
+          icon: "fa-light fa-share-alt",
+          action: (item) => this.$refs.shareLinkComponent.openModal(item)
         },
         {//Delete action
           icon: 'fa-light fa-trash-can',
