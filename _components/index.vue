@@ -1197,6 +1197,13 @@ export default {
         this.loading = false
       })
     }
+  },
+  watch: {
+    isAppOffline: {
+      handler: function () {
+        this.getDataTable(true);
+      }
+    },
   }
 }
 </script>
