@@ -189,7 +189,7 @@ export default {
         this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
-        reject(error.response.data.errors)//Failed response
+        reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
       })
     })
   },
