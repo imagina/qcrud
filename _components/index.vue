@@ -851,10 +851,10 @@ export default {
                   this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
                   this.loading = false
                 })
-
-                if (this.isAppOffline) {
-                  await cacheOffline.deleteItem(item.id);
-                }
+                
+                const CACHE_PATH = 'apiRoutes.qramp.workOrders'
+                cacheOffline.deleteItem(item.id, CACHE_PATH)
+                
               }
             }
           }
