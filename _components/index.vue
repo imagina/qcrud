@@ -564,7 +564,6 @@ export default {
     filterDataTable() {
       const filterData = this.table.data.filter(item => {
         if (this.isAppOffline) {
-          //console.log('ingreso offline');
           return Object.values(item).some(value => {
             if (value) {
               const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
@@ -691,29 +690,7 @@ export default {
     },
     async requestDataTable(apiRoute, params, pagination) {
       try {
-        if (this.isAppOffline) {
-          const cachePaginate = await paginateCacheOffline(apiRoute, this.table.filter.search, pagination.page, pagination.rowsPerPage);
-          if (cachePaginate.data.length > 0) {
-            return cachePaginate;
-          } else {
-            return await this.$crud.index(apiRoute, params)
-              .catch(error => {
-                this.$apiResponse.handleError(error, () => {
-                  this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
-                  console.error(error)
-                  this.loading = false
-                })
-              })
-          }
-        }
-        const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
-          .catch(error => {
-            this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
-            console.error(error)
-            this.loading = false
-          })
-
-        return response || {
+        const modelRequest = {
           data: [],
           meta: {
             page: {
@@ -722,6 +699,30 @@ export default {
             },
           }
         };
+
+        if (this.isAppOffline) {
+          const cachePaginate = await paginateCacheOffline(
+            apiRoute, 
+            this.table.filter.search, 
+            pagination.page, 
+            pagination.rowsPerPage
+          )
+          if (cachePaginate.data.length > 0) {
+            return cachePaginate
+          }
+          return modelRequest
+        }
+
+        const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
+          .catch(error => {
+            if (!this.isAppOffline) {
+              this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
+            }
+            console.error(error)
+            this.loading = false
+          })
+
+        return response || modelRequest
       } catch (error) {
         console.log(error);
         this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
@@ -848,7 +849,9 @@ export default {
                   //Close loading
                   this.loading = false
                 }).catch(error => {
-                  this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
+                  if (!this.isAppOffline) {
+                    this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
+                  }
                   this.loading = false
                 })
                 
