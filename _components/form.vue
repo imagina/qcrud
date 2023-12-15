@@ -187,7 +187,6 @@ export default {
       this.loading = true//loading
       this.locale = {fields: {options: {}}, fieldsTranslatable: {}, form: {}}//Reset locales
       this.paramsProps = this.$clone(this.params)
-      console.log('this.paramsProps - init', this.paramsProps)
       await Promise.all([
         this.getExtraFields(),//Get extra fields to backend
         this.$hook.dispatchEvent(//Dispatch hook event
@@ -281,11 +280,8 @@ export default {
         if (!this.paramsProps.field) {
           //Request
           if (this.isAppOffline) {
-            console.log('this.itemId', this.itemId)
-            console.log('propParams.apiRoute', propParams.apiRoute)
             cacheOffline.getItemById(this.itemId, propParams.apiRoute)
               .then(response => {
-                console.log('response - workOrderStatus', response)
                 this.locale.form = this.$clone(response)
                 resolve(true)
               })
@@ -299,20 +295,20 @@ export default {
           }
 
           this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
-            console.log('response - getDataItem', response)
             this.locale.form = this.$clone(response.data)
             this.loading = false//hide loading
             resolve(true)
           }).catch(error => {
             this.$apiResponse.handleError(error, () => {
-              this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+              if (!this.isAppOffline) {
+                this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+              }
               this.loading = false//hide loading
               reject(false)
             })
           })
         } else { //Request if exist field
           //Request
-          console.log('propParams.apiRoute - index', propParams.apiRoute)
           this.$crud.index(propParams.apiRoute, params).then(response => {
             //Save data field
             this.dataField = {
@@ -328,7 +324,9 @@ export default {
             resolve(true)
           }).catch(error => {
             this.$apiResponse.handleError(error, () => {
-              this.$alert.error(this.$tr('isite.cms.message.errorRequest'))
+              if (!this.isAppOffline) {
+                this.$alert.error(this.$tr('isite.cms.message.errorRequest'))
+              }
               this.loading = false//hide loading
               reject(false)
             })
@@ -347,18 +345,21 @@ export default {
         let propParams = this.$clone(this.paramsProps)
         let formData = this.$clone(await this.getDataForm())
         let requestInfo = {response: false, error: false}//Default request response
-        let customParams = {params: {titleOffline: this.modalProps.title || ''}}
 
         try {
           if (propParams.create.method) {
             requestInfo.response = await propParams.create.method(formData)
           } else  {
             try {
-              requestInfo.response = await this.$crud.create(propParams.apiRoute, formData, customParams)
+              requestInfo.response = await this.$crud.create(
+                propParams.apiRoute, 
+                { ...formData, titleOffline: this.modalProps.title || '' }
+              )
             } catch (err) {
               requestInfo.error = err
             }
-            requestInfo.response = this.saveInCache(propParams.apiRoute, requestInfo.response?.data, formData)
+            await this.saveInCache(propParams.apiRoute, requestInfo.response?.data, formData)
+            if (this.isAppOffline) requestInfo.response = true
           }
         } catch (err) {
           requestInfo.error = err
@@ -374,13 +375,11 @@ export default {
           await this.$hook.dispatchEvent('wasCreated', {entityName: this.params.entityName})
           this.loading = false
           this.show = false
-          //this.initForm()
           this.$emit('created', formData)
         } else {
           if (!this.isAppOffline) {
             this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
           }
-          this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
           this.loading = false//login hide
           if (requestInfo.error) {//Message Validate
             let errorMsg = JSON.parse(requestInfo.error)
@@ -390,7 +389,9 @@ export default {
                 pos: 'bottom', timeOut: 4000
               })
             } else {
-              this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
+              if (!this.isAppOffline) {
+                this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
+              }
             }
           }
         }
@@ -401,7 +402,6 @@ export default {
       if (await this.$refs.localeComponent.validateForm()) {
         this.loading = true
         let propParams = this.$clone(this.paramsProps)
-        console.log('propParams - update', propParams)
         let criteria = this.$clone(this.itemId)
         let requestInfo = {response: false, error: false}//Default request response
         let formData = this.$clone(await this.getDataForm())
@@ -415,31 +415,34 @@ export default {
         if (this.paramsProps.field && this.dataField.id) criteria = this.dataField.id
 
         //Request
-        await new Promise((resolve, reject) => {
+        try {
           if (propParams.update.method) {
-            //Call custom method
-            propParams.update.method(criteria, formData, customParams).then(response => {
-              requestInfo.response = response
-              return resolve(true)
-            }).catch(error => {
-              requestInfo.error = error
-              return resolve(true)
-            })
+            // Call custom method
+            requestInfo.response = await propParams.update.method(criteria, formData, customParams)
           } else {
-            this.$crud.update(propParams.apiRoute, criteria, formData, customParams).then(response => {
-              requestInfo.response = response
-              return resolve(true)
-            }).catch(error => {
-              requestInfo.error = error
-              return resolve(true)
-            })
+            await cacheOffline.updateRecord(propParams.apiRoute, formData, criteria)
+
+            requestInfo.response = await this.$crud.update(
+              propParams.apiRoute, 
+              criteria, 
+              formData, 
+              customParams
+            )
           }
-        })
+        } catch (error) {
+          requestInfo.error = error
+        }
+
+        if (this.isAppOffline) {
+          requestInfo.response = true
+        }
 
         //Action after request
         if (requestInfo.response) {
           this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
-          this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
+          if (!this.isAppOffline) {
+            this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
+          }
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasUpdated', {entityName: this.params.entityName})
           this.loading = false
@@ -448,7 +451,9 @@ export default {
           this.$emit('updated', requestInfo.response.data)
         } else {
           this.loading = false
-          this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
+          if (!this.isAppOffline) {
+            this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
+          }
         }
       }
     },
