@@ -780,9 +780,7 @@ export default {
         return response || modelRequest
       } catch (error) {
         console.log(error);
-        if (!this.isAppOffline) {
-          this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
-        }
+        this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
       }
     },
     //Get products
@@ -887,37 +885,34 @@ export default {
                   this.getDataTable(true)
                   this.loading = false
                 }).catch(error => {
-                  if (!this.isAppOffline) {
-                    this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
-                  }
+                  this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
                   this.loading = false
                 })
-
-                await cacheOffline.updateRecord(propParams.apiRoute, dataField, dataField.id)
               } else {
                 //Request
                 if (this.isAppOffline) {
                   this.table.data = this.table.data.filter(data => item.id !== data.id);
                   this.loading = false;
                 }
-                this.$crud.delete(propParams.apiRoute, item.id, customParams)
-                  .then(response => {
-                    this.$alert.info({ message: this.$tr('isite.cms.message.recordDeleted') })
-                    this.getDataTable(true)
+                this.$crud.delete(propParams.apiRoute, item.id, customParams).then(response => {
+                  this.$alert.info({ message: this.$tr('isite.cms.message.recordDeleted') })
+                  this.getDataTable(true)
 
-                    //Dispatch event hook
-                    this.$hook.dispatchEvent('wasDeleted', { entityName: this.params.entityName })
+                  //Dispatch event hook
+                  this.$hook.dispatchEvent('wasDeleted', { entityName: this.params.entityName })
 
-                    //Close loading
-                    this.loading = false
-                  }).catch(error => {
-                    if (!this.isAppOffline) {
-                      this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
-                    }
-                    this.loading = false
-                  })
+                  //Close loading
+                  this.loading = false
+                }).catch(error => {
+                  if (!this.isAppOffline) {
+                    this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' })
+                  }
+                  this.loading = false
+                })
                 
-                await cacheOffline.deleteItem(item.id, propParams.apiRoute)
+                const CACHE_PATH = 'apiRoutes.qramp.workOrders'
+                cacheOffline.deleteItem(item.id, CACHE_PATH)
+                
               }
             }
           }
@@ -962,18 +957,13 @@ export default {
       }
     },
     //Update item status
-    async updateStatus(item) {
+    updateStatus(item) {
       this.loading = true
       //Request Data
       let requestData = {
         id: item.row.id,
         [item.col.name]: (typeof item.row[item.col.name] == "boolean") ? !item.row[item.col.name] :
           parseInt(item.row[item.col.name]) ? 0 : 1
-      }
-      const customParams = { 
-        params: { 
-          titleOffline: `Update status - ${item.row.id || ''}`
-        } 
       }
 
       //Validate if is translatable
@@ -984,33 +974,20 @@ export default {
         delete requestData[item.col.name]
       }
 
-      try {
-        await cacheOffline.updateRecord(this.params.apiRoute, requestData, item.row.id)
-
-        try {
-          await this.$crud.update(
-            this.params.apiRoute, 
-            item.row.id, 
-            requestData,
-            customParams,
-          )
-          this.$alert.info({ message: this.$tr('isite.cms.message.recordUpdated') })
-        } catch (error) {
-          if (!this.isAppOffline) {
-            this.$alert.error({ message: this.$tr('isite.cms.message.recordNoUpdated') })
-          }
-        }
-
+      //Request
+      this.$crud.update(this.params.apiRoute, item.row.id, requestData).then(response => {
+        //Change value status in data
         this.table.data = this.$clone(this.table.data.map(itemData => {
           //Change status
           if (itemData.id == item.row.id) itemData[item.col.name] = requestData[item.col.name]
           return itemData//Response
         }))
-      } catch (error) {
-        this.$alert.error('Error updating record', error)
-      }
-
-      this.loading = false
+        this.loading = false
+        this.$alert.info({ message: this.$tr('isite.cms.message.recordUpdated') })
+      }).catch(error => {
+        this.loading = false
+        this.$alert.error({ message: this.$tr('isite.cms.message.recordNoUpdated') })
+      })
     },
     //Return field actions
     fieldActions(field) {

@@ -4,7 +4,6 @@ import {helper} from '@imagina/qsite/_plugins/helper'
 import cache from '@imagina/qsite/_plugins/cache'
 import config from '@imagina/qsite/_config/master/index'
 import apiResponse from '@imagina/qcrud/_plugins/apiResponse'
-import { is } from 'quasar'
 
 //Replace params in apiRoute
 function replaceParamsApiRoute(apiRoute, params) {
@@ -12,9 +11,6 @@ function replaceParamsApiRoute(apiRoute, params) {
   return apiRoute
 }
 
-const isAppOffline = () => {
-  return !window.navigator.onLine
-}
 
 export default {
   /**
@@ -24,6 +20,7 @@ export default {
    * @returns {Promise<any>}
    */
   create(configName, data, params = {}) {
+    console.log(params)
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
@@ -63,22 +60,18 @@ export default {
             await axios.get(urlApi, {params: params.params}).then(response => {
               resolve(response)//Response
             }).catch(error => {
-              if (!isAppOffline()) {
-                apiResponse.handleError(error, () => {
-                  console.error('[base-service-index-callback]Error::', error)
-                })
-                reject(error.response || error)//Response
-              }
+              apiResponse.handleError(error, () => {
+                console.error('[base-service-index-callback]Error::', error)
+              })
+              reject(error.response || error)//Response
             })
           })
         }
       }).then(response => resolve(response)).catch(error => {
-        if (!isAppOffline()) {
-          apiResponse.handleError(error, () => {
-            console.error('[base-service-index]Remember-Error::', error)
-          })
-          reject(error)
-        }
+        apiResponse.handleError(error, () => {
+          console.error('[base-service-index]Remember-Error::', error)
+        })
+        reject(error)
       })
     })
   },
@@ -107,11 +100,9 @@ export default {
             axios.get(urlApi, {params: params.params}).then(response => {
               resolve(response)//Response
             }).catch(error => {
-              if (!isAppOffline()) {
-                apiResponse.handleError(error, () => {
-                  reject(error.response || error)
-                })
-              }
+              apiResponse.handleError(error, () => {
+                reject(error.response || error)
+              })
             })
           })
         }
