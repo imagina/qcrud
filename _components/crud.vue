@@ -6,13 +6,14 @@
     <!--=== Button to Create ===-->
     <q-btn class="btnJustCreate btn-small" v-bind="defaultProps" rounded unelevated
            @click="create()" v-if="showType('button-create')"/>
+
     <!--=== Select to List and Create ===-->
     <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
                    @input="emitValue" @click.native="showEventListener">
       <!--Before options slot-->
       <div slot="before-options">
-        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green" no-caps
-               :label="`${paramsProps.create.title || ''}`" v-if="params.create"/>
+        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green"
+               :label="`${params.create.title || ''}`" v-if="params.create"/>
       </div>
     </dynamic-field>
 
@@ -25,9 +26,7 @@
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
                  @created="(response) => formEmmit('created', response)"
-                 @updated="formEmmit('updated')"
-                 @createdData="(response) => onCreate(response)"
-                 />
+                 @updated="formEmmit('updated')"/>
     </div>
 
     <!--=== Dialog permission deny ===-->
@@ -362,16 +361,15 @@ export default {
     update(item) {
       //Validate if can update
       if (this.hasPermission.edit) {
-        let params = this.paramsProps
         //Set custom item crud fields
         if (item.crudFields) this.itemCrudFields = this.$clone(item.crudFields)
         //Set data to update
         if (item.id.field) this.fieldData = item.id.field
         //Go to edit
-        if (params.update.to) this.$router.push({name: params.update.to, params: item})
+        if (this.params.update.to) this.$router.push({name: this.params.update.to, params: item})
         //Edit by method
-        else if (params.update.method) params.update.method(item)
-        else {
+        else if (this.params.update.method) this.params.update.method(item)
+        else if(this.params.update) {
           this.itemIdToEdit = item.id
           this.showModal = true
         }
@@ -436,8 +434,8 @@ export default {
       return response
     },
     //Set value to select
-    setValueSelect(data = false) {
-      let newValue = data ? data : this.$clone(this.value)
+    setValueSelect() {
+      let newValue = this.$clone(this.value)
       if (Array.isArray(newValue)) {
         let responseSelected = []
         newValue.forEach(item => responseSelected.push(item.toString()))
@@ -446,20 +444,6 @@ export default {
         this.dataCrudSelect.itemSelected = newValue ? newValue : newValue
       else
         this.dataCrudSelect.itemSelected = newValue ? newValue.toString() : newValue
-    },
-    //Set value with last created item:
-    onCreate(data){
-      if(this.showType('select')){
-        if(data){
-          if(Array.isArray(this.dataCrudSelect.itemSelected)){ //multiple
-            if(!this.dataCrudSelect.itemSelected[0]){
-              this.setValueSelect([data.id])
-            }
-          } else if(!this.dataCrudSelect.itemSelected){
-            this.setValueSelect(data)
-          }
-        }
-      }
     }
   }
 }
