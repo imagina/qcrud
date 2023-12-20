@@ -4,17 +4,9 @@
     <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
       <!--Page Actions-->
       <div class="q-my-md">
-        <page-actions
-          :extra-actions="tableActions"
-          :excludeActions="params.read.noFilter ? ['filter'] : []"
-          :searchAction="params.read.searchAction"
-          :title="tableTitle"
-          @search="val => search(val)"
-          @new="handlerActionCreate()"
-          @refresh="getDataTable(true)"
-          ref="pageActionRef"
-          :tour-name="tourName"
-        />
+        <page-actions :extra-actions="tableActions" :excludeActions="params.read.noFilter ? ['filter'] : []"
+          :searchAction="params.read.searchAction" :title="tableTitle" @search="val => search(val)"
+          @new="handlerActionCreate()" @refresh="getDataTable(true)" ref="pageActionRef" :tour-name="tourName" />
       </div>
       <!-- Bulk Actions -->
       <div v-if="selectedRows.length" id="selectedRows"
@@ -73,14 +65,8 @@
                 </div>
                 <!-- Button table collapsable -->
                 <div v-if="col.name === 'expandibleColumn'">
-                  <q-btn
-                      size="sm"
-                      flat
-                      round
-                      color="blue-grey"
-                      :icon="tableCollapseIcon(props.key)"
-                      @click="toggleRelationContent(props)"
-                  />
+                  <q-btn size="sm" flat round color="blue-grey" :icon="tableCollapseIcon(props.key)"
+                    @click="toggleRelationContent(props)" />
                 </div>
                 <!--Actions column-->
                 <div class="crudIndexActionsColumn" v-if="col.name == 'actions'">
@@ -109,6 +95,7 @@
                   </q-btn-dropdown>
 
                   <label v-else>
+
                     {{ col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled') }}
                   </label>
                 </div>
@@ -120,27 +107,17 @@
                       :isLoading="col.formatAsync ? loading : false">
                       <template v-slot="data">
                         <div>
-                          <div 
-                            v-if="col.bgTextColor && data.data"
-                            @click="rowclick(col,props.row)"
-                            :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
-                          >
+                          <div v-if="col.bgTextColor && data.data" @click="rowclick(col, props.row)"
+                            :class="(col.textColor ? ' text-' + col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')">
                             <q-badge :class="col.bgTextColor" v-html="data.data">
                               {{ data.data }}
                             </q-badge>
                           </div>
                           <!--Label-->
-                          <div
-                            v-else
-                            @click="rowclick(col,props.row)"
-                            v-html="data.data"
-                            :class="(isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
-                          >
+                          <div v-else @click="rowclick(col, props.row)" v-html="data.data"
+                            :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-' + col.textColor : '')">
                             {{ data.data }}
                           </div>
-                          <q-tooltip v-if="col.tooltip == undefined || col.tooltip">
-                            {{ col.tooltip || data.data }}
-                          </q-tooltip>
                         </div>
                       </template>
                     </promiseTemplate>
@@ -238,30 +215,18 @@
                             :isLoading="col.formatAsync ? loading : false">
                             <template v-slot="data">
                               <div>
-                                <div 
-                                  v-if="col.bgTextColor && data.data"
-                                  @click="rowclick(col,props.row)"
-                                  :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
-                                >
+                                <div v-if="col.bgTextColor && data.data" @click="rowclick(col, props.row)"
+                                  :class="(col.textColor ? ' text-' + col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')">
                                   <q-badge :class="col.bgTextColor" v-html="data.data">
                                     {{ data.data }}
                                   </q-badge>
                                 </div>
                                 <!--Label-->
-                                <div
-                                    v-else
-                                    @click="rowclick(col,props.row)"
-                                    v-html="data.data"
-                                    :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
-                                >
+                                <div v-else @click="rowclick(col, props.row)" v-html="data.data"
+                                  :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-' + col.textColor : '')">
                                   {{ data.data }}
                                 </div>
-                                <q-tooltip>
-                                  {{ data.data }}
-                                  <label v-if="isActionableColumn(col)" class="text-weight-bold">
-                                    <br> {{$tr('isite.cms.label.clickToAction')}}
-                                  </label>
-                                </q-tooltip>
+                                <q-tooltip>{{ data.data }}</q-tooltip>
                               </div>
                             </template>
                           </promiseTemplate>
@@ -307,11 +272,7 @@
       </div>
     </div>
     <!-- Export Component -->
-    <master-export v-model="exportParams" ref="exportComponent" export-item/>
-    <!-- Qreable Component -->
-    <qreable ref="qreableComponent" @created="getDataTable(true)" />
-    <!-- Share-link Component-->
-    <share-link ref="shareLinkComponent" />
+    <master-export v-model="exportParams" ref="exportComponent" export-item />
   </div>
 </template>
 
@@ -324,7 +285,6 @@ import foldersStore from '@imagina/qsite/_components/master/folders/store/folder
 import _ from "lodash";
 import paginateCacheOffline from '@imagina/qsite/_plugins/paginateCacheOffline.js';
 import cacheOffline from '@imagina/qsite/_plugins/cacheOffline';
-import qreable from "@imagina/qqreable/_components/qreable.vue"
 
 export default {
   props: {
@@ -334,7 +294,6 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable
   },
   provide() {
     return {
@@ -421,13 +380,14 @@ export default {
           label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
           vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
           props: {
-            icon: this.localShowAs != 'grid' ? 'fa-light fa-grid-horizontal' : 'fa-light fa-list',
+            icon: this.localShowAs != 'grid' ? 'fa-duotone fa-grid-horizontal' : 'fa-duotone fa-list',
             id: 'crudIndexViewAction'
           },
           vIfAction: this.readShowAs === 'drag',
           action: () => {
             const alternativeShow = this.readShowAs != "table" ? this.readShowAs : 'grid'
             this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
+            this.getDataTable(true)
           },
         })
       }
@@ -512,21 +472,6 @@ export default {
       //Select column
       if (this.bulkActions.length) {
         columns.unshift({ name: 'selectColumn', label: '', align: 'center' })
-      }
-
-      //Verify if includes qrs
-      if(this.params?.read?.requestParams?.include?.includes('qrs')) {
-        //Create column QR, if exist in include
-        const columnQr = {
-          name: 'qr', label: 'QR',
-          align: 'left',
-          format: val => '<i class="fa-light fa-qrcode" style="font-size: 20px">',
-          tooltip: this.$tr('iqreable.cms.label.view'),
-          action: (item) => this.setActionQr(item)
-        }
-
-        //Set the QR column and place it in position 1 of the array
-        columns.splice(1, 0, columnQr)
       }
       //Response
       return columns
@@ -619,6 +564,7 @@ export default {
     filterDataTable() {
       const filterData = this.table.data.filter(item => {
         if (this.isAppOffline) {
+          //console.log('ingreso offline');
           return Object.values(item).some(value => {
             if (value) {
               const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
@@ -730,7 +676,6 @@ export default {
     async rowclick(col, row) {
       // if is an actionable column
       if (this.isActionableColumn(col)) {
-
         //if the col has an action callback
         if (col.action) {
           await col.action(row)
@@ -739,6 +684,7 @@ export default {
           let defaultAction = this.fieldActions(col).find(action => {
             return action.default ?? false
           })
+
           if (defaultAction.action) await defaultAction.action(row)
         }
       }
@@ -999,47 +945,45 @@ export default {
         return action.default ?? false;
       })
       //Add default actions
-      actions = [
-        {//Edit action
-          icon: 'fa-light fa-pencil',
-          color: 'green',
-          default: defaultAction ? false : true,
-          label: this.$tr('isite.cms.label.edit'),
-          vIf: this.permitAction(field).edit,
-          action: (item) => {
-            this.$emit('update', item)
-          }
+      actions = [...actions,
+      //Export
+      {
+        label: this.$tr('isite.cms.label.export'),
+        vIf: this.exportParams,
+        icon: 'fa-light fa-download',
+        action: (item) => this.$refs.exportComponent.showReportItem({
+          item: item,
+          exportParams: { fileName: `${this.exportParams.fileName}-${item.id}` },
+          filter: { id: item.id }
+        })
+      },
+      {//Edit action
+        icon: 'fa-light fa-pencil',
+        color: 'green',
+        default: defaultAction ? false : true,
+        label: this.$tr('isite.cms.label.edit'),
+        vIf: this.permitAction(field).edit,
+        action: (item) => {
+          this.$emit('update', item)
+        }
+      },
+      {//Copy disclosure link action
+        label: this.$tr('isite.cms.label.copyDisclosureLink'),
+        format: (item) => {
+          return { vIf: item.url ? true : false }
         },
-        {//Share action
-          label: this.$tr('isite.cms.label.share'),
-          format: (item) => {
-            return {vIf: (item.url || item.embed) ? true : false}
-          },
-          color: 'info',
-          icon: "fa-light fa-share-alt",
-          action: (item) => this.$refs.shareLinkComponent.openModal(item)
-        },
-        {//Delete action
-          icon: 'fa-light fa-trash-can',
-          color: 'red',
-          label: this.$tr('isite.cms.label.delete'),
-          vIf: this.permitAction(field).destroy,
-          action: (item) => {
-            this.deleteItem(item)
-          }
-        },
-         //Export
-         {
-          label: this.$tr('isite.cms.label.export'),
-          vIf: this.exportParams,
-          icon: 'fa-light fa-download',
-          action: (item) => this.$refs.exportComponent.showReportItem({
-            item: item,
-            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
-            filter: {id: item.id}
-          })
-        },
-        ...actions
+        icon: "fa-light fa-copy",
+        action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
+      },
+      {//Delete action
+        icon: 'fa-light fa-trash-can',
+        color: 'red',
+        label: this.$tr('isite.cms.label.delete'),
+        vIf: this.permitAction(field).destroy,
+        action: (item) => {
+          this.deleteItem(item)
+        }
+      }
       ]
 
       //Order field actions
@@ -1264,52 +1208,7 @@ export default {
         this.getDataTable(true);
       }
     },
-  },
-  setActionQr(item) {
-    //Check if there is a related QR code that is in the 'mainqr' zone
-    const qrData = item.qrs?.find(i => i.zone === 'mainqr');
-    if(qrData) {
-      //Display a modal with the QR code image
-      this.$refs.qreableComponent.show(qrData);
-    } else {
-      //Get the module
-      const route = this.$helper.getInfoFromPermission(this.$route.meta.permission)
-
-      //Capitalize module and entity
-      const module = this.$helper.toCapitalize(route.module)
-      const entity = this.$helper.toCapitalize(this.params.entityName)
-      //Create the correct entity_type
-      const entity_type = `Modules\\${module}\\Entities\\${entity}`;
-
-      //Set the values to create the QR code
-      const createQr = {
-        title: item.title ?? item.name ?? `${this.params.entityName}-${item.id}`,
-        zone: 'mainqr',
-        content: item.url,
-        entity_type,
-        entity_id: item.id
-      }
-
-      //Ask for user confirmation for QR code creation
-      this.$alert.warning({
-        mode: 'modal',
-        title: this.$trp('iqreable.cms.label.createQr'),
-        message: this.$tr('iqreable.cms.messages.sureCreateQr'),
-        actions: [
-          {label: this.$tr('isite.cms.label.cancel'), color: 'grey-8'},
-          {
-            label: this.$tr('isite.cms.label.accept'),
-            color: 'green',
-            handler: () => {
-              this.loading = true
-              //request Params to Generate QR
-              this.$refs.qreableComponent.generate(createQr)
-            }
-          },
-        ]
-      })
-    }
-  },
+  }
 }
 </script>
 

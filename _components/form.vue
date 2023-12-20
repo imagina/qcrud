@@ -7,19 +7,9 @@
       <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
         <div class="relative-position col-12">
           <!--Forms-->
-          <dynamic-field
-            v-if="fieldBanner"
-            :field="fieldBanner"
-          />
-          <q-form 
-            autocorrect="off" 
-            autocomplete="off" 
-            ref="formContent" 
-            class="row q-col-gutter-md col-12"
-            @submit="(!isUpdate && !field) ?  createItem() : updateItem()" 
-            v-if="success"
-            @validation-error="$alert.error($tr('isite.cms.message.formInvalid'))"
-          >
+          <q-form autocorrect="off" autocomplete="off" ref="formContent" class="row q-col-gutter-md col-12"
+                  @submit="(!isUpdate && !field) ?  createItem() : updateItem()" v-if="success"
+                  @validation-error="$alert.error($tr('isite.cms.message.formInvalid'))">
             <!--Language-->
             <div 
               :class="locale.languages && (locale.languages.length >= 2) ? 'col-12' : 'q-pa-none'"
@@ -168,22 +158,6 @@ export default {
       if (this.itemId === false) return false
       return true
     },
-    fieldBanner() {
-      const description = this.isUpdate 
-        ? this.paramsProps?.update?.description 
-        : this.paramsProps?.create?.description
-
-      if (!description) return null
-
-      return  {
-        type: 'banner',
-        props: {
-          color: 'blue-grey-4',
-          icon: 'fas fa-exclamation-triangle',
-          message: description
-        }
-      }
-    },
     //Actions to store component
     componentStore() {
       return {
@@ -224,19 +198,6 @@ export default {
         },
       }
     },
-    customFieldProps() {
-      const customFormProps = this.isUpdate 
-        ? this.paramsProps?.update?.customFormProps 
-        : this.paramsProps?.create?.customFormProps
-        
-      const paramsProps = this.$clone(this.paramsProps)
-
-      if(customFormProps) {
-        return this.injectProps(customFormProps, paramsProps)
-      }
-
-      return this.paramsProps
-    }
   },
   methods: {
     //Init form
@@ -245,7 +206,6 @@ export default {
       this.loading = true//loading
       this.locale = {fields: {options: {}}, fieldsTranslatable: {}, form: {}}//Reset locales
       this.paramsProps = this.$clone(this.params)
-      console.log('this.paramsProps - init', this.paramsProps)
       await Promise.all([
         this.getExtraFields(),//Get extra fields to backend
         this.$hook.dispatchEvent(//Dispatch hook event
@@ -339,11 +299,8 @@ export default {
         if (!this.paramsProps.field) {
           //Request
           if (this.isAppOffline) {
-            console.log('this.itemId', this.itemId)
-            console.log('propParams.apiRoute', propParams.apiRoute)
             cacheOffline.getItemById(this.itemId, propParams.apiRoute)
               .then(response => {
-                console.log('response - workOrderStatus', response)
                 this.locale.form = this.$clone(response)
                 resolve(true)
               })
@@ -357,7 +314,6 @@ export default {
           }
 
           this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
-            console.log('response - getDataItem', response)
             this.locale.form = this.$clone(response.data)
             this.loading = false//hide loading
             resolve(true)
@@ -370,7 +326,6 @@ export default {
           })
         } else { //Request if exist field
           //Request
-          console.log('propParams.apiRoute - index', propParams.apiRoute)
           this.$crud.index(propParams.apiRoute, params).then(response => {
             //Save data field
             this.dataField = {
@@ -434,8 +389,6 @@ export default {
           this.show = false
           //this.initForm()
           this.$emit('created', formData)
-          this.$emit('createdData', requestInfo.response.data)
-          if(this.params.create?.callback) this.params.create.callback(requestInfo.response.data)
         } else {
           if (!this.isAppOffline) {
             this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
@@ -456,13 +409,6 @@ export default {
           }
         }
 
-        if (this.paramsProps.events) {
-          const events = this.paramsProps.events
-          if (events.createdSon && formData.parentId) {
-            const idNewForm = requestInfo.response.data.id
-            events.createdSon(idNewForm)
-          }
-        }
       }
     },
     //Update Category
@@ -470,7 +416,6 @@ export default {
       if (await this.$refs.localeComponent.validateForm()) {
         this.loading = true
         let propParams = this.$clone(this.paramsProps)
-        console.log('propParams - update', propParams)
         let criteria = this.$clone(this.itemId)
         let requestInfo = {response: false, error: false}//Default request response
         let formData = this.$clone(await this.getDataForm())
@@ -515,29 +460,11 @@ export default {
           this.show = false
           //this.initForm()
           this.$emit('updated', requestInfo.response.data)
-          if(this.params.update?.callback) this.params.update.callback(requestInfo.response.data)
         } else {
           this.loading = false
           this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
         }
       }
-    },
-    injectProps(customFormProps, paramsProps) {
-      ["formLeft","formRight"].forEach(type => {
-        Object.keys(paramsProps[type]).forEach(fieldName => {
-          if (customFormProps[fieldName]) {
-            paramsProps[type][fieldName] = {
-              ...paramsProps[type][fieldName],
-              ...customFormProps[fieldName],
-              props: {
-                ...(paramsProps[type][fieldName].props || {}),
-                ...(customFormProps[fieldName].props || {})
-              }
-            }
-          }
-        })
-      })
-      return paramsProps
     },
     //Return data of form
     getDataForm() {
