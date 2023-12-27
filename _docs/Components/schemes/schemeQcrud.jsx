@@ -105,6 +105,24 @@ export const crudDataConfig = [
   [
     'getDataForm',
     { type: <code>Function</code>, description: <>This method accepts two parameters, <code>data</code> and <code>typeForm</code> (create or update). If this method is defined, it intercepts the data before the create or update request to allow modification of the data before sending it.</>},
+  ],
+  [
+    'handleFormUpdates',
+    {
+      type: <code>Function</code>,
+      Params: <code>formData, changedFields, formType</code>,
+      description: "Monitors each change that occurs in the form, allowing the incorporation of custom logic. When a change in a value is detected, it provides the ability to make decisions on whether to modify another value accordingly.",
+      example: <CodeBlock language="js">
+        {
+          `handleFormUpdates: (formData, changedFields, formType) => {
+  return new Promise(resolve => {
+    if (changedFields.includes('entityType')) formData.type = null
+    resolve(formData)
+  })
+}`
+        }
+      </CodeBlock>
+    },
   ]
 ]
 
