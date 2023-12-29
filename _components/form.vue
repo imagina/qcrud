@@ -31,7 +31,7 @@
               <div>
                 <!--Fields-->
                 <div 
-                  v-for="(field, key) in customFieldProps[pos]" :key="key" :ref="key"
+                  v-for="(field, key) in paramsProps[pos]" :key="key" :ref="key"
                 >
                   <!--Dynamic fake field-->
                   <dynamic-field 
