@@ -714,6 +714,9 @@ export default {
           return modelRequest
         }
 
+        console.log('params - index', params);
+        console.log('apiRoute', apiRoute);
+
         const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
           .catch(error => {
             if (!this.isAppOffline) {
@@ -722,11 +725,14 @@ export default {
             console.error(error)
             this.loading = false
           })
+          console.log('response - index', response);
 
         return response || modelRequest
       } catch (error) {
         console.log(error);
-        this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
+        if (!this.isAppOffline) {
+          this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
+        }
       }
     },
     //Get products
