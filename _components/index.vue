@@ -564,7 +564,6 @@ export default {
     filterDataTable() {
       const filterData = this.table.data.filter(item => {
         if (this.isAppOffline) {
-          //console.log('ingreso offline');
           return Object.values(item).some(value => {
             if (value) {
               const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
@@ -714,9 +713,6 @@ export default {
           return modelRequest
         }
 
-        console.log('params - index', params);
-        console.log('apiRoute', apiRoute);
-
         const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
           .catch(error => {
             if (!this.isAppOffline) {
@@ -725,7 +721,6 @@ export default {
             console.error(error)
             this.loading = false
           })
-          console.log('response - index', response);
 
         return response || modelRequest
       } catch (error) {
