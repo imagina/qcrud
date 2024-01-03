@@ -317,7 +317,6 @@ export default {
               })
             return
           }
-          console.log('params', params)
 
           this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
             this.locale.form = this.$clone(response.data)
