@@ -432,41 +432,54 @@ export default {
 
       }
     },
+    async executeUpdateRequest() {
+      const propParams = this.$clone(this.paramsProps)
+      const formData = this.$clone(await this.getDataForm())
+      const customParams = {
+        params: {
+          titleOffline: this.modalProps.title || ''
+        }
+      }
+      let criteria = this.$clone(this.itemId)
+      let response = null
+      let errorResponse = null
+
+      //If is field update criteria
+      if (this.paramsProps.field && this.dataField.id) criteria = this.dataField.id
+
+      try {
+        if (propParams.update.method) {
+          // Call custom method
+          response = await propParams.update.method(criteria, formData, customParams)
+        } else {
+          await cacheOffline.updateRecord(propParams.apiRoute, formData, criteria)
+
+          response = await this.$crud.update(
+            propParams.apiRoute, 
+            criteria, 
+            formData, 
+            customParams
+          )
+        }
+      } catch (error) {
+        errorResponse = error
+      }
+
+      return {
+        response, 
+        errorResponse
+      }
+    },
     //Update Category
     async updateItem() {
       if (await this.$refs.localeComponent.validateForm()) {
         this.loading = true
-        let propParams = this.$clone(this.paramsProps)
-        let criteria = this.$clone(this.itemId)
+        const propParams = this.$clone(this.paramsProps)
         let requestInfo = {response: false, error: false}//Default request response
-        let formData = this.$clone(await this.getDataForm())
-        let customParams = {params: {titleOffline: this.modalProps.title || ''}}
-        //let customParams = propParams.update.requestParams.params || {};
 
-        //Add offline params
-        //propParams.update.requestParams.params = {...customParams, titleOffline: this.modalProps.title || ''}
-
-        //If is field update criteria
-        if (this.paramsProps.field && this.dataField.id) criteria = this.dataField.id
-
-        //Request
-        try {
-          if (propParams.update.method) {
-            // Call custom method
-            requestInfo.response = await propParams.update.method(criteria, formData, customParams)
-          } else {
-            await cacheOffline.updateRecord(propParams.apiRoute, formData, criteria)
-
-            requestInfo.response = await this.$crud.update(
-              propParams.apiRoute, 
-              criteria, 
-              formData, 
-              customParams
-            )
-          }
-        } catch (error) {
-          requestInfo.error = error
-        }
+        const response = await this.executeUpdateRequest()
+        requestInfo.response = await response.response
+        requestInfo.error = await response.errorResponse
 
         if (this.isAppOffline) {
           requestInfo.response = true
