@@ -220,6 +220,11 @@ export default {
       this.componentStore.create()//Create component in store
       this.loading = false
     },
+    messageWindow(type, message) {
+      if (!this.isAppOffline) {
+        this.$alert[type](message)
+      }
+    },
     //Get extra fields
     getExtraFields() {
       return new Promise((resolve, reject) => {
@@ -312,6 +317,7 @@ export default {
               })
             return
           }
+          console.log('params', params)
 
           this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
             this.locale.form = this.$clone(response.data)
@@ -319,11 +325,11 @@ export default {
             resolve(true)
           }).catch(error => {
             this.$apiResponse.handleError(error, () => {
-              if (!this.isAppOffline) {
-                this.$alert.error({
-                  message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'
-                })
-              }
+              
+              this.messageWindow('error', {
+                message: this.$tr('isite.cms.message.errorRequest'), 
+                pos: 'bottom'
+              })
               this.loading = false//hide loading
               reject(false)
             })
@@ -345,9 +351,8 @@ export default {
             resolve(true)
           }).catch(error => {
             this.$apiResponse.handleError(error, () => {
-              if (!this.isAppOffline) {
-                this.$alert.error(this.$tr('isite.cms.message.errorRequest'))
-              }
+              
+              this.messageWindow('error', this.$tr('isite.cms.message.errorRequest'))
               this.loading = false//hide loading
               reject(false)
             })
@@ -389,9 +394,11 @@ export default {
         //Action after request
         if (requestInfo.response) {
           this.$root.$emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
-          if (!this.isAppOffline) {
-            this.$alert.info({message: `${this.$tr('isite.cms.message.recordCreated')}`})
-          }
+          
+          this.messageWindow(
+            'info', 
+            { message: `${this.$tr('isite.cms.message.recordCreated')}` }
+          )
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasCreated', {entityName: this.params.entityName})
           this.loading = false
@@ -399,10 +406,11 @@ export default {
           //this.initForm()
           this.$emit('created', formData)
         } else {
-          if (!this.isAppOffline) {
-            this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
-          }
-          this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
+          
+          this.messageWindow(
+            'error', 
+            { message: `${this.$tr('isite.cms.message.recordNoCreated')}` }
+          )
           this.loading = false//login hide
           if (requestInfo.error) {//Message Validate
             let errorMsg = JSON.parse(requestInfo.error)
@@ -413,9 +421,11 @@ export default {
               })
               
             } else {
-              if (!this.isAppOffline) {
-                this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
-              }
+              
+              this.messageWindow(
+                'error', 
+                { message: `${this.$tr('isite.cms.message.recordNoCreated')}` }
+              )
             }
           }
         }
@@ -465,9 +475,11 @@ export default {
         //Action after request
         if (requestInfo.response) {
           this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
-          if (!this.isAppOffline) {
-            this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
-          }
+          
+          this.messageWindow(
+            'info', 
+            { message: this.$tr('isite.cms.message.recordUpdated') }
+          )
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasUpdated', {entityName: this.params.entityName})
           this.loading = false
@@ -476,11 +488,11 @@ export default {
           this.$emit('updated', requestInfo.response.data)
         } else {
           this.loading = false
-          if (!this.isAppOffline) {
-           this.$alert.error({
-            message: this.$tr('isite.cms.message.recordNoUpdated')
-          })
-          }
+          
+          this.messageWindow(
+            'error', 
+            { message: this.$tr('isite.cms.message.recordNoUpdated') }
+          )
         }
       }
     },
