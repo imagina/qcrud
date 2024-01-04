@@ -564,7 +564,6 @@ export default {
     filterDataTable() {
       const filterData = this.table.data.filter(item => {
         if (this.isAppOffline) {
-          //console.log('ingreso offline');
           return Object.values(item).some(value => {
             if (value) {
               const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
@@ -726,7 +725,9 @@ export default {
         return response || modelRequest
       } catch (error) {
         console.log(error);
-        this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
+        if (!this.isAppOffline) {
+          this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' })
+        }
       }
     },
     //Get products
