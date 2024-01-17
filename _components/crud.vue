@@ -59,6 +59,7 @@ export default {
   props: {
     crudData: {default: false},//import of vue with computed
     type: {default: 'full'},
+    imageField: { default: false },
     crudProps: {
       type: Object, default: () => {
         return {}
@@ -246,7 +247,8 @@ export default {
           flat: this.crudProps.multiple ? true : false,
           loading: this.dataCrudSelect.loading,
           readonly: this.dataCrudSelect.loading,
-          ...this.crudProps
+          ...this.crudProps,
+          imageField: this.imageField,
         },
         loadOptions: !this.defaultConfig.filterByQuery ? false : {
           apiRoute: params.apiRoute,
