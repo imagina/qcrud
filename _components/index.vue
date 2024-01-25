@@ -294,13 +294,10 @@
                                   {{ data.data }}
                                 </div>
                                 <q-tooltip>
-                                  <div v-if="col.tooltip" v-html="col.tooltip"></div>
-                                  <div v-else >
-                                    <div v-html="data.data"></div>
-                                    <label v-if="isActionableColumn(col)" class="text-weight-bold">
-                                      {{$tr('isite.cms.label.clickToAction')}}
-                                    </label>
-                                  </div>
+                                  <div v-html="col.tooltip || data.data"></div>
+                                  <label v-if="isActionableColumn(col)" class="text-weight-bold">
+                                    {{$tr('isite.cms.label.clickToAction')}}
+                                  </label>
                                 </q-tooltip>
                               </div>
                             </template>
