@@ -294,9 +294,9 @@
                                   {{ data.data }}
                                 </div>
                                 <q-tooltip>
-                                  {{ data.data }}
+                                  <div v-html="data.data"></div>
                                   <label v-if="isActionableColumn(col)" class="text-weight-bold">
-                                    <br> {{$tr('isite.cms.label.clickToAction')}}
+                                    {{$tr('isite.cms.label.clickToAction')}}
                                   </label>
                                 </q-tooltip>
                               </div>
