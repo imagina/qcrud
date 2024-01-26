@@ -5,15 +5,15 @@
       <!--Page Actions-->
       <div class="q-my-md">
         <page-actions
-          :extra-actions="tableActions"
-          :excludeActions="params.read.noFilter ? ['filter'] : []"
-          :searchAction="params.read.searchAction"
-          :title="tableTitle"
-          @search="val => search(val)"
-          @new="handlerActionCreate()"
-          @refresh="getDataTable(true)"
-          ref="pageActionRef"
-          :tour-name="tourName"
+            :extra-actions="tableActions"
+            :excludeActions="excludeActions"
+            :searchAction="params.read.searchAction"
+            :title="tableTitle"
+            @search="val => search(val)"
+            @new="handlerActionCreate()"
+            @refresh="getDataTable(true)"
+            ref="pageActionRef"
+            :tour-name="tourName"
         />
       </div>
       <!-- Bulk Actions -->
@@ -296,7 +296,7 @@
                                 <q-tooltip>
                                   <div v-html="col.tooltip || data.data"></div>
                                   <label v-if="isActionableColumn(col)" class="text-weight-bold">
-                                    {{$tr('isite.cms.label.clickToAction')}}
+                                    {{ $tr('isite.cms.label.clickToAction') }}
                                   </label>
                                 </q-tooltip>
                               </div>
@@ -379,9 +379,9 @@
     <!-- Export Component -->
     <master-export v-model="exportParams" ref="exportComponent" export-item/>
     <!-- Qreable Component -->
-    <qreable ref="qreableComponent" @created="getDataTable(true)" />
+    <qreable ref="qreableComponent" @created="getDataTable(true)"/>
     <!-- Share-link Component-->
-    <share-link ref="shareLinkComponent" />
+    <share-link ref="shareLinkComponent"/>
   </div>
 </template>
 
@@ -578,7 +578,7 @@ export default {
       }
 
       //Verify if includes qrs
-      if(this.params?.read?.requestParams?.include?.includes('qrs')) {
+      if (this.params?.read?.requestParams?.include?.includes('qrs')) {
         //Create column QR, if exist in include
         const columnQr = {
           name: 'qr', label: 'QR',
@@ -678,6 +678,12 @@ export default {
     },
     apiRouteOrderFolders() {
       return this.params.read?.apiRouteOrderFolders || null;
+    },
+    //Exclude actions
+    excludeActions() {
+      let response = this.params.read.excludeActions || []
+      if (this.params.read.noFilter) response.push('filter')
+      return response
     }
   },
   methods: {
@@ -1031,8 +1037,8 @@ export default {
             this.deleteItem(item)
           }
         },
-         //Export
-         {
+        //Export
+        {
           label: this.$tr('isite.cms.label.export'),
           vIf: this.exportParams,
           icon: 'fa-light fa-download',
@@ -1264,7 +1270,7 @@ export default {
     setActionQr(item) {
       //Check if there is a related QR code that is in the 'mainqr' zone
       const qrData = item.qrs?.find(i => i.zone === 'mainqr');
-      if(qrData) {
+      if (qrData) {
         //Display a modal with the QR code image
         this.$refs.qreableComponent.show(qrData);
       } else {
@@ -1304,8 +1310,8 @@ export default {
             },
           ]
         })
-  }
-}
+      }
+    }
   }
 }
 </script>

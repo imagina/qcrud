@@ -10,31 +10,60 @@ export const componentCrud = {
         "data": [
           [
             'crudData',
-            { type: <code>Object</code>, description: 'Required data to configure CRUD.', configuration: <Link to="/docs/VueJs/Components/Qcrud#cruddata-configuration">Go to Configuration</Link> },
+            {
+              type: <code>Object</code>,
+              description: 'Required data to configure CRUD.',
+              configuration: <Link to="/docs/VueJs/Components/Qcrud#cruddata-configuration">Go to Configuration</Link>
+            },
           ],
           [
             'customData',
-            { type: <code>Object</code>, description: <>Same structure as <code>crudData</code> but can change CRUD configuration without modifying the main CRUD configuration, only within the component.</>},
+            {
+              type: <code>Object</code>,
+              description: <>Same structure as <code>crudData</code> but can change CRUD configuration without modifying
+                the main CRUD configuration, only within the component.</>
+            },
           ],
           [
             'title',
-            { type: <code>String</code>, description: 'CRUD title to show on the index section.'},
+            {type: <code>String</code>, description: 'CRUD title to show on the index section.'},
           ],
           [
             'type',
-            { type: <code>String</code>, description: 'The type property is used to define how the CRUD component will be displayed.', types: <Link to="/docs/VueJs/Components/Qcrud#crud-types">Go to Types</Link> },
+            {
+              type: <code>String</code>,
+              description: 'The type property is used to define how the CRUD component will be displayed.',
+              types: <Link to="/docs/VueJs/Components/Qcrud#crud-types">Go to Types</Link>
+            },
           ],
           [
             'crudProps',
-            { type: <code>Object</code>, description: <>It is used to define specific properties when <code>button-create</code> or <code>select</code> is selected. These custom properties can configure the behavior and appearance of the component based on the choice of <code>type</code>.</>},
+            {
+              type: <code>Object</code>,
+              description: <>It is used to define specific properties
+                when <code>button-create</code> or <code>select</code> is selected. These custom properties can
+                configure the behavior and appearance of the component based on the choice of <code>type</code>.</>
+            },
           ],
           [
             'defaultConfig',
-            { type: <code>Object</code>, description: <>This property is used to define how the items will be displayed when the <code>select</code> type is selected. It can have two values: <code>label, value/id</code>. This allows you to specify which field in the data will be used as the label (<code>label</code>) and which field will be used as the identifier (<code>value</code> or <code>id</code>). By default, the "title" and "id" fields will be used, respectively.</>},
+            {
+              type: <code>Object</code>,
+              description: <>This property is used to define how the items will be displayed when
+                the <code>select</code> type is selected. It can have two values: <code>label, value/id</code>. This
+                allows you to specify which field in the data will be used as the label (<code>label</code>) and which
+                field will be used as the identifier (<code>value</code> or <code>id</code>). By default, the "title"
+                and "id" fields will be used, respectively.</>
+            },
           ],
           [
             'value',
-            { type: <code>Object</code>, description: <>This property is used as part of the model (<code>v-model</code>) when working with the <code>select</code> type. It allows you to select an item or set a specific value for the selector.</>},
+            {
+              type: <code>Object</code>,
+              description: <>This property is used as part of the model (<code>v-model</code>) when working with
+                the <code>select</code> type. It allows you to select an item or set a specific value for the
+                selector.</>
+            },
           ],
         ]
       }
@@ -60,51 +89,81 @@ export const crudTypes = [
 export const crudDataConfig = [
   [
     'crudId',
-    { type: <code>Integer</code>, description: <>Unique ID for CRUD. E.g., <code>this.$uid()</code>.</> },
+    {type: <code>Integer</code>, description: <>Unique ID for CRUD. E.g., <code>this.$uid()</code>.</>},
   ],
   [
     'entityName',
-    { type: <code>String</code>, description: <>Entity name to manage <Link to="/docs/VueJs/modules/QSite/QsitePlugins#hook">hooks</Link>; this data is called from the <Link to="/docs/VueJs/modules/QSite/QsiteConfig#main">main module config</Link>. E.g., <code>config("main.qsite.entityNames.recommendation")</code>.</>},
+    {
+      type: <code>String</code>,
+      description: <>Entity name to manage <Link to="/docs/VueJs/modules/QSite/QsitePlugins#hook">hooks</Link>; this
+        data is called from the <Link to="/docs/VueJs/modules/QSite/QsiteConfig#main">main module config</Link>.
+        E.g., <code>config("main.qsite.entityNames.recommendation")</code>.</>
+    },
   ],
   [
     'apiRoute',
-    { type: <code>String</code>, description: 'API route to request data.'},
+    {type: <code>String</code>, description: 'API route to request data.'},
   ],
   [
     'permission',
-    { type: <code>String</code>, description: <>Permission name. This permission should contain only the following format: <code>moduleName.entityName</code>. The CRUD component fills in the standard names for all CRUD permissions (<code>create, index, edit, destroy</code>).</>},
+    {
+      type: <code>String</code>,
+      description: <>Permission name. This permission should contain only the following
+        format: <code>moduleName.entityName</code>. The CRUD component fills in the standard names for all CRUD
+        permissions (<code>create, index, edit, destroy</code>).</>
+    },
   ],
   [
     'extraFromField',
-    { type: <code>String</code>, description: 'Config name to request additional CRUD fields from the backend.'},
+    {type: <code>String</code>, description: 'Config name to request additional CRUD fields from the backend.'},
   ],
   [
     'create',
-    { type: <code>Object</code>, description: <>Configuration for the create action. Set as <code>false</code> to disable this CRUD action.</>, params: <Link to="/docs/VueJs/Components/Qcrud#create-params">Go to Params</Link>},
+    {
+      type: <code>Object</code>,
+      description: <>Configuration for the create action. Set as <code>false</code> to disable this CRUD action.</>,
+      params: <Link to="/docs/VueJs/Components/Qcrud#create-params">Go to Params</Link>
+    },
   ],
   [
     'read',
-    { type: <code>Object</code>, description: 'Configuration for the read action.', params: <Link to="/docs/VueJs/Components/Qcrud#read-params">Go to Params</Link>},
+    {
+      type: <code>Object</code>,
+      description: 'Configuration for the read action.',
+      params: <Link to="/docs/VueJs/Components/Qcrud#read-params">Go to Params</Link>
+    },
   ],
   [
     'update',
-    { type: <code>Object</code>, description: <>Configuration for the update action. Set as <code>false</code> to disable this CRUD action.</>, params: <Link to="/docs/VueJs/Components/Qcrud#update-params">Go to Params</Link>},
+    {
+      type: <code>Object</code>,
+      description: <>Configuration for the update action. Set as <code>false</code> to disable this CRUD action.</>,
+      params: <Link to="/docs/VueJs/Components/Qcrud#update-params">Go to Params</Link>
+    },
   ],
   [
     'delete',
-    { type: <code>Boolean</code>, description: <>Configuration to delete action. Set as <code>false</code> to disable this CRUD action.</>},
+    {
+      type: <code>Boolean</code>,
+      description: <>Configuration to delete action. Set as <code>false</code> to disable this CRUD action.</>
+    },
   ],
   [
     'formLeft',
-    { type: <code>Object</code>, description: 'Array list with dynamic fields to render on the form\'s left part.'},
+    {type: <code>Object</code>, description: 'Array list with dynamic fields to render on the form\'s left part.'},
   ],
   [
     'formRight',
-    { type: <code>Object</code>, description: 'Array list with dynamic fields to render on the form\'s right part.'},
+    {type: <code>Object</code>, description: 'Array list with dynamic fields to render on the form\'s right part.'},
   ],
   [
     'getDataForm',
-    { type: <code>Function</code>, description: <>This method accepts two parameters, <code>data</code> and <code>typeForm</code> (create or update). If this method is defined, it intercepts the data before the create or update request to allow modification of the data before sending it.</>},
+    {
+      type: <code>Function</code>,
+      description: <>This method accepts two parameters, <code>data</code> and <code>typeForm</code> (create or update).
+        If this method is defined, it intercepts the data before the create or update request to allow modification of
+        the data before sending it.</>
+    },
   ],
   [
     'handleFormUpdates',
@@ -129,19 +188,22 @@ export const crudDataConfig = [
 export const createParams = [
   [
     'title',
-    { type: <code>String</code>, description: 'Title to show on the button action.'},
+    {type: <code>String</code>, description: 'Title to show on the button action.'},
   ],
   [
     'to',
-    { type: <code>Object</code>, description: 'Vue route to redirect to a custom form.'},
+    {type: <code>Object</code>, description: 'Vue route to redirect to a custom form.'},
   ],
   [
     'toExternalUrl',
-    { type: <code>String</code>, description: 'URL to redirect to an external URL.'},
+    {type: <code>String</code>, description: 'URL to redirect to an external URL.'},
   ],
   [
     'method',
-    { type: <code>Function</code>, description: 'Method to manually create the request. This should return a promise response.'},
+    {
+      type: <code>Function</code>,
+      description: 'Method to manually create the request. This should return a promise response.'
+    },
   ],
   [
     'customFormProps',
@@ -170,7 +232,9 @@ export const readParams = [
     'columns',
     {
       type: <code>Array</code>,
-      description: <>Format of <a href="https://v1.quasar.dev/vue-components/table#defining-the-columns">quasar-table-columns</a> to display CRUD data.</>,
+      description: <>Format of <a
+        href="https://v1.quasar.dev/vue-components/table#defining-the-columns">quasar-table-columns</a> to display CRUD
+        data.</>,
       params: <Link to="/docs/VueJs/Components/Qcrud#read-columns-params">Go to Params</Link>,
       example: <CodeBlock language="js">
         {
@@ -186,50 +250,72 @@ export const readParams = [
   ],
   [
     'requestParams',
-    { type: <code>Object</code>, description: 'Standard API params to request data.'},
+    {type: <code>Object</code>, description: 'Standard API params to request data.'},
   ],
   [
     'filters',
-    { type: <code>Object</code>, description: <>Array list with <Link to="/docs/VueJs/Components/dynamicField">dynamic-fields</Link> to render and add filters to the request.</>},
+    {
+      type: <code>Object</code>,
+      description: <>Array list with <Link to="/docs/VueJs/Components/dynamicField">dynamic-fields</Link> to render and
+        add filters to the request.</>
+    },
   ],
   [
     'actions',
-    { type: <code>Array</code>, description: 'Actions for each row in the table.', props: <Link to="/docs/VueJs/Components/Qcrud#read-actions-params">Go to Props</Link>},
+    {
+      type: <code>Array</code>,
+      description: 'Actions for each row in the table.',
+      props: <Link to="/docs/VueJs/Components/Qcrud#read-actions-params">Go to Props</Link>
+    },
   ],
   [
     'showAs',
-    { type: <code>String</code>, description: <>Define view type between <code>grid</code> and <code>table</code> by default.</>},
+    {
+      type: <code>String</code>,
+      description: <>Define view type between <code>grid</code> and <code>table</code> by default.</>
+    },
   ],
   [
     'allowToggleView',
-    { type: <code>Boolean</code>, description:  <code>Enable/Disable the button action to change view.</code>},
+    {type: <code>Boolean</code>, description: <code>Enable/Disable the button action to change view.</code>},
   ],
   [
     'rowsPerPageOptions',
-    { type: <code>Array</code>, description: 'Change the pagination options to display.' },
+    {type: <code>Array</code>, description: 'Change the pagination options to display.'},
   ],
   [
     'grid',
-    { type: <code>Object</code>, description: 'Configure view grid mode.', props: <Link to="/docs/VueJs/Components/Qcrud#read-grid-params">Go to Props</Link>},
+    {
+      type: <code>Object</code>,
+      description: 'Configure view grid mode.',
+      props: <Link to="/docs/VueJs/Components/Qcrud#read-grid-params">Go to Props</Link>
+    },
+  ],
+  [
+    'excludeParams',
+    {type: <code>Array</code>, description: 'Define the exclue actions in the pageAction'},
   ],
 ]
 
 export const updateParams = [
   [
     'title',
-    { type: <code>String</code>, description: 'Title to show on the button action.' },
+    {type: <code>String</code>, description: 'Title to show on the button action.'},
   ],
   [
     'to',
-    { type: <code>Object</code>, description: 'Vue route to redirect to a custom form.' },
+    {type: <code>Object</code>, description: 'Vue route to redirect to a custom form.'},
   ],
   [
     'requestParams',
-    { type: <code>Object</code>, description: 'Standard API params to request data for updating a row.' },
+    {type: <code>Object</code>, description: 'Standard API params to request data for updating a row.'},
   ],
   [
     'method',
-    { type: <code>Function</code>, description: 'Method to manually create the request. This should return a promise response.' },
+    {
+      type: <code>Function</code>,
+      description: 'Method to manually create the request. This should return a promise response.'
+    },
   ],
   [
     'customFormProps',
@@ -256,61 +342,88 @@ export const updateParams = [
 export const readActionsParams = [
   [
     'label/tooltip',
-    { type: <code>String</code> },
+    {type: <code>String</code>},
   ],
   [
     'icon',
-    { type: <code>String</code> },
+    {type: <code>String</code>},
   ],
   [
     'color',
-    { type: <code>String</code> },
+    {type: <code>String</code>},
   ],
   [
     'action',
-    { type: <code>Function</code>, description: 'Action to be executed when this action is triggered.' },
+    {type: <code>Function</code>, description: 'Action to be executed when this action is triggered.'},
   ]
 ]
 
 export const readGridParams = [
   [
     'colClass',
-    { type: <code>String</code>, description: 'Grid distribution.' },
+    {type: <code>String</code>, description: 'Grid distribution.'},
   ],
   [
     'component',
-    { type: <code>Function</code>, description: <>Custom card component to render as a card.<br />E.g., <CodeBlock language="js">() => import('@imagina/qappointment/_components/crud/appointmentCard')</CodeBlock></> },
+    {
+      type: <code>Function</code>,
+      description: <>Custom card component to render as a card.<br/>E.g., <CodeBlock language="js">() =>
+        import('@imagina/qappointment/_components/crud/appointmentCard')</CodeBlock></>
+    },
   ]
 ]
 
 export const readColumnParams = [
   [
     'name',
-    { type: <code>String</code>, description: <>The name of the attribute used when selecting a row. For example, in a user table, <code>row.name</code> will return the name of the user.</> }
+    {
+      type: <code>String</code>,
+      description: <>The name of the attribute used when selecting a row. For example, in a user
+        table, <code>row.name</code> will return the name of the user.</>
+    }
   ],
   [
     'field',
-    { type: <code>String</code>, description: 'Specifies the name of the attribute that contains the data to be displayed in the column.' }
+    {
+      type: <code>String</code>,
+      description: 'Specifies the name of the attribute that contains the data to be displayed in the column.'
+    }
   ],
   [
     'sortable',
-    { type: <code>Boolean</code>, description: 'Allows defining whether the column is sortable, enabling the table to be sorted by the values in this column.' }
+    {
+      type: <code>Boolean</code>,
+      description: 'Allows defining whether the column is sortable, enabling the table to be sorted by the values in this column.'
+    }
   ],
   [
     'align',
-    { type: <code>String</code>, description: 'Specifies the alignment of the content in the column, such as "left," "center," or "right.' }
+    {
+      type: <code>String</code>,
+      description: 'Specifies the alignment of the content in the column, such as "left," "center," or "right.'
+    }
   ],
   [
     'format',
-    { type: <code>String</code>, description: 'Used to customize the content within the column. For example, it can be used to insert icons.' }
+    {
+      type: <code>String</code>,
+      description: 'Used to customize the content within the column. For example, it can be used to insert icons.'
+    }
   ],
   [
     'tooltip',
-    { type: <code>string</code>, description: <>Allows setting a custom text that will be displayed when hovering over the column. By default, the tooltip will display the content of the <code>row.field</code>.</> }
+    {
+      type: <code>string</code>,
+      description: <>Allows setting a custom text that will be displayed when hovering over the column. By default, the
+        tooltip will display the content of the <code>row.field</code>.</>
+    }
   ],
   [
     'action',
-    { type: <code>Function</code>, description: 'Defines the function that is executed when selecting the cell. It can be a custom function that performs a specific action in response to cell selection.' }
+    {
+      type: <code>Function</code>,
+      description: 'Defines the function that is executed when selecting the cell. It can be a custom function that performs a specific action in response to cell selection.'
+    }
   ],
 ]
 
