@@ -14,6 +14,7 @@
             @refresh="getDataTable(true)"
             ref="pageActionRef"
             :tour-name="tourName"
+            :help="help"
         />
       </div>
       <!-- Bulk Actions -->
@@ -502,6 +503,9 @@ export default {
       if (this.localShowAs === 'kanban' && this.$refs.kanban) response.push(this.$refs.kanban.extraPageActions);
       //Response
       return response.filter((item) => !item.vIfAction)
+    },
+    help(){
+      return  this.params.read?.help ?? {}
     },
     //Define slot table to show
     showSlotTable() {

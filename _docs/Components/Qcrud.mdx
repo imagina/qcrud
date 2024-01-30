@@ -63,6 +63,11 @@ This configuration should be instantiated as a Vue file with a specific structur
               title: this.$tr('qblog.layout.newCategory'),
             },
             read: {
+              help: {
+                title: this.$tr('icommerce.cms.form.generalWarehouse'),
+                icon: 'fa-light fa-warehouse',
+                description: this.$tr('icommerce.cms.form.generalWarehouseHelp')
+              },
               columns: [
                 {name: 'id', label: this.$tr('ui.form.id'), field: 'id', style: 'width: 50px'},
                 {name: 'name', label: this.$tr('ui.form.title'), field: 'title', align: 'rigth'},
