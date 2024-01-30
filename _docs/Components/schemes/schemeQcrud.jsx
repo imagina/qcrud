@@ -295,6 +295,22 @@ export const readParams = [
     'excludeParams',
     {type: <code>Array</code>, description: 'Define the exclue actions in the pageAction'},
   ],
+  [
+    'help',
+    {
+      type: <code>Object</code>,
+      description: 'Shows a help tooltip with an icon and description',
+      example: <CodeBlock language="js">
+        {
+          `help: {
+            title: this.$tr('icommerce.cms.form.generalWarehouse'),
+            icon: 'fa-light fa-warehouse',
+            description: this.$tr('icommerce.cms.form.generalWarehouseHelp')
+          },`
+        }
+      </CodeBlock>
+    },
+  ],
 ]
 
 export const updateParams = [
