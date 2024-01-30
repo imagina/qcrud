@@ -394,6 +394,7 @@ import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveI
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
 import qreable from "@imagina/qqreable/_components/qreable.vue"
+import _filterPlugin from '@imagina/qsite/_plugins/filter'
 
 export default {
   props: {
@@ -411,7 +412,8 @@ export default {
       updateRelationData: this.updateRelationData,
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
-      getFieldRelationActions: this.getFieldRelationActions
+      getFieldRelationActions: this.getFieldRelationActions,
+      filterPlugin: computed(() => this.filterPlugin)
     }
   },
   watch: {},
@@ -460,7 +462,9 @@ export default {
       folderList: [],
       funnelId: null,
       searchKanban: null,
-      tourName: 'admin_crud_index_tour'
+      tourName: 'admin_crud_index_tour',
+      filters: false,
+      filterPlugin: false
     }
   },
   computed: {
@@ -703,6 +707,7 @@ export default {
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
+      await this.setFilterPlugin();
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
       if (!this.params.read.filterName) this.getDataTable()//Get data
@@ -717,6 +722,24 @@ export default {
       //Success
       this.success = true
     },
+    setFilterPlugin(){
+      if(this.params?.read){
+        if (this.params.read?.filterName || this.params.read.filters) {
+          let cacheName;
+          if (this.params.read?.filterCacheName){
+            cacheName = this.params.read?.filterCacheName;
+          } else {
+            const entityName = this.params.entityName ?? ''
+            cacheName = `${this.$route.name}_${entityName}`
+          }
+
+          this.filterPlugin =  _filterPlugin.getInstance(cacheName)
+          return
+        }
+      }
+      // use the global filter
+      this.filterPlugin = this.$filter
+    },
     //Order filters
     orderFilters() {
       return new Promise(async (resolve, reject) => {
@@ -725,19 +748,21 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
-            await this.$filter.setFilter({
-              name: params.read.filterName || this.$route.name,
-              fields: this.$clone(params.read.filters || {}),
-              callBack: () => {
-                const refresh = !this.params.read.kanban;
-                this.table.filter = this.$clone(this.$filter.values)
-                if (this.params.read.kanban) {
-                  const filterName = this.params.read.kanban.column.filter.name || '';
-                  this.funnelId = this.table.filter[filterName || null];
+            if((Object.keys(params.read.filters).length)){
+              await this.filterPlugin.setFilter({
+                name: params.read.filterName || this.$route.name,
+                fields: this.$clone(params.read.filters || {}),
+                callBack: () => {
+                  const refresh = !this.params.read.kanban;
+                  this.table.filter = this.$clone(this.filterPlugin.values)
+                  if (this.params.read.kanban) {
+                    const filterName = this.params.read.kanban.column.filter.name || '';
+                    this.funnelId = this.table.filter[filterName || null];
+                  }
+                  this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
                 }
-                this.getDataTable(refresh, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
-              }
-            })
+              })
+            }
           }
         }
 
@@ -768,7 +793,7 @@ export default {
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
         const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(this.$filter.values[filterName] || null);
+        this.funnelId = String(this.filterPlugin.values[filterName] || null);
         await this.$refs.kanban.setSearch(this.searchKanban);
         await this.$refs.kanban.init(refresh);
         return;
@@ -858,9 +883,9 @@ export default {
         //Sync master filter
         if (this.params.read.filterName) {
           //Set search param
-          this.$filter.addValues({search: params.params.filter.search})
+          this.filterPlugin.addValues({search: params.params.filter.search})
           //Set pagination
-          this.$filter.setPagination({
+          this.filterPlugin.setPagination({
             page: this.$clone(response.meta.page.currentPage),
             rowsPerPage: this.$clone(response.meta.page.perPage),
             lastPage: this.$clone(response.meta.page.lastPage),
