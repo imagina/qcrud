@@ -466,7 +466,7 @@ export default {
   }
 }
 </script>
-<style lang="sass">
+<style lang="scss">
 #crudContentPage
   .btnCreate
     padding 3px 8px

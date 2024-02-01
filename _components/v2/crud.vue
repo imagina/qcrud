@@ -123,5 +123,5 @@ export default {
   }
 }
 </script>
-<style lang="sass">
+<style lang="scss">
 </style>

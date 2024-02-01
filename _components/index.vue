@@ -1345,7 +1345,7 @@ export default {
 }
 </script>
 
-<style lang="sass">
+<style lang="scss">
 #componentCrudIndex
   #backend-page
     .q-table__top, .q-table__middle, .q-table__bottom
