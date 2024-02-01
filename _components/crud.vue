@@ -466,7 +466,7 @@ export default {
   }
 }
 </script>
-<style lang="stylus">
+<style lang="sass">
 #crudContentPage
   .btnCreate
     padding 3px 8px
