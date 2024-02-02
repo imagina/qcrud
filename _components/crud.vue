@@ -467,22 +467,29 @@ export default {
 }
 </script>
 <style lang="scss">
-#crudContentPage
-  .btnCreate
-    padding 3px 8px
+#crudContentPage {
+  .btnCreate {
+    padding: 3px 8px;
 
-    .q-icon
-      margin-right 5px
-      font-size 12px
+    .q-icon {
+      margin-right: 5px;
+      font-size: 12px;
+    }
 
-    .q-btn__content
-      font-size 12px
+    .q-btn__content {
+      font-size: 12px;
+    }
+  }
 
-.btnCreateCrud
-  .q-icon
-    margin-right 5px
-    font-size 12px
+  .btnCreateCrud {
+    .q-icon {
+      margin-right: 5px;
+      font-size: 12px;
+    }
 
-  .q-btn__content
-    font-size 12px
+    .q-btn__content {
+      font-size: 12px;
+    }
+  }
+}
 </style>
