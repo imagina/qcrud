@@ -157,7 +157,8 @@
                                @click="rowclick(col,props.row)"
                                :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
                           >
-                            <q-badge :class="col.bgTextColor" v-html="data.data">
+                            <q-badge :class="col.bgTextColor" >
+                              <span v-html="data.data" />
                               {{ data.data }}
                             </q-badge>
                           </div>
@@ -168,7 +169,6 @@
                               v-html="data.data"
                               :class="(isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                           >
-                            {{ data.data }}
                           </div>
                           <q-tooltip v-if="col.tooltip == undefined || col.tooltip">
                             {{ col.tooltip || data.data }}
@@ -281,9 +281,7 @@
                                      @click="rowclick(col,props.row)"
                                      :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
                                 >
-                                  <q-badge :class="col.bgTextColor" v-html="data.data">
-                                    {{ data.data }}
-                                  </q-badge>
+                                  <q-badge :class="col.bgTextColor" v-html="data.data"></q-badge>
                                 </div>
                                 <!--Label-->
                                 <div
@@ -292,7 +290,6 @@
                                     v-html="data.data"
                                     :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                                 >
-                                  {{ data.data }}
                                 </div>
                                 <q-tooltip>
                                   <div v-html="col.tooltip || data.data"></div>
