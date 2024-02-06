@@ -392,6 +392,7 @@ import foldersStore from '@imagina/qsite/_components/master/folders/store/folder
 import _ from "lodash";
 import qreable from "@imagina/qqreable/_components/qreable.vue"
 import _filterPlugin from '@imagina/qsite/_plugins/filter'
+import eventBus from '@imagina/qsite/_plugins/eventBus'
 
 export default {
   props: {
@@ -710,7 +711,7 @@ export default {
       if (!this.params.read.filterName) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
-        this.$eventBus.$emit('setMobileMainAction', {
+        eventBus.emit('setMobileMainAction', {
           icon: 'fas fa-plus',
           color: 'green',
           callBack: () => this.handlerActionCreate()
