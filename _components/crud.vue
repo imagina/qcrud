@@ -451,6 +451,7 @@ export default {
     },
     //Set value with last created item:
     onCreate(data){
+      this.formEmmit('createdData', data)
       if(this.showType('select')){
         if(data){
           if(Array.isArray(this.dataCrudSelect.itemSelected)){ //multiple
