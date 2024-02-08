@@ -51,10 +51,11 @@
 //Component
 import crudIndex from '@imagina/qcrud/_components/index'
 import crudForm from '@imagina/qcrud/_components/form'
+import eventBus from '@imagina/qsite/_plugins/eventBus'
 
 export default {
   beforeDestroy() {
-    this.$root.$off(`${this.paramsProps.apiRoute}.crud.event.created`)
+    eventBus.off(`${this.paramsProps.apiRoute}.crud.event.created`)
   },
   props: {
     crudData: {default: false},//import of vue with computed
@@ -288,7 +289,7 @@ export default {
         this.success = true//udate success
         this.getIndexOptions()//Get indexOptions if is crudSelect
         //Listen event to created
-        this.$root.$on(`${this.paramsProps.apiRoute}.crud.event.created`, this.getIndexOptions)
+        eventBus.on(`${this.paramsProps.apiRoute}.crud.event.created`, this.getIndexOptions)
         //Set value select
         this.setValueSelect()
       }
