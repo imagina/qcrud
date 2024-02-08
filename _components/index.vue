@@ -377,7 +377,8 @@
     <!-- Export Component -->
     <master-export v-model="exportParams" ref="exportComponent" export-item/>
     <!-- Qreable Component -->
-    <qreable ref="qreableComponent" @created="getDataTable(true)"/>
+    <!--[ptc]-->
+    <!-- <qreable ref="qreableComponent" @created="getDataTable(true)"/> -->
     <!-- Share-link Component-->
     <share-link ref="shareLinkComponent"/>
   </div>
@@ -390,7 +391,8 @@ import masterExport from "@imagina/qsite/_components/master/masterExport"
 import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
-import qreable from "@imagina/qqreable/_components/qreable.vue"
+//[ptc]
+// import qreable from "@imagina/qqreable/_components/qreable.vue"
 import _filterPlugin from '@imagina/qsite/_plugins/filter'
 import eventBus from '@imagina/qsite/_plugins/eventBus'
 
@@ -402,7 +404,8 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable
+    //[ptc]
+    // qreable
   },
   provide() {
     return {
@@ -656,7 +659,7 @@ export default {
       //Validate availability
       response = bulkActions.filter(action => {
         //Validate vIf
-        if ((action.vIf != undefined) && !action.vIf) return false
+        if ((action?.vIf != undefined) && !action?.vIf) return false
         //Validate permission
         if ((action.permission != undefined) && !this.$auth.hasAccess(action.permission)) return false
         //Validate apiRoute
