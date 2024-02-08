@@ -659,7 +659,7 @@ export default {
       //Validate availability
       response = bulkActions.filter(action => {
         //Validate vIf
-        if ((action?.vIf != undefined) && !action.vIf) return false
+        if ((action?.vIf != undefined) && !action?.vIf) return false
         //Validate permission
         if ((action.permission != undefined) && !this.$auth.hasAccess(action.permission)) return false
         //Validate apiRoute
