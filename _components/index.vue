@@ -56,7 +56,7 @@
         <q-table
             v-model:pagination="table.pagination"
             v-if="['table','grid','folders'].includes(localShowAs)"
-            :grid="localShowAs === 'grid'" :data="table.data"
+            :grid="localShowAs === 'grid'" :rows="table.data"
             :columns="tableColumns"
             :pagination.sync="table.pagination"
             @request="getData"
@@ -194,7 +194,7 @@
                       </div>
                       <!-- Table -->
                       <q-table
-                          :data="relation.data"
+                          :rows="relation.data"
                           :columns="relationConfig('columns')"
                       >
                         <template v-slot:body-cell="props">
@@ -775,7 +775,7 @@ export default {
             Object.keys(params.read.filters).forEach(key => {
               let filter = params.read.filters[key]
               if (key !== 'date') {
-                this.$set(this.table.filter, (filter.name || key), filter.value)
+                this.table.filter[filter.name || key] = filter.value
               }
             })
             if (!this.params.read.filterName) this.filter.available = true//allow filters
