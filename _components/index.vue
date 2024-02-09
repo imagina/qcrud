@@ -157,8 +157,8 @@
                                @click="rowclick(col,props.row)"
                                :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
                           >
-                            <q-badge :class="col.bgTextColor" >
-                              <span v-html="data.data" />
+                            <q-badge :class="col.bgTextColor">
+                              <span v-html="data.data"/>
                               {{ data.data }}
                             </q-badge>
                           </div>
@@ -469,6 +469,9 @@ export default {
     }
   },
   computed: {
+    isAppOffline() {
+      return this.$store.state.qofflineMaster.isAppOffline;
+    },
     //Table Title
     permisionRelation() {
       return this.params.read.relation.permission ? this.$auth.hasAccess(this.params.read.relation.permission) : true;
@@ -509,8 +512,8 @@ export default {
       //Response
       return response.filter((item) => !item.vIfAction)
     },
-    help(){
-      return  this.params.read?.help ?? {}
+    help() {
+      return this.params.read?.help ?? {}
     },
     //Define slot table to show
     showSlotTable() {
@@ -693,6 +696,25 @@ export default {
       let response = this.params.read.excludeActions || []
       if (this.params.read.noFilter) response.push('filter')
       return response
+    },
+    filterDataTable() {
+      const filterData = this.table.data.filter(item => {
+        if (this.isAppOffline) {
+          return Object.values(item).some(value => {
+            if (value) {
+              const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
+              if (search) {
+                return String(value).toLowerCase().includes(search)
+              } else {
+                return true;
+              }
+            }
+          })
+        }
+
+        return true;
+      });
+      return filterData;
     }
   },
   methods: {
@@ -711,7 +733,7 @@ export default {
       await this.setFilterPlugin();
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
-      if (!this.params.read.filterName) this.getDataTable()//Get data
+      if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
         eventBus.emit('setMobileMainAction', {
@@ -723,18 +745,18 @@ export default {
       //Success
       this.success = true
     },
-    setFilterPlugin(){
-      if(this.params?.read){
+    setFilterPlugin() {
+      if (this.params?.read) {
         if (this.params.read?.filterName || this.params.read.filters) {
           let cacheName;
-          if (this.params.read?.filterCacheName){
+          if (this.params.read?.filterCacheName) {
             cacheName = this.params.read?.filterCacheName;
           } else {
             const entityName = this.params.entityName ?? ''
             cacheName = `${this.$route.name}_${entityName}`
           }
 
-          this.filterPlugin =  _filterPlugin.getInstance(cacheName)
+          this.filterPlugin = _filterPlugin.getInstance(cacheName)
           return
         }
       }
@@ -749,7 +771,7 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
-            if((Object.keys(params.read.filters).length)){
+            if ((Object.keys(params.read.filters).length)) {
               await this.filterPlugin.setFilter({
                 name: params.read.filterName || this.$route.name,
                 fields: this.$clone(params.read.filters || {}),
@@ -823,8 +845,50 @@ export default {
         }
       }
     },
+    async requestDataTable(apiRoute, params, pagination) {
+      try {
+        const modelRequest = {
+          data: [],
+          meta: {
+            page: {
+              currentPage: 1,
+              total: 0,
+            },
+          }
+        };
+
+        if (this.isAppOffline) {
+          const cachePaginate = await paginateCacheOffline(
+              apiRoute,
+              this.table.filter.search,
+              pagination.page,
+              pagination.rowsPerPage
+          )
+          if (cachePaginate.data.length > 0) {
+            return cachePaginate
+          }
+          return modelRequest
+        }
+
+        const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
+            .catch(error => {
+              if (!this.isAppOffline) {
+                this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+              }
+              console.error(error)
+              this.loading = false
+            })
+
+        return response || modelRequest
+      } catch (error) {
+        console.log(error);
+        if (!this.isAppOffline) {
+          this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+        }
+      }
+    },
     //Get products
-    getData({pagination, filter}, refresh = false) {
+    async getData({pagination, filter}, refresh = false) {
       let propParams = this.$clone(this.params)
       this.loading = true
 
@@ -862,52 +926,44 @@ export default {
       }
 
       //Request
-      this.$crud.index(propParams.apiRoute, params).then(response => {
-        let dataTable = response.data
+      const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
+      let dataTable = response.data
+      //If is field change format
+      if (this.params.field) {
+        dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
+        this.dataField = response.data[0]
+      }
 
-        //If is field change format
-        if (this.params.field) {
-          dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
-          this.dataField = response.data[0]
-        }
+      //Set data to table
+      this.table.data = this.$clone(dataTable);
+      const folderList = foldersStore().transformDataToDragableForderList(dataTable);
+      this.folderList = _.orderBy(folderList, 'position', 'asc');
+      this.table.pagination.page = this.$clone(response.meta.page.currentPage)
+      this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
+      this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
+      this.table.pagination.sortBy = this.$clone(pagination.sortBy)
+      this.table.pagination.descending = this.$clone(pagination.descending)
 
-        //Set data to table
-        this.table.data = this.$clone(dataTable);
-        const folderList = foldersStore().transformDataToDragableForderList(dataTable);
-        this.folderList = _.orderBy(folderList, 'position', 'asc');
-        this.table.pagination.page = this.$clone(response.meta.page.currentPage)
-        this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
-        this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
-        this.table.pagination.sortBy = this.$clone(pagination.sortBy)
-        this.table.pagination.descending = this.$clone(pagination.descending)
-
-        //Sync master filter
-        if (this.params.read.filterName) {
-          //Set search param
-          this.filterPlugin.addValues({search: params.params.filter.search})
-          //Set pagination
-          this.filterPlugin.setPagination({
-            page: this.$clone(response.meta.page.currentPage),
-            rowsPerPage: this.$clone(response.meta.page.perPage),
-            lastPage: this.$clone(response.meta.page.lastPage),
-          })
-          //Sync local
-          this.table.filter.search = this.$clone(params.params.filter.search)
-        }
-
-        //Dispatch event hook
-        this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
-        //Sync data to drag view
-        this.dataTableDraggable = this.getDataTableDraggable;
-        //Close loading
-        this.loading = false
-      }).catch(error => {
-        this.$apiResponse.handleError(error, () => {
-          this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-          console.error(error)
-          this.loading = false
+      //Sync master filter
+      if (this.params.read.filterName) {
+        //Set search param
+        this.filterPlugin.addValues({search: params.params.filter.search})
+        //Set pagination
+        this.filterPlugin.setPagination({
+          page: this.$clone(response.meta.page.currentPage),
+          rowsPerPage: this.$clone(response.meta.page.perPage),
+          lastPage: this.$clone(response.meta.page.lastPage),
         })
-      })
+        //Sync local
+        this.table.filter.search = this.$clone(params.params.filter.search)
+      }
+
+      //Dispatch event hook
+      this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
+      //Sync data to drag view
+      this.dataTableDraggable = this.getDataTableDraggable;
+      //Close loading
+      this.loading = false
     },
     //Delete category
     deleteItem(item) {
@@ -920,16 +976,16 @@ export default {
           {
             label: this.$tr('isite.cms.label.delete'),
             color: 'red',
-            handler: () => {
+            handler: async () => {
               this.loading = true
-              let propParams = this.$clone(this.params)
+              let propParams = this.$clone(this.params);
+              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title)} - ${item.id}` || ''}};
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField)//get data table
                 dataField.value.splice(item.__index, 1)//Remove field
-
                 //Request
-                this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
+                this.$crud.update(propParams.apiRoute, dataField.id, dataField, customParams).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
                   this.loading = false
@@ -939,7 +995,11 @@ export default {
                 })
               } else {
                 //Request
-                this.$crud.delete(propParams.apiRoute, item.id).then(response => {
+                if (this.isAppOffline) {
+                  this.table.data = this.table.data.filter(data => item.id !== data.id);
+                  this.loading = false;
+                }
+                this.$crud.delete(propParams.apiRoute, item.id, customParams).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
 
@@ -949,9 +1009,15 @@ export default {
                   //Close loading
                   this.loading = false
                 }).catch(error => {
-                  this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
+                  if (!this.isAppOffline) {
+                    this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
+                  }
                   this.loading = false
                 })
+
+                const CACHE_PATH = 'apiRoutes.qramp.workOrders'
+                cacheOffline.deleteItem(item.id, CACHE_PATH)
+
               }
             }
           }
@@ -1038,7 +1104,18 @@ export default {
         return action.default ?? false;
       })
       //Add default actions
-      actions = [
+      actions = [...actions,
+        //Export
+        {
+          label: this.$tr('isite.cms.label.export'),
+          vIf: this.exportParams,
+          icon: 'fa-light fa-download',
+          action: (item) => this.$refs.exportComponent.showReportItem({
+            item: item,
+            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
+            filter: {id: item.id}
+          })
+        },
         {//Edit action
           icon: 'fa-light fa-pencil',
           color: 'green',
@@ -1048,6 +1125,14 @@ export default {
           action: (item) => {
             this.$emit('update', item)
           }
+        },
+        {//Copy disclosure link action
+          label: this.$tr('isite.cms.label.copyDisclosureLink'),
+          format: (item) => {
+            return {vIf: item.url ? true : false}
+          },
+          icon: "fa-light fa-copy",
+          action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
         },
         {//Share action
           label: this.$tr('isite.cms.label.share'),
@@ -1341,6 +1426,13 @@ export default {
           ]
         })
       }
+    },
+    watch: {
+      isAppOffline: {
+        handler: function () {
+          this.getDataTable(true);
+        }
+      },
     }
   }
 }
@@ -1348,6 +1440,9 @@ export default {
 
 <style lang="scss">
 #componentCrudIndex {
+  .btn-menu-offline {
+    @apply tw-bg-yellow-400 !important;
+  }
   #backend-page {
     .q-table__top, .q-table__middle, .q-table__bottom {
       border-radius: $custom-radius;

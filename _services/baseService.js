@@ -21,6 +21,7 @@ const axiosActions = {
    * @returns {Promise<any>}
    */
   create(configName, data, params = {}) {
+    console.log(params)
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
@@ -45,17 +46,16 @@ const axiosActions = {
    * @param params {params : {}, remember: boolean}
    * @returns {Promise<any>}
    */
-  index(configName, params = {}) {
+  index(configName, params = {}, isOffline = false) {
     return new Promise((resolve, reject) => {
       params = {params: {}, refresh: false, cacheTime: (3600 * 3), cacheKey: null, ...params}//Validate params params
       if (!configName) return reject('Config name is required')//Validate config name
       let urlApi = (config(configName) || configName)//Get url from config
-      let key = params.cacheKey || `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
-
+      let key = params.cacheKey || `${configName}::${isOffline ? 'offline' : `requestParams[${JSON.stringify(params.params)}]`}`//Key to cache
       remember.async({
         key: key,
         seconds: params.cacheTime,
-        refresh: params.refresh,
+        refresh: window.navigator.onLine ? params.refresh : false,
         callBack: () => {
           return new Promise(async (resolve, reject) => {
             await axios.get(urlApi, {params: params.params}).then(response => {
@@ -95,7 +95,7 @@ const axiosActions = {
       remember.async({
         key: key,
         seconds: params.cacheTime,
-        refresh: params.refresh,
+        refresh: window.navigator.onLine ? params.refresh : false,
         callBack: () => {
           return new Promise(async (resolve, reject) => {
             axios.get(urlApi, {params: params.params}).then(response => {
@@ -190,7 +190,7 @@ const axiosActions = {
         this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
-        reject(error.response.data.errors)//Failed response
+        reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
       })
     })
   },
