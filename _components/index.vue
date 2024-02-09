@@ -1441,7 +1441,7 @@ export default {
 <style lang="scss">
 #componentCrudIndex {
   .btn-menu-offline {
-    @apply tw-bg-yellow-400 !important;
+    @apply tw-bg-yellow-400;
   }
   #backend-page {
     .q-table__top, .q-table__middle, .q-table__bottom {
