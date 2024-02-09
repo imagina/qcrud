@@ -267,7 +267,7 @@ export default {
           let pathExplode = path.component.split('/')
           let packageName = pathExplode[1]
           let filePath = pathExplode.slice(4, pathExplode.length)
-          this.crud.read[root].component = require(`@imagina${packageName}/_components/crud/${filePath}`)
+          this.crud.read[root].component = require(`@imagina/${packageName}/_components/crud/${filePath}`)
         }
       },*/
     setAction(type,value, method, params, obj, path, store) {
@@ -332,7 +332,7 @@ export default {
             debugger
             if(_this.appMode == format.validationAppMode.mode) {
               return format.yes
-            }
+            } 
           }
           if(format.method === 'include') {
             if(format.value.includes(field[format.child])) {
