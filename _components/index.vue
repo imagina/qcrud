@@ -4,9 +4,18 @@
     <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
       <!--Page Actions-->
       <div class="q-my-md">
-        <page-actions :extra-actions="tableActions" :excludeActions="params.read.noFilter ? ['filter'] : []"
-          :searchAction="params.read.searchAction" :title="tableTitle" @search="val => search(val)"
-          @new="handlerActionCreate()" @refresh="getDataTable(true)" ref="pageActionRef" :tour-name="tourName" />
+        <page-actions
+            :extra-actions="tableActions"
+            :excludeActions="excludeActions"
+            :searchAction="params.read.searchAction"
+            :title="tableTitle"
+            @search="val => search(val)"
+            @new="handlerActionCreate()"
+            @refresh="getDataTable(true)"
+            ref="pageActionRef"
+            :tour-name="tourName"
+            :help="help"
+        />
       </div>
       <!-- Bulk Actions -->
       <div v-if="selectedRows.length" id="selectedRows"
@@ -37,10 +46,18 @@
           </div>
         </div>
         <!--Table/Grid View-->
-        <q-table v-model:pagination="table.pagination" v-if="['table', 'grid', 'folders'].includes(localShowAs)"
-          :grid="localShowAs === 'grid'" :data="table.data" :columns="tableColumns" :pagination.sync="table.pagination"
-          @request="getData" class="stick-table" :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
-          ref="tableComponent" card-container-class="q-col-gutter-md">
+        <q-table
+            v-model:pagination="table.pagination"
+            v-if="['table','grid','folders'].includes(localShowAs)"
+            :grid="localShowAs === 'grid'" :rows="table.data"
+            :columns="tableColumns"
+            :pagination.sync="table.pagination"
+            @request="getData"
+            class="stick-table"
+            :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
+            ref="tableComponent"
+            card-container-class="q-col-gutter-md"
+        >
           <!--Custom Columns-->
           <template v-slot:header="props" v-if="!isAppOffline">
             <q-tr :props="props" class="tw-bg-white">
@@ -107,16 +124,22 @@
                       :isLoading="col.formatAsync ? loading : false">
                       <template v-slot="data">
                         <div>
-                          <div v-if="col.bgTextColor && data.data" @click="rowclick(col, props.row)"
-                            :class="(col.textColor ? ' text-' + col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')">
-                            <q-badge :class="col.bgTextColor" v-html="data.data">
+                          <div v-if="col.bgTextColor && data.data"
+                               @click="rowclick(col,props.row)"
+                               :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
+                          >
+                            <q-badge :class="col.bgTextColor" >
+                              <span v-html="data.data" />
                               {{ data.data }}
                             </q-badge>
                           </div>
                           <!--Label-->
-                          <div v-else @click="rowclick(col, props.row)" v-html="data.data"
-                            :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-' + col.textColor : '')">
-                            {{ data.data }}
+                          <div
+                              v-else
+                              @click="rowclick(col,props.row)"
+                              v-html="data.data"
+                              :class="(isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                          >
                           </div>
                         </div>
                       </template>
@@ -138,7 +161,10 @@
                         {{ relationConfig('label') }}
                       </div>
                       <!-- Table -->
-                      <q-table :data="relation.data" :columns="relationConfig('columns')">
+                      <q-table
+                          :rows="relation.data"
+                          :columns="relationConfig('columns')"
+                      >
                         <template v-slot:body-cell="props">
                           <q-td :props="props">
                             <!--Actions-->
@@ -215,18 +241,26 @@
                             :isLoading="col.formatAsync ? loading : false">
                             <template v-slot="data">
                               <div>
-                                <div v-if="col.bgTextColor && data.data" @click="rowclick(col, props.row)"
-                                  :class="(col.textColor ? ' text-' + col.textColor : '') + (isActionableColumn(col) ? ' cursor-pointer ' : '')">
-                                  <q-badge :class="col.bgTextColor" v-html="data.data">
-                                    {{ data.data }}
-                                  </q-badge>
+                                <div v-if="col.bgTextColor && data.data"
+                                     @click="rowclick(col,props.row)"
+                                     :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
+                                >
+                                  <q-badge :class="col.bgTextColor" v-html="data.data"></q-badge>
                                 </div>
                                 <!--Label-->
-                                <div v-else @click="rowclick(col, props.row)" v-html="data.data"
-                                  :class="(isActionableColumn(col) ? 'cursor-pointer' : '') + (col.textColor ? ' text-' + col.textColor : '')">
-                                  {{ data.data }}
+                                <div
+                                    v-else
+                                    @click="rowclick(col,props.row)"
+                                    v-html="data.data"
+                                    :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                                >
                                 </div>
-                                <q-tooltip>{{ data.data }}</q-tooltip>
+                                <q-tooltip>
+                                  <div v-html="col.tooltip || data.data"></div>
+                                  <label v-if="isActionableColumn(col)" class="text-weight-bold">
+                                    {{ $tr('isite.cms.label.clickToAction') }}
+                                  </label>
+                                </q-tooltip>
                               </div>
                             </template>
                           </promiseTemplate>
@@ -272,7 +306,12 @@
       </div>
     </div>
     <!-- Export Component -->
-    <master-export v-model="exportParams" ref="exportComponent" export-item />
+    <master-export v-model="exportParams" ref="exportComponent" export-item/>
+    <!-- Qreable Component -->
+    <!--[ptc]-->
+    <!-- <qreable ref="qreableComponent" @created="getDataTable(true)"/> -->
+    <!-- Share-link Component-->
+    <share-link ref="shareLinkComponent"/>
   </div>
 </template>
 
@@ -285,6 +324,10 @@ import foldersStore from '@imagina/qsite/_components/master/folders/store/folder
 import _ from "lodash";
 import paginateCacheOffline from '@imagina/qsite/_plugins/paginateCacheOffline.js';
 import cacheOffline from '@imagina/qsite/_plugins/cacheOffline';
+//[ptc]
+// import qreable from "@imagina/qqreable/_components/qreable.vue"
+import _filterPlugin from '@imagina/qsite/_plugins/filter'
+import eventBus from '@imagina/qsite/_plugins/eventBus'
 
 export default {
   props: {
@@ -294,6 +337,8 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
+    //[ptc]
+    // qreable
   },
   provide() {
     return {
@@ -301,7 +346,8 @@ export default {
       updateRelationData: this.updateRelationData,
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
-      getFieldRelationActions: this.getFieldRelationActions
+      getFieldRelationActions: this.getFieldRelationActions,
+      filterPlugin: computed(() => this.filterPlugin)
     }
   },
   created() {
@@ -352,7 +398,9 @@ export default {
       folderList: [],
       funnelId: null,
       searchKanban: null,
-      tourName: 'admin_crud_index_tour'
+      tourName: 'admin_crud_index_tour',
+      filters: false,
+      filterPlugin: false
     }
   },
   computed: {
@@ -399,6 +447,9 @@ export default {
       if (this.localShowAs === 'kanban' && this.$refs.kanban) response.push(this.$refs.kanban.extraPageActions);
       //Response
       return response.filter((item) => !item.vIfAction)
+    },
+    help(){
+      return  this.params.read?.help ?? {}
     },
     //Define slot table to show
     showSlotTable() {
@@ -471,7 +522,22 @@ export default {
       }
       //Select column
       if (this.bulkActions.length) {
-        columns.unshift({ name: 'selectColumn', label: '', align: 'center' })
+        columns.unshift({name: 'selectColumn', label: '', align: 'center'})
+      }
+
+      //Verify if includes qrs
+      if (this.params?.read?.requestParams?.include?.includes('qrs')) {
+        //Create column QR, if exist in include
+        const columnQr = {
+          name: 'qr', label: 'QR',
+          align: 'left',
+          format: val => '<i class="fa-light fa-qrcode" style="font-size: 20px">',
+          tooltip: this.$tr('iqreable.cms.label.view'),
+          action: (item) => this.setActionQr(item)
+        }
+
+        //Set the QR column and place it in position 1 of the array
+        columns.splice(1, 0, columnQr)
       }
       //Response
       return columns
@@ -532,7 +598,7 @@ export default {
       //Validate availability
       response = bulkActions.filter(action => {
         //Validate vIf
-        if ((action.vIf != undefined) && !action.vIf) return false
+        if ((action?.vIf != undefined) && !action?.vIf) return false
         //Validate permission
         if ((action.permission != undefined) && !this.$auth.hasAccess(action.permission)) return false
         //Validate apiRoute
@@ -579,6 +645,12 @@ export default {
         return true;
       });
       return filterData;
+    },
+    //Exclude actions
+    excludeActions() {
+      let response = this.params.read.excludeActions || []
+      if (this.params.read.noFilter) response.push('filter')
+      return response
     }
   },
   methods: {
@@ -594,12 +666,13 @@ export default {
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
+      await this.setFilterPlugin();
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
       if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
-        this.$eventBus.$emit('setMobileMainAction', {
+        eventBus.emit('setMobileMainAction', {
           icon: 'fas fa-plus',
           color: 'green',
           callBack: () => this.handlerActionCreate()
@@ -607,6 +680,24 @@ export default {
       }
       //Success
       this.success = true
+    },
+    setFilterPlugin(){
+      if(this.params?.read){
+        if (this.params.read?.filterName || this.params.read.filters) {
+          let cacheName;
+          if (this.params.read?.filterCacheName){
+            cacheName = this.params.read?.filterCacheName;
+          } else {
+            const entityName = this.params.entityName ?? ''
+            cacheName = `${this.$route.name}_${entityName}`
+          }
+
+          this.filterPlugin =  _filterPlugin.getInstance(cacheName)
+          return
+        }
+      }
+      // use the global filter
+      this.filterPlugin = this.$filter
     },
     //Order filters
     orderFilters() {
@@ -616,19 +707,21 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
-            await this.$filter.setFilter({
-              name: params.read.filterName || this.$route.name,
-              fields: this.$clone(params.read.filters || {}),
-              callBack: () => {
-                const refresh = !this.params.read.kanban;
-                this.table.filter = this.$clone(this.$filter.values)
-                if (this.params.read.kanban) {
-                  const filterName = this.params.read.kanban.column.filter.name || '';
-                  this.funnelId = this.table.filter[filterName || null];
+            if((Object.keys(params.read.filters).length)){
+              await this.filterPlugin.setFilter({
+                name: params.read.filterName || this.$route.name,
+                fields: this.$clone(params.read.filters || {}),
+                callBack: () => {
+                  const refresh = !this.params.read.kanban;
+                  this.table.filter = this.$clone(this.filterPlugin.values)
+                  if (this.params.read.kanban) {
+                    const filterName = this.params.read.kanban.column.filter.name || '';
+                    this.funnelId = this.table.filter[filterName || null];
+                  }
+                  this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
                 }
-                this.getDataTable(refresh, this.$clone(this.$filter.values), this.$clone(this.$filter.pagination))
-              }
-            })
+              })
+            }
           }
         }
 
@@ -640,7 +733,7 @@ export default {
             Object.keys(params.read.filters).forEach(key => {
               let filter = params.read.filters[key]
               if (key !== 'date') {
-                this.$set(this.table.filter, (filter.name || key), filter.value)
+                this.table.filter[filter.name || key] = filter.value
               }
             })
             if (!this.params.read.filterName) this.filter.available = true//allow filters
@@ -659,7 +752,7 @@ export default {
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
         const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(this.$filter.values[filterName] || null);
+        this.funnelId = String(this.filterPlugin.values[filterName] || null);
         await this.$refs.kanban.setSearch(this.searchKanban);
         await this.$refs.kanban.init(refresh);
         return;
@@ -731,7 +824,7 @@ export default {
       }
     },
     //Get products
-    async getData({ pagination, filter }, refresh = false) {
+    getData({pagination, filter}, refresh = false) {
       let propParams = this.$clone(this.params)
       this.loading = true
 
@@ -740,7 +833,7 @@ export default {
       this.selectedRowsAll = false;
 
       //Refresh all data
-      if (refresh) this.$cache.remove({ allKey: this.params.apiRoute })
+      if (refresh) this.$cache.remove({allKey: this.params.apiRoute})
 
       //Params to request
       let params = {
@@ -749,7 +842,7 @@ export default {
       }
       //add params
       if (!params.params.filter) params.params.filter = {};
-      params.params.filter = { ...params.params.filter, ...this.table.filter, ...filter }
+      params.params.filter = {...params.params.filter, ...this.table.filter, ...filter}
       this.removeEmptyFilters(params.params.filter);
       params.params.page = pagination.page;
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
@@ -767,45 +860,54 @@ export default {
           params.params[key] = Object.assign({}, params.params[key], propParams.read.params[key])
         })
       }
+
       //Request
-      const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
-      let dataTable = response.data
-      //If is field change format
-      if (this.params.field) {
-        dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
-        this.dataField = response.data[0]
-      }
+      this.$crud.index(propParams.apiRoute, params).then(response => {
+        let dataTable = response.data
 
-      //Set data to table
-      this.table.data = this.$clone(dataTable);
-      const folderList = foldersStore().transformDataToDragableForderList(dataTable);
-      this.folderList = _.orderBy(folderList, 'position', 'asc');
-      this.table.pagination.page = this.$clone(response.meta.page.currentPage)
-      this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
-      this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
-      this.table.pagination.sortBy = this.$clone(pagination.sortBy)
-      this.table.pagination.descending = this.$clone(pagination.descending)
+        //If is field change format
+        if (this.params.field) {
+          dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
+          this.dataField = response.data[0]
+        }
 
-      //Sync master filter
-      if (this.params.read.filterName) {
-        //Set search param
-        this.$filter.addValues({ search: params.params.filter.search })
-        //Set pagination
-        this.$filter.setPagination({
-          page: this.$clone(response.meta.page.currentPage),
-          rowsPerPage: this.$clone(response.meta.page.perPage),
-          lastPage: this.$clone(response.meta.page.lastPage),
+        //Set data to table
+        this.table.data = this.$clone(dataTable);
+        const folderList = foldersStore().transformDataToDragableForderList(dataTable);
+        this.folderList = _.orderBy(folderList, 'position', 'asc');
+        this.table.pagination.page = this.$clone(response.meta.page.currentPage)
+        this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
+        this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
+        this.table.pagination.sortBy = this.$clone(pagination.sortBy)
+        this.table.pagination.descending = this.$clone(pagination.descending)
+
+        //Sync master filter
+        if (this.params.read.filterName) {
+          //Set search param
+          this.filterPlugin.addValues({search: params.params.filter.search})
+          //Set pagination
+          this.filterPlugin.setPagination({
+            page: this.$clone(response.meta.page.currentPage),
+            rowsPerPage: this.$clone(response.meta.page.perPage),
+            lastPage: this.$clone(response.meta.page.lastPage),
+          })
+          //Sync local
+          this.table.filter.search = this.$clone(params.params.filter.search)
+        }
+
+        //Dispatch event hook
+        this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
+        //Sync data to drag view
+        this.dataTableDraggable = this.getDataTableDraggable;
+        //Close loading
+        this.loading = false
+      }).catch(error => {
+        this.$apiResponse.handleError(error, () => {
+          this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+          console.error(error)
+          this.loading = false
         })
-        //Sync local
-        this.table.filter.search = this.$clone(params.params.filter.search)
-      }
-
-      //Dispatch event hook
-      this.$hook.dispatchEvent('wasListed', { entityName: this.params.entityName })
-      //Sync data to drag view
-      this.dataTableDraggable = this.getDataTableDraggable;
-      //Close loading
-      this.loading = false
+      })
     },
     //Delete category
     deleteItem(item) {
@@ -976,15 +1078,36 @@ export default {
         icon: "fa-light fa-copy",
         action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
       },
-      {//Delete action
-        icon: 'fa-light fa-trash-can',
-        color: 'red',
-        label: this.$tr('isite.cms.label.delete'),
-        vIf: this.permitAction(field).destroy,
-        action: (item) => {
-          this.deleteItem(item)
-        }
-      }
+        {//Share action
+          label: this.$tr('isite.cms.label.share'),
+          format: (item) => {
+            return {vIf: (item.url || item.embed) ? true : false}
+          },
+          color: 'info',
+          icon: "fa-light fa-share-alt",
+          action: (item) => this.$refs.shareLinkComponent.openModal(item)
+        },
+        {//Delete action
+          icon: 'fa-light fa-trash-can',
+          color: 'red',
+          label: this.$tr('isite.cms.label.delete'),
+          vIf: this.permitAction(field).destroy,
+          action: (item) => {
+            this.deleteItem(item)
+          }
+        },
+        //Export
+        {
+          label: this.$tr('isite.cms.label.export'),
+          vIf: this.exportParams,
+          icon: 'fa-light fa-download',
+          action: (item) => this.$refs.exportComponent.showReportItem({
+            item: item,
+            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
+            filter: {id: item.id}
+          })
+        },
+        ...actions
       ]
 
       //Order field actions
@@ -1209,100 +1332,167 @@ export default {
         this.getDataTable(true);
       }
     },
+    setActionQr(item) {
+      //Check if there is a related QR code that is in the 'mainqr' zone
+      const qrData = item.qrs?.find(i => i.zone === 'mainqr');
+      if (qrData) {
+        //Display a modal with the QR code image
+        this.$refs.qreableComponent.show(qrData);
+      } else {
+        //Get the module
+        const route = this.$helper.getInfoFromPermission(this.$route.meta.permission)
+
+        //Capitalize module and entity
+        const module = this.$helper.toCapitalize(route.module)
+        const entity = this.$helper.toCapitalize(this.params.entityName)
+        //Create the correct entity_type
+        const entity_type = `Modules\\${module}\\Entities\\${entity}`;
+
+        //Set the values to create the QR code
+        const createQr = {
+          title: item.title ?? item.name ?? `${this.params.entityName}-${item.id}`,
+          zone: 'mainqr',
+          content: item.url,
+          entity_type,
+          entity_id: item.id
+        }
+
+        //Ask for user confirmation for QR code creation
+        this.$alert.warning({
+          mode: 'modal',
+          title: this.$trp('iqreable.cms.label.createQr'),
+          message: this.$tr('iqreable.cms.messages.sureCreateQr'),
+          actions: [
+            {label: this.$tr('isite.cms.label.cancel'), color: 'grey-8'},
+            {
+              label: this.$tr('isite.cms.label.accept'),
+              color: 'green',
+              handler: () => {
+                this.loading = true
+                //request Params to Generate QR
+                this.$refs.qreableComponent.generate(createQr)
+              }
+            },
+          ]
+        })
+      }
+    }
   }
 }
 </script>
 
-<style lang="stylus">
-#componentCrudIndex
-  .btn-menu-offline
-    @apply tw-bg-yellow-400 !important
-  #backend-page
-    .q-table__top, .q-table__middle, .q-table__bottom
-      border-radius $custom-radius
-      //box-shadow $custom-box-shadow
-      background-color white
+<style lang="scss">
+#componentCrudIndex {
+  #backend-page {
+    .q-table__top, .q-table__middle, .q-table__bottom {
+      border-radius: $custom-radius;
+      //box-shadow: $custom-box-shadow;
+      background-color: white;
+    }
 
-  th
-    color $blue-grey
-    font-weight bold
-    font-size 13px !important
+    th {
+      color: $blue-grey;
+      font-weight: bold;
+      font-size: 13px !important;
+    }
 
-  //text-align left !important
+    //text-align: left !important;
 
-  td
-    color #222222
+    td {
+      color: #222222;
+    }
 
-  .q-table__card
-    background-color transparent !important
-    box-shadow none !important
+    .q-table__card {
+      background-color: transparent !important;
+      box-shadow: none !important;
+    }
 
-  .q-table__middle
-    border-radius $custom-radius
-    box-shadow $custom-box-shadow
-    background-color white
+    .q-table__middle {
+      border-radius: $custom-radius;
+      box-shadow: $custom-box-shadow;
+      background-color: white;
+    }
 
-  .q-table__top
-    margin-bottom 16px !important
-    padding 12px 16px !important
-    back(true)
+    .q-table__top {
+      margin-bottom: 16px !important;
+      padding: 12px 16px !important;
+    }
 
-  .q-table__middle
-    min-height 0 !important
-    margin 0 !important
+    .q-table__middle {
+      min-height: 0 !important;
+      margin: 0 !important;
+    }
 
-  .q-table__bottom
-    border-top 1px solid transparent !important
-    margin-top 16px !important
-    padding 12px 16px !important
-    back(true)
+    .q-table__bottom {
+      border-top: 1px solid transparent !important;
+      margin-top: 16px !important;
+      padding: 12px 16px !important;
+    }
 
-  .stick-table
-    th:last-child, td:last-child
-      position: sticky
-      right: 0
-      z-index: 1
+    .stick-table {
+      th:last-child, td:last-child {
+        background-color: white;
+        position: sticky;
+        right: 0;
+        z-index: 1;
+      }
 
-    th:first-child, td:first-child
-      position: sticky
-      left: 0
-      z-index: 1
-  .default-card-grid
-    .default-card-grid_item-image
-      width 100%
-      height 140px
-      background-position center
-      background-size cover
-      background-repeat no-repeat
-      border-radius $custom-radius-items
-      margin 10px 0 10px 0
+      th:first-child, td:first-child {
+        background-color: white;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+      }
+    }
 
-  #crudPaginationComponent
-    .q-btn
-      height 30px
-      width 30px
-      min-width 30px !important
+    .default-card-grid {
+      .default-card-grid_item-image {
+        width: 100%;
+        height: 140px;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        border-radius: $custom-radius-items;
+        margin: 10px 0 10px 0;
+      }
+    }
 
-  #collapseTable
-    padding 0;
-    background-color: $grey-1
+    #crudPaginationComponent {
+      .q-btn {
+        height: 30px;
+        width: 30px;
+        min-width: 30px !important;
+      }
+    }
 
-    #contentRelationData
-      min-height 90px
-      position relative
-      width 100%
+    #collapseTable {
+      padding: 0;
+      background-color: $grey-1;
 
-    .q-table, th:last-child, th:first-child, td:last-child, td:first-child
-      background-color: $grey-1
+      #contentRelationData {
+        min-height: 90px;
+        position: relative;
+        width: 100%;
+      }
 
-    .q-table__middle
-      padding 0;
-      box-shadow none;
-      border-radius: 0;
+      .q-table, th:last-child, th:first-child, td:last-child, td:first-child {
+        background-color: $grey-1;
+      }
 
-  #selectedRows
-    border-radius $custom-radius
+      .q-table__middle {
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
 
-#dialogFilters
-  min-height max-content !important
+    #selectedRows {
+      border-radius: $custom-radius;
+    }
+  }
+
+  #dialogFilters {
+    min-height: max-content !important;
+  }
+}
 </style>
