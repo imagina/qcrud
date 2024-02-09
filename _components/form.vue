@@ -1,68 +1,78 @@
 <template>
   <!--Modal with form to category-->
-  <master-modal 
-    :id="paramsProps.modalId || 'modalFormCrud'" v-model="show" v-bind="modalProps"
-    @hide="componentStore.remove()" custom-position :persistent="true">
+  <master-modal
+      :id="paramsProps.modalId || 'modalFormCrud'" v-model="show" v-bind="modalProps"
+      @hide="componentStore.remove()" custom-position :persistent="true">
     <div class="modal-crud">
       <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
         <div class="relative-position col-12">
           <!--Forms-->
-          <q-form autocorrect="off" autocomplete="off" ref="formContent" class="row q-col-gutter-md col-12"
-                  @submit="(!isUpdate && !field) ?  createItem() : updateItem()" v-if="success"
-                  @validation-error="$alert.error($tr('isite.cms.message.formInvalid'))">
+          <dynamic-field
+              v-if="fieldBanner"
+              :field="fieldBanner"
+          />
+          <q-form
+              autocorrect="off"
+              autocomplete="off"
+              ref="formContent"
+              class="row q-col-gutter-md col-12"
+              @submit="(!isUpdate && !field) ?  createItem() : updateItem()"
+              v-if="success"
+              @validation-error="$alert.error($tr('isite.cms.message.formInvalid'))"
+          >
             <!--Language-->
-            <div 
-              :class="locale.languages && (locale.languages.length >= 2) ? 'col-12' : 'q-pa-none'"
-              v-show="locale.fieldsTranslatable && Object.keys(locale.fieldsTranslatable).length"
+            <div
+                :class="locale.languages && (locale.languages.length >= 2) ? 'col-12' : 'q-pa-none'"
+                v-show="locale.fieldsTranslatable && Object.keys(locale.fieldsTranslatable).length"
             >
-              <locales 
-                v-model="locale" 
-                ref="localeComponent" 
-                :form="$refs.formContent"
+              <locales
+                  v-model="locale"
+                  ref="localeComponent"
+                  :form="$refs.formContent"
               />
             </div>
 
             <!--Form-->
-            <div 
-              v-for="(pos,key) in ['formLeft','formRight']" :key="pos"
-              v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
-              :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`"
+            <div
+                v-for="(pos,key) in ['formLeft','formRight']" :key="pos"
+                v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
+                :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`"
             >
               <div>
                 <!--Fields-->
-                <div 
-                  v-for="(field, key) in paramsProps[pos]" :key="key" :ref="key"
+                <div
+                    v-for="(field, key) in customFieldProps[pos]" :key="key" :ref="key"
                 >
                   <!--Dynamic fake field-->
-                  <dynamic-field 
-                    v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
-                    @input="setDynamicValues(field.name || key, field)" 
-                    :key="key"
-                    :field="{...field, testId: (field.testId || field.name || key)}"
-                    :language="locale.language" :item-id="itemId" 
-                    :ref="`field-${field.name || key}`"
-                    v-if="showField(field, (field.name || key)) && (field.isFakeField || field.fakeFieldName)"
-                    @enter="$refs.formContent.submit()"
+                  <dynamic-field
+                      v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
+                      @input="setDynamicValues(field.name || key, field)"
+                      :key="key"
+                      :field="{...field, testId: (field.testId || field.name || key)}"
+                      :language="locale.language" :item-id="itemId"
+                      :ref="`field-${field.name || key}`"
+                      v-if="showField(field, (field.name || key)) && (field.isFakeField || field.fakeFieldName)"
+                      @enter="$refs.formContent.submit()"
                   />
                   <!--Dynamic field-->
-                  <dynamic-field 
-                    v-model="locale.formTemplate[field.name || key]" 
-                    :key="key"
-                    @input="setDynamicValues(field.name || key, field)"
-                    :field="{...field, testId: (field.testId  || field.name || key)}"
-                    :language="locale.language" :item-id="itemId" 
-                    :ref="`field-${field.name || key}`"
-                    v-if="showField(field, (field.name || key)) && !field.isFakeField && !field.fakeFieldName"
-                    @enter="$refs.formContent.submit()"
+                  <dynamic-field
+                      v-model="locale.formTemplate[field.name || key]"
+                      :key="key"
+                      @input="setDynamicValues(field.name || key, field)"
+                      :field="{...field, testId: (field.testId  || field.name || key)}"
+                      :language="locale.language" :item-id="itemId"
+                      :ref="`field-${field.name || key}`"
+                      v-if="showField(field, (field.name || key)) && !field.isFakeField && !field.fakeFieldName"
+                      @enter="$refs.formContent.submit()"
                   />
                 </div>
               </div>
             </div>
           </q-form>
-          </div>
         </div>
       </div>
-    </master-modal>
+    </div>
+  </master-modal>
 </template>
 
 <script>
@@ -158,6 +168,22 @@ export default {
       if (this.itemId === false) return false
       return true
     },
+    fieldBanner() {
+      const description = this.isUpdate
+          ? this.paramsProps?.update?.description
+          : this.paramsProps?.create?.description
+
+      if (!description) return null
+
+      return {
+        type: 'banner',
+        props: {
+          color: 'blue-grey-4',
+          icon: 'fas fa-exclamation-triangle',
+          message: description
+        }
+      }
+    },
     //Actions to store component
     componentStore() {
       return {
@@ -174,22 +200,32 @@ export default {
             }
           }, 500)
         },
-        update: () => {
+        update: async () => {
           if (!this.paramsProps.field && this.locale.success) {
             let formDataStore = this.$clone(this.$store.state.qcrudComponent.component[this.paramsProps.crudId])
             let formData = this.$clone(this.locale.formTemplate)
-            let emitForm = formDataStore ? false : true
+            let changedFields = []
 
             //Validate if change some item from form
-            if (!emitForm)
+            if (formDataStore) {
               for (var itemName in formData)
                 if (JSON.stringify(formDataStore[itemName]) !== JSON.stringify(formData[itemName]))
-                  emitForm = true
+                  changedFields.push(itemName)
+            }
+
             //Emit form data
-            if (emitForm)
+            if (changedFields.length || !formDataStore) {
+              // Emit change for extra modifcation
+              if (this.paramsProps.handleFormUpdates) {
+                formData = await this.paramsProps.handleFormUpdates(formData, changedFields, this.formType)
+              }
+              // Set the data in the CRUD store
               this.$store.dispatch('qcrudComponent/SET_DATA_COMPONENT', {
-                id: this.paramsProps.crudId, data: this.locale.formTemplate
+                id: this.paramsProps.crudId, data: formData
               })
+              //set in the formTemplate
+              this.locale.formTemplate = this.$clone(formData)
+            }
           }
         },
         remove: () => {
@@ -198,6 +234,23 @@ export default {
         },
       }
     },
+    customFieldProps() {
+      const customFormProps = this.isUpdate
+          ? this.paramsProps?.update?.customFormProps
+          : this.paramsProps?.create?.customFormProps
+
+      const paramsProps = this.$clone(this.paramsProps)
+
+      if (customFormProps) {
+        return this.injectProps(customFormProps, paramsProps)
+      }
+
+      return this.paramsProps
+    },
+    //return the formType
+    formType() {
+      return this.isUpdate ? 'update' : 'create'
+    }
   },
   methods: {
     //Init form
@@ -324,9 +377,9 @@ export default {
             resolve(true)
           }).catch(error => {
             this.$apiResponse.handleError(error, () => {
-              
+
               this.messageWindow('error', {
-                message: this.$tr('isite.cms.message.errorRequest'), 
+                message: this.$tr('isite.cms.message.errorRequest'),
                 pos: 'bottom'
               })
               this.loading = false//hide loading
@@ -350,7 +403,7 @@ export default {
             resolve(true)
           }).catch(error => {
             this.$apiResponse.handleError(error, () => {
-              
+
               this.messageWindow('error', this.$tr('isite.cms.message.errorRequest'))
               this.loading = false//hide loading
               reject(false)
@@ -377,7 +430,7 @@ export default {
           } else  {
             try {
               requestInfo.response = await this.$crud.create(
-                propParams.apiRoute, 
+                propParams.apiRoute,
                 { ...formData, titleOffline: this.modalProps.title || '' }
               )
             } catch (err) {
@@ -393,9 +446,9 @@ export default {
         //Action after request
         if (requestInfo.response) {
           this.$root.$emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
-          
+
           this.messageWindow(
-            'info', 
+            'info',
             { message: `${this.$tr('isite.cms.message.recordCreated')}` }
           )
           //Dispatch hook event
@@ -404,10 +457,12 @@ export default {
           this.show = false
           //this.initForm()
           this.$emit('created', formData)
+          this.$emit('createdData', requestInfo.response.data)
+          if (this.params.create?.callback) this.params.create.callback(requestInfo.response.data)
         } else {
-          
+
           this.messageWindow(
-            'error', 
+            'error',
             { message: `${this.$tr('isite.cms.message.recordNoCreated')}` }
           )
           this.loading = false//login hide
@@ -418,11 +473,11 @@ export default {
                 message: this.$tr('iprofile.cms.message.emailExist'),
                 pos: 'bottom', timeOut: 4000
               })
-              
+
             } else {
-              
+
               this.messageWindow(
-                'error', 
+                'error',
                 { message: `${this.$tr('isite.cms.message.recordNoCreated')}` }
               )
             }
@@ -454,9 +509,9 @@ export default {
           await cacheOffline.updateRecord(propParams.apiRoute, formData, criteria)
 
           response = await this.$crud.update(
-            propParams.apiRoute, 
-            criteria, 
-            formData, 
+            propParams.apiRoute,
+            criteria,
+            formData,
             customParams
           )
         }
@@ -465,7 +520,7 @@ export default {
       }
 
       return {
-        response, 
+        response,
         errorResponse
       }
     },
@@ -487,9 +542,9 @@ export default {
         //Action after request
         if (requestInfo.response) {
           this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
-          
+
           this.messageWindow(
-            'info', 
+            'info',
             { message: this.$tr('isite.cms.message.recordUpdated') }
           )
           //Dispatch hook event
@@ -498,15 +553,33 @@ export default {
           this.show = false
           //this.initForm()
           this.$emit('updated', requestInfo.response.data)
+          if (this.params.update?.callback) this.params.update.callback(requestInfo.response.data)
         } else {
           this.loading = false
-          
+
           this.messageWindow(
-            'error', 
+            'error',
             { message: this.$tr('isite.cms.message.recordNoUpdated') }
           )
         }
       }
+    },
+    injectProps(customFormProps, paramsProps) {
+      ["formLeft", "formRight"].forEach(type => {
+        Object.keys(paramsProps[type]).forEach(fieldName => {
+          if (customFormProps[fieldName]) {
+            paramsProps[type][fieldName] = {
+              ...paramsProps[type][fieldName],
+              ...customFormProps[fieldName],
+              props: {
+                ...(paramsProps[type][fieldName].props || {}),
+                ...(customFormProps[fieldName].props || {})
+              }
+            }
+          }
+        })
+      })
+      return paramsProps
     },
     //Return data of form
     getDataForm() {
@@ -541,7 +614,7 @@ export default {
 
         //Call custom Get Data Form
         if (this.paramsProps.getDataForm) {
-          data = await this.paramsProps.getDataForm(this.$clone(data), this.isUpdate ? 'update' : 'create')
+          data = await this.paramsProps.getDataForm(this.$clone(data), this.formType)
         }
         //Response
         resolve(data)
@@ -608,7 +681,7 @@ export default {
 
       //Response
       return response
-    },
+    }
   }
 }
 </script>

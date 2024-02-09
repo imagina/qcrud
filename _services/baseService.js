@@ -4,6 +4,7 @@ import {helper} from '@imagina/qsite/_plugins/helper'
 import cache from '@imagina/qsite/_plugins/cache'
 import config from '@imagina/qsite/_config/master/index'
 import apiResponse from '@imagina/qcrud/_plugins/apiResponse'
+import {debounce} from 'quasar'
 
 //Replace params in apiRoute
 function replaceParamsApiRoute(apiRoute, params) {
@@ -12,7 +13,7 @@ function replaceParamsApiRoute(apiRoute, params) {
 }
 
 
-export default {
+const axiosActions = {
   /**
    * Create a item
    * @param configName
@@ -262,10 +263,12 @@ export default {
   /**
    * Request to clear backend cache
    */
-  clearCache() {
+  clearCache: debounce(() => {
     return new Promise(async (resolve, reject) => {
-      await this.post('apiRoutes.qsite.cacheClear').catch(error => reject(error))
+      await axiosActions.post('apiRoutes.qsite.cacheClear').catch(error => reject(error))
       resolve(true)
     })
-  }
+  }, 1000)
 }
+
+export default axiosActions;
