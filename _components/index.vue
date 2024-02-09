@@ -387,14 +387,14 @@
 <script>
 //Components
 import {computed} from 'vue';
-import masterExport from "@imagina/qsite/_components/master/masterExport"
-import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
-import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
+import masterExport from "modules/qsite/_components/master/masterExport"
+import recursiveItemDraggable from 'modules/qsite/_components/master/recursiveItemDraggable';
+import foldersStore from 'modules/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
 //[ptc]
-// import qreable from "@imagina/qqreable/_components/qreable.vue"
-import _filterPlugin from '@imagina/qsite/_plugins/filter'
-import eventBus from '@imagina/qsite/_plugins/eventBus'
+// import qreable from "modules/qqreable/_components/qreable.vue"
+import _filterPlugin from 'modules/qsite/_plugins/filter'
+import eventBus from 'modules/qsite/_plugins/eventBus'
 
 export default {
   props: {

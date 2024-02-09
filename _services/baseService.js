@@ -1,9 +1,9 @@
 import axios from 'axios'
-import {remember} from '@imagina/qsite/_plugins/remember'
-import {helper} from '@imagina/qsite/_plugins/helper'
-import cache from '@imagina/qsite/_plugins/cache'
-import config from '@imagina/qsite/_config/master/index'
-import apiResponse from '@imagina/qcrud/_plugins/apiResponse'
+import {remember} from 'modules/qsite/_plugins/remember'
+import {helper} from 'modules/qsite/_plugins/helper'
+import cache from 'modules/qsite/_plugins/cache'
+import config from 'modules/qsite/_config/master/index'
+import apiResponse from 'modules/qcrud/_plugins/apiResponse'
 import {debounce} from 'quasar'
 
 //Replace params in apiRoute

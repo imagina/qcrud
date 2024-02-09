@@ -49,9 +49,9 @@
 </template>
 <script>
 //Component
-import crudIndex from '@imagina/qcrud/_components/index';
-import crudForm from '@imagina/qcrud/_components/form';
-import eventBus from '@imagina/qsite/_plugins/eventBus';
+import crudIndex from 'modules/qcrud/_components/index';
+import crudForm from 'modules/qcrud/_components/form';
+import eventBus from 'modules/qsite/_plugins/eventBus';
 
 export default {
   beforeDestroy() {

@@ -1,4 +1,4 @@
-import layout from '@imagina/qcrud/_i18n/es/layout'
+import layout from 'modules/qcrud/_i18n/es/layout'
 
 export default {
   layout
