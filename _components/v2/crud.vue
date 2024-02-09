@@ -9,7 +9,7 @@
   </div>
 </template>
 <script>
-import form from '@imagina/qcrud/_components/v2/form'
+import form from 'modules/qcrud/_components/v2/form'
 
 export default {
   props: {

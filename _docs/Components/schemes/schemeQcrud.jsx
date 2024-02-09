@@ -384,7 +384,7 @@ export const readGridParams = [
     {
       type: <code>Function</code>,
       description: <>Custom card component to render as a card.<br/>E.g., <CodeBlock language="js">() =>
-        import('@imagina/qappointment/_components/crud/appointmentCard')</CodeBlock></>
+        import('modules/qappointment/_components/crud/appointmentCard')</CodeBlock></>
     },
   ]
 ]
