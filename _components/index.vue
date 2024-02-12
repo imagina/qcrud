@@ -348,7 +348,7 @@
                 </div>
                 <div class="actionsBtnPag">
                   <q-btn
-                      icon="chevron_left"
+                      icon="fa-regular fa-chevron-left"
                       color="primary"
                       round
                       dense
@@ -357,7 +357,7 @@
                       @click="props.prevPage"
                   />
                   <q-btn
-                      icon="chevron_right"
+                      icon="fa-regular fa-chevron-right"
                       color="primary"
                       round
                       dense
