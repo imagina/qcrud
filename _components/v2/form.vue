@@ -27,14 +27,14 @@
                                  @input="setDynamicValues(field.name || key, field)" :key="key"
                                  :field="{...field, testId : (field.testId || field.name || key)}"
                                  :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                                 v-if="showField(field, (field.name || key)) && (field.isFakeField || field.fakeFieldName)"
+                                 v-if="showField(field, (field.name || key)) && (field?.isFakeField || field.fakeFieldName)"
                                  @enter="$refs.formContent.submit()"/>
                   <!--Dynamic field-->
                   <dynamic-field v-model="locale.formTemplate[field.name || key]" :key="key"
                                  @input="setDynamicValues(field.name || key, field)"
                                  :field="{...field, testId : (field.testId  || field.name || key)}"
                                  :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                                 v-if="showField(field, (field.name || key)) && !field.isFakeField && !field.fakeFieldName"
+                                 v-if="showField(field, (field.name || key)) && !field?.isFakeField && !field.fakeFieldName"
                                  @enter="$refs.formContent.submit()"/>
                 </div>
               </div>
@@ -243,7 +243,7 @@ export default {
         //Add to data locale to field
         if (field.isTranslatable) {
           fieldsTranslatables[field.name || key] = field.value
-        } else if (field.isFakeField) {
+        } else if (field?.isFakeField) {
           fields.options[field.name || key] = field.value
         } else if (field.fakeFieldName) {
           if (!fields[field.fakeFieldName]) fields[field.fakeFieldName] = {}
@@ -503,7 +503,7 @@ export default {
       let response = true//Default response
 
       //Check if is field "masterRecord" and check permission
-      if (field.isFakeField && (fieldName == 'masterRecord')) {
+      if (field?.isFakeField && (fieldName == 'masterRecord')) {
         //Validate permission to create
         if (!this.isUpdate && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.create')) {
           response = false
