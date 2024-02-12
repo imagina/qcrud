@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import cacheOffline from '@imagina/qsite/_plugins/cacheOffline';
+import cacheOffline from 'modules/qsite/_plugins/cacheOffline';
 
 export default {
   props: {
