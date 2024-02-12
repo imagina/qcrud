@@ -2,7 +2,7 @@ import axios from 'axios'
 import {remember} from 'modules/qsite/_plugins/remember'
 import {helper} from 'modules/qsite/_plugins/helper'
 import cache from 'modules/qsite/_plugins/cache'
-import config from 'modules/qsite/_config/master/index'
+import config from 'src/config/plugin'
 import apiResponse from 'modules/qcrud/_plugins/apiResponse'
 import {debounce} from 'quasar'
 
