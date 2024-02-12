@@ -52,6 +52,7 @@
 import crudIndex from 'modules/qcrud/_components/index';
 import crudForm from 'modules/qcrud/_components/form';
 import eventBus from 'modules/qsite/_plugins/eventBus';
+import { markRaw } from 'vue';
 
 export default {
   beforeDestroy() {
@@ -270,7 +271,7 @@ export default {
   methods: {
     async loadComponent() {
       const crudComponent = await this.crudData;
-      this.componentCrudData = crudComponent.default;
+      this.componentCrudData = markRaw(crudComponent.default);
       this.$nextTick(function() {
         this.init();
       });
