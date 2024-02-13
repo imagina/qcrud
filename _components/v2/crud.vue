@@ -9,7 +9,6 @@
   </div>
 </template>
 <script>
-import form from 'modules/qcrud/_components/v2/form'
 
 export default {
   props: {
@@ -22,7 +21,6 @@ export default {
       }
     }
   },
-  components: {},
   mounted() {
     this.$nextTick(function () {
       this.init()
