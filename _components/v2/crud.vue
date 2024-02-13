@@ -23,7 +23,6 @@ export default {
     }
   },
   components: {},
-  watch: {},
   mounted() {
     this.$nextTick(function () {
       this.init()

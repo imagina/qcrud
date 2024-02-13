@@ -417,7 +417,13 @@ export default {
       filterPlugin: computed(() => this.filterPlugin)
     }
   },
-  watch: {},
+  watch: {
+    isAppOffline: {
+      handler: function () {
+        this.getDataTable(true);
+      }
+    },
+  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
@@ -1427,13 +1433,7 @@ export default {
         })
       }
     },
-    watch: {
-      isAppOffline: {
-        handler: function () {
-          this.getDataTable(true);
-        }
-      },
-    }
+    
   }
 }
 </script>
