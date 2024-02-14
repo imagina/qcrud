@@ -8,7 +8,7 @@
            @click="create()" v-if="showType('button-create')" />
     <!--=== Select to List and Create ===-->
     <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
-                   @input="emitValue" @click.native="showEventListener">
+                   @update:modelValue="emitValue" @click.native="showEventListener">
       <!--Before options slot-->
       <div slot="before-options">
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green" no-caps
@@ -24,6 +24,7 @@
       <!--Modal create/update component-->
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
+                 @update:modelValue="val => showModal = val"
                  @created="(response) => formEmmit('created', response)"
                  @updated="formEmmit('updated')"
                  @createdData="(response) => onCreate(response)"
@@ -51,7 +52,7 @@
 //Component
 import crudIndex from 'modules/qcrud/_components/index';
 import crudForm from 'modules/qcrud/_components/form';
-import eventBus from 'modules/qsite/_plugins/eventBus';
+import { eventBus } from 'src/plugins/utils';
 import { markRaw } from 'vue';
 
 export default {
@@ -72,7 +73,7 @@ export default {
         return {};
       }
     },
-    value: { default: null },
+    modelValue: { default: null },
     customData: {
       default: () => {
         return {};
@@ -85,6 +86,7 @@ export default {
     },
     title: { defualt: false }
   },
+  emits: ['update:modelValue','deleted','created','updated'],
   // Dependency injection
   provide() {
     return {
@@ -93,7 +95,7 @@ export default {
   },
   components: { crudIndex, crudForm },
   watch: {
-    value(newValue, oldValue) {
+    modelValue(newValue, oldValue) {
       if (!newValue || (JSON.stringify(newValue) != JSON.stringify(oldValue))) {
         this.setValueSelect();
       }
@@ -226,7 +228,7 @@ export default {
     },
     //Emit value
     emitValue() {
-      this.$emit('input', this.dataCrudSelect.itemSelected);
+      this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
     },
     //select field props
     selectField() {
@@ -447,7 +449,7 @@ export default {
     },
     //Set value to select
     setValueSelect(data = false) {
-      let newValue = data ? data : this.$clone(this.value);
+      let newValue = data ? data : this.$clone(this.modelValue);
       if (Array.isArray(newValue)) {
         let responseSelected = [];
         newValue.forEach(item => responseSelected.push(item.toString()));

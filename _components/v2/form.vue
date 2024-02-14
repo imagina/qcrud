@@ -24,7 +24,7 @@
                 <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
                   <!--Dynamic fake field-->
                   <dynamic-field v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
-                                 @input="setDynamicValues(field.name || key, field)" :key="key"
+                                 @update:modelValue="setDynamicValues(field.name || key, field)" :key="key"
                                  :field="{...field, testId : (field.testId || field.name || key)}"
                                  :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
                                  v-if="showField(field, (field.name || key)) && (field?.isFakeField || field.fakeFieldName)"
@@ -49,18 +49,19 @@
 <script>
 export default {
   props: {
-    value: {default: false},
+    modelValue: {default: false},
     itemId: {default: false},
     field: {default: false},
     params: {default: false}
   },
+  emits: ['update:modelValue','created','updated'],
   components: {},
   watch: {
-    value(newValue) {
+    modelValue(newValue) {
       this.show = this.value
     },
     show(newValue) {
-      this.$emit('input', this.show)
+      this.$emit('update:modelValue', this.show)
       if (newValue) this.initForm()
     },
     'locale.formTemplate': {
@@ -83,7 +84,7 @@ export default {
   },
   mounted() {
     this.$nextTick(function () {
-      this.show = this.value
+      this.show = this.modelValue
     })
   },
   data() {
@@ -191,7 +192,7 @@ export default {
         ),
       ])
       this.orderFields()//order fields to component locale
-      this.show = this.value//Assign props value to show modal
+      this.show = this.modelValue//Assign props value to show modal
       this.success = true//successful
       if (this.isUpdate || this.paramsProps.field) await this.getDataItem()//Get data item
       this.componentStore.create()//Create component in store

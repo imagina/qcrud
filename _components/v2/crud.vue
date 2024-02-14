@@ -21,6 +21,8 @@ export default {
       }
     }
   },
+  emits: ['obtained'],
+  components: {},
   mounted() {
     this.$nextTick(function () {
       this.init()
