@@ -47,6 +47,7 @@
 </template>
 
 <script>
+import { eventBus } from 'src/plugins/utils'
 export default {
   props: {
     modelValue: {default: false},
@@ -345,7 +346,7 @@ export default {
 
         //Action after request
         if (requestInfo.response) {
-          this.$root.$emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
+          eventBus.emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
           this.$alert.info({message: `${this.$tr('isite.cms.message.recordCreated')}`})
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasCreated', {entityName: this.params.entityName})
@@ -406,7 +407,7 @@ export default {
 
         //Action after request
         if (requestInfo.response) {
-          this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
+          eventBus.emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
           this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasUpdated', {entityName: this.params.entityName})

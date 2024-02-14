@@ -78,6 +78,7 @@
 
 <script>
 import { cacheOffline } from 'src/plugins/utils';
+import { eventBus } from 'src/plugins/utils'
 
 export default {
   props: {
@@ -450,7 +451,7 @@ export default {
 
         //Action after request
         if (requestInfo.response) {
-          this.$root.$emit(`${propParams.apiRoute}.crud.event.created`);//emmit event
+          eventBus.emit(`${propParams.apiRoute}.crud.event.created`);//emmit event
 
           this.messageWindow(
             'info',
@@ -546,7 +547,7 @@ export default {
 
         //Action after request
         if (requestInfo.response) {
-          this.$root.$emit(`crudForm${propParams.apiRoute}Updated`);//emmit event
+          eventBus.emit(`crudForm${propParams.apiRoute}Updated`);//emmit event
 
           this.messageWindow(
             'info',
