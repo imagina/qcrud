@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import cacheOffline from 'modules/qsite/_plugins/cacheOffline';
+import { cacheOffline } from 'src/plugins/utils';
 
 export default {
   props: {
