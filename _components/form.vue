@@ -1,6 +1,5 @@
 <template>
   <!--Modal with form to category-->
-  showMasterModalForm {{ show ? 'Yes' : 'No' }}
   <master-modal
     :id="paramsProps.modalId || 'modalFormCrud'" v-model="show" v-bind="modalProps"
     @hide="componentStore.remove()" custom-position :persistent="true">
