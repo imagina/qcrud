@@ -24,6 +24,7 @@
       <!--Modal create/update component-->
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
+                 @input="val => showModal = val"
                  @created="(response) => formEmmit('created', response)"
                  @updated="formEmmit('updated')"
                  @createdData="(response) => onCreate(response)"
