@@ -234,8 +234,8 @@
                      :style="`background-image: url('${itemImage(props.row)}')`"></div>
                 <!--Fields-->
                 <q-list dense>
-                  <q-item v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name" style="padding: 3px 0"
-                          v-if="col.name != 'actions'">
+                <template v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name">
+                  <q-item  style="padding: 3px 0" v-if="col?.name != 'actions'">
                     <q-item-section>
                       <!--Field name-->
                       <q-item-label class="ellipsis">
@@ -304,6 +304,7 @@
                       </q-item-label>
                     </q-item-section>
                   </q-item>
+                </template>
                 </q-list>
               </q-card>
             </div>
@@ -395,6 +396,7 @@ import _ from "lodash";
 // import qreable from "modules/qqreable/_components/qreable.vue"
 import _filterPlugin from 'modules/qsite/_plugins/filter'
 import eventBus from 'modules/qsite/_plugins/eventBus'
+import { markRaw } from 'vue';
 
 export default {
   props: {
@@ -427,10 +429,8 @@ export default {
   created() {
     this.$helper.setDynamicSelectList({});
   },
-  mounted() {
-    this.$nextTick(function () {
-      this.init()
-    })
+  beforeMount() {
+    this.loadComponent();
   },
   data() {
     return {
@@ -471,7 +471,8 @@ export default {
       searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
-      filterPlugin: false
+      filterPlugin: false,
+      gridComponent: false
     }
   },
   computed: {
@@ -619,10 +620,11 @@ export default {
     //Grid params
     gridParams() {
       let gridParams = this.params.read.grid || {}//Get grid params
+      gridParams.component = this.gridComponent
       //Response
       return {
         colClass: gridParams.colClass || 'col-12 col-sm-6 col-lg-4 col-xl-3',
-        component: gridParams.component || false
+        component:  gridParams.component || false
       }
     },
     //Validate read show as
@@ -724,6 +726,16 @@ export default {
     }
   },
   methods: {
+    async loadComponent() {
+      if(this.params.read?.grid){
+        const qComponent = await this.params.read.grid.component()
+        const gridComponent = qComponent.default
+        this.gridComponent = markRaw(gridComponent)
+      }
+      this.$nextTick(function() {
+        this.init();
+      });
+    },
     countPage(props) {
       const page = props.pagination.page
       const rowsPerPage = props.pagination.rowsPerPage
