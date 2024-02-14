@@ -351,6 +351,7 @@
                   <q-btn
                       icon="fas fa-chevron-left"
                       color="primary"
+                      size="sm"
                       round
                       dense
                       flat
@@ -360,6 +361,7 @@
                   <q-btn
                       icon="fas fa-chevron-right"
                       color="primary"
+                      size="sm"
                       round
                       dense
                       flat
