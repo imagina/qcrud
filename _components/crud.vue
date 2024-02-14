@@ -73,7 +73,7 @@ export default {
         return {};
       }
     },
-    value: { default: null },
+    modelValue: { default: null },
     customData: {
       default: () => {
         return {};
@@ -86,6 +86,7 @@ export default {
     },
     title: { defualt: false }
   },
+  emits: ['update:modelValue','deleted','created','updated'],
   // Dependency injection
   provide() {
     return {
@@ -94,7 +95,7 @@ export default {
   },
   components: { crudIndex, crudForm },
   watch: {
-    value(newValue, oldValue) {
+    modelValue(newValue, oldValue) {
       if (!newValue || (JSON.stringify(newValue) != JSON.stringify(oldValue))) {
         this.setValueSelect();
       }
@@ -227,7 +228,7 @@ export default {
     },
     //Emit value
     emitValue() {
-      this.$emit('input', this.dataCrudSelect.itemSelected);
+      this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
     },
     //select field props
     selectField() {
@@ -448,7 +449,7 @@ export default {
     },
     //Set value to select
     setValueSelect(data = false) {
-      let newValue = data ? data : this.$clone(this.value);
+      let newValue = data ? data : this.$clone(this.modelValue);
       if (Array.isArray(newValue)) {
         let responseSelected = [];
         newValue.forEach(item => responseSelected.push(item.toString()));

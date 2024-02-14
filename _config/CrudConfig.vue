@@ -2,6 +2,7 @@
 <script>
 export default {
   name: "configCrud",
+  emits: ['crud.data.refresh'],
   data() {
     return {
       crud: {},
@@ -332,7 +333,7 @@ export default {
             debugger
             if(_this.appMode == format.validationAppMode.mode) {
               return format.yes
-            } 
+            }
           }
           if(format.method === 'include') {
             if(format.value.includes(field[format.child])) {

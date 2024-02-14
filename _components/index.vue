@@ -403,6 +403,7 @@ export default {
     params: {default: false},
     title: {default: false}
   },
+  emits: ['update','create'],
   components: {
     masterExport,
     recursiveItemDraggable,
@@ -1445,7 +1446,7 @@ export default {
         })
       }
     },
-    
+
   }
 }
 </script>
