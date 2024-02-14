@@ -52,7 +52,7 @@
 //Component
 import crudIndex from 'modules/qcrud/_components/index';
 import crudForm from 'modules/qcrud/_components/form';
-import eventBus from 'modules/qsite/_plugins/eventBus';
+import { eventBus } from 'src/plugins/utils';
 import { markRaw } from 'vue';
 
 export default {

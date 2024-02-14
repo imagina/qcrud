@@ -396,8 +396,8 @@ import foldersStore from 'modules/qsite/_components/master/folders/store/folders
 import _ from "lodash";
 //[ptc]
 // import qreable from "modules/qqreable/_components/qreable.vue"
-import _filterPlugin from 'modules/qsite/_plugins/filter'
-import eventBus from 'modules/qsite/_plugins/eventBus'
+import _filterPlugin from 'src/plugins/filter'
+import { eventBus } from 'src/plugins/utils'
 import { markRaw } from 'vue';
 
 export default {
