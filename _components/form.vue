@@ -45,7 +45,7 @@
                     <!--Dynamic fake field-->
                     <dynamic-field
                       v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
-                      @input="setDynamicValues(field.name || key, field)"
+                      @update:modelValue="setDynamicValues(field.name || key, field)"
                       :key="key"
                       :field="{...field, testId: (field.testId || field.name || key)}"
                       :language="locale.language" :item-id="itemId"
@@ -57,7 +57,7 @@
                     <dynamic-field
                       v-model="locale.formTemplate[field.name || key]"
                       :key="key"
-                      @input="setDynamicValues(field.name || key, field)"
+                      @update:modelValue="setDynamicValues(field.name || key, field)"
                       :field="{...field, testId: (field.testId  || field.name || key)}"
                       :language="locale.language" :item-id="itemId"
                       :ref="`field-${field.name || key}`"

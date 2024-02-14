@@ -8,7 +8,7 @@
            @click="create()" v-if="showType('button-create')" />
     <!--=== Select to List and Create ===-->
     <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
-                   @input="emitValue" @click.native="showEventListener">
+                   @update:modelValue="emitValue" @click.native="showEventListener">
       <!--Before options slot-->
       <div slot="before-options">
         <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green" no-caps
@@ -24,7 +24,7 @@
       <!--Modal create/update component-->
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
-                 @input="val => showModal = val"
+                 @update:modelValue="val => showModal = val"
                  @created="(response) => formEmmit('created', response)"
                  @updated="formEmmit('updated')"
                  @createdData="(response) => onCreate(response)"

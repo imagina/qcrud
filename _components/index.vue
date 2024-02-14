@@ -76,7 +76,7 @@
                 <div v-if="col.name === 'selectColumn'">
                   <q-checkbox
                       v-model="selectedRowsAll"
-                      @input="selectAllFields"
+                      @update:modelValue="selectAllFields"
                   />
                 </div>
                 {{ col.label }}
@@ -339,7 +339,7 @@
                   <q-select
                       v-model="table.pagination.rowsPerPage"
                       :options="rowsPerPageOption"
-                      @input="getDataTable()"
+                      @update:modelValue="getDataTable()"
                       options-cover
                       dense
                       class="q-mx-sm text-caption"
