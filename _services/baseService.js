@@ -1,6 +1,6 @@
 import axios from 'axios'
 import {remember, helper, cache} from 'src/plugins/utils'
-import config from 'src/config/plugin'
+import config from 'src/setup/plugin'
 import apiResponse from 'modules/qcrud/_plugins/apiResponse'
 import {debounce} from 'quasar'
 
