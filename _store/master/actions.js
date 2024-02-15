@@ -1,6 +1,6 @@
 /*Services*/
-import crud from '@imagina/qcrud/_services/baseService'
-import apiResponse from "@imagina/qcrud/_plugins/apiResponse";
+import crud from 'modules/qcrud/_services/baseService'
+import apiResponse from "modules/qcrud/_plugins/apiResponse";
 
 //Get and Save data as INDEX method
 export function INDEX({commit, state}, params) {

@@ -1,7 +1,7 @@
 <template>
   <div id="componentCrudIndex">
     <!--Content-->
-    <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
+    <div id="backend-page">
       <!--Page Actions-->
       <div class="q-my-md">
         <page-actions
@@ -56,7 +56,7 @@
         <q-table
             v-model:pagination="table.pagination"
             v-if="['table','grid','folders'].includes(localShowAs)"
-            :grid="localShowAs === 'grid'" :data="table.data"
+            :grid="localShowAs === 'grid'" :rows="table.data"
             :columns="tableColumns"
             :pagination.sync="table.pagination"
             @request="getData"
@@ -76,7 +76,7 @@
                 <div v-if="col.name === 'selectColumn'">
                   <q-checkbox
                       v-model="selectedRowsAll"
-                      @input="selectAllFields"
+                      @update:modelValue="selectAllFields"
                   />
                 </div>
                 {{ col.label }}
@@ -157,7 +157,8 @@
                                @click="rowclick(col,props.row)"
                                :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
                           >
-                            <q-badge :class="col.bgTextColor" v-html="data.data">
+                            <q-badge :class="col.bgTextColor">
+                              <span v-html="data.data"/>
                               {{ data.data }}
                             </q-badge>
                           </div>
@@ -168,7 +169,6 @@
                               v-html="data.data"
                               :class="(isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                           >
-                            {{ data.data }}
                           </div>
                           <q-tooltip v-if="col.tooltip == undefined || col.tooltip">
                             {{ col.tooltip || data.data }}
@@ -194,7 +194,7 @@
                       </div>
                       <!-- Table -->
                       <q-table
-                          :data="relation.data"
+                          :rows="relation.data"
                           :columns="relationConfig('columns')"
                       >
                         <template v-slot:body-cell="props">
@@ -234,8 +234,8 @@
                      :style="`background-image: url('${itemImage(props.row)}')`"></div>
                 <!--Fields-->
                 <q-list dense>
-                  <q-item v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name" style="padding: 3px 0"
-                          v-if="col.name != 'actions'">
+                <template v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name">
+                  <q-item  style="padding: 3px 0" v-if="col?.name != 'actions'">
                     <q-item-section>
                       <!--Field name-->
                       <q-item-label class="ellipsis">
@@ -281,9 +281,7 @@
                                      @click="rowclick(col,props.row)"
                                      :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
                                 >
-                                  <q-badge :class="col.bgTextColor" v-html="data.data">
-                                    {{ data.data }}
-                                  </q-badge>
+                                  <q-badge :class="col.bgTextColor" v-html="data.data"></q-badge>
                                 </div>
                                 <!--Label-->
                                 <div
@@ -292,7 +290,6 @@
                                     v-html="data.data"
                                     :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
                                 >
-                                  {{ data.data }}
                                 </div>
                                 <q-tooltip>
                                   <div v-html="col.tooltip || data.data"></div>
@@ -307,6 +304,7 @@
                       </q-item-label>
                     </q-item-section>
                   </q-item>
+                </template>
                 </q-list>
               </q-card>
             </div>
@@ -341,7 +339,7 @@
                   <q-select
                       v-model="table.pagination.rowsPerPage"
                       :options="rowsPerPageOption"
-                      @input="getDataTable()"
+                      @update:modelValue="getDataTable()"
                       options-cover
                       dense
                       class="q-mx-sm text-caption"
@@ -351,8 +349,9 @@
                 </div>
                 <div class="actionsBtnPag">
                   <q-btn
-                      icon="chevron_left"
+                      icon="fas fa-chevron-left"
                       color="primary"
+                      size="sm"
                       round
                       dense
                       flat
@@ -360,8 +359,9 @@
                       @click="props.prevPage"
                   />
                   <q-btn
-                      icon="chevron_right"
+                      icon="fas fa-chevron-right"
                       color="primary"
+                      size="sm"
                       round
                       dense
                       flat
@@ -380,7 +380,8 @@
     <!-- Export Component -->
     <master-export v-model="exportParams" ref="exportComponent" export-item/>
     <!-- Qreable Component -->
-    <qreable ref="qreableComponent" @created="getDataTable(true)"/>
+    <!--[ptc]-->
+    <!-- <qreable ref="qreableComponent" @created="getDataTable(true)"/> -->
     <!-- Share-link Component-->
     <share-link ref="shareLinkComponent"/>
   </div>
@@ -389,22 +390,27 @@
 <script>
 //Components
 import {computed} from 'vue';
-import masterExport from "@imagina/qsite/_components/master/masterExport"
-import recursiveItemDraggable from '@imagina/qsite/_components/master/recursiveItemDraggable';
-import foldersStore from '@imagina/qsite/_components/master/folders/store/foldersStore.js'
+import masterExport from "modules/qsite/_components/master/masterExport"
+import recursiveItemDraggable from 'modules/qsite/_components/master/recursiveItemDraggable';
+import foldersStore from 'modules/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
-import qreable from "@imagina/qqreable/_components/qreable.vue"
-import _filterPlugin from '@imagina/qsite/_plugins/filter'
+//[ptc]
+// import qreable from "modules/qqreable/_components/qreable.vue"
+import _filterPlugin from 'src/plugins/filter'
+import { eventBus } from 'src/plugins/utils'
+import { markRaw } from 'vue';
 
 export default {
   props: {
     params: {default: false},
     title: {default: false}
   },
+  emits: ['update','create'],
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable
+    //[ptc]
+    // qreable
   },
   provide() {
     return {
@@ -416,14 +422,18 @@ export default {
       filterPlugin: computed(() => this.filterPlugin)
     }
   },
-  watch: {},
+  watch: {
+    isAppOffline: {
+      handler: function () {
+        this.getDataTable(true);
+      }
+    },
+  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
-  mounted() {
-    this.$nextTick(function () {
-      this.init()
-    })
+  beforeMount() {
+    this.loadComponent();
   },
   data() {
     return {
@@ -464,10 +474,14 @@ export default {
       searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
-      filterPlugin: false
+      filterPlugin: false,
+      gridComponent: false
     }
   },
   computed: {
+    isAppOffline() {
+      return this.$store.state.qofflineMaster.isAppOffline;
+    },
     //Table Title
     permisionRelation() {
       return this.params.read.relation.permission ? this.$auth.hasAccess(this.params.read.relation.permission) : true;
@@ -508,8 +522,8 @@ export default {
       //Response
       return response.filter((item) => !item.vIfAction)
     },
-    help(){
-      return  this.params.read?.help ?? {}
+    help() {
+      return this.params.read?.help ?? {}
     },
     //Define slot table to show
     showSlotTable() {
@@ -609,10 +623,11 @@ export default {
     //Grid params
     gridParams() {
       let gridParams = this.params.read.grid || {}//Get grid params
+      gridParams.component = this.gridComponent
       //Response
       return {
         colClass: gridParams.colClass || 'col-12 col-sm-6 col-lg-4 col-xl-3',
-        component: gridParams.component || false
+        component:  gridParams.component || false
       }
     },
     //Validate read show as
@@ -658,7 +673,7 @@ export default {
       //Validate availability
       response = bulkActions.filter(action => {
         //Validate vIf
-        if ((action.vIf != undefined) && !action.vIf) return false
+        if ((action?.vIf != undefined) && !action?.vIf) return false
         //Validate permission
         if ((action.permission != undefined) && !this.$auth.hasAccess(action.permission)) return false
         //Validate apiRoute
@@ -692,9 +707,38 @@ export default {
       let response = this.params.read.excludeActions || []
       if (this.params.read.noFilter) response.push('filter')
       return response
+    },
+    filterDataTable() {
+      const filterData = this.table.data.filter(item => {
+        if (this.isAppOffline) {
+          return Object.values(item).some(value => {
+            if (value) {
+              const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
+              if (search) {
+                return String(value).toLowerCase().includes(search)
+              } else {
+                return true;
+              }
+            }
+          })
+        }
+
+        return true;
+      });
+      return filterData;
     }
   },
   methods: {
+    async loadComponent() {
+      if(this.params.read?.grid){
+        const qComponent = await this.params.read.grid.component()
+        const gridComponent = qComponent.default
+        this.gridComponent = markRaw(gridComponent)
+      }
+      this.$nextTick(function() {
+        this.init();
+      });
+    },
     countPage(props) {
       const page = props.pagination.page
       const rowsPerPage = props.pagination.rowsPerPage
@@ -710,10 +754,10 @@ export default {
       await this.setFilterPlugin();
       await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
-      if (!this.params.read.filterName) this.getDataTable()//Get data
+      if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
-        this.$eventBus.$emit('setMobileMainAction', {
+        eventBus.emit('setMobileMainAction', {
           icon: 'fas fa-plus',
           color: 'green',
           callBack: () => this.handlerActionCreate()
@@ -722,18 +766,18 @@ export default {
       //Success
       this.success = true
     },
-    setFilterPlugin(){
-      if(this.params?.read){
+    setFilterPlugin() {
+      if (this.params?.read) {
         if (this.params.read?.filterName || this.params.read.filters) {
           let cacheName;
-          if (this.params.read?.filterCacheName){
+          if (this.params.read?.filterCacheName) {
             cacheName = this.params.read?.filterCacheName;
           } else {
             const entityName = this.params.entityName ?? ''
             cacheName = `${this.$route.name}_${entityName}`
           }
 
-          this.filterPlugin =  _filterPlugin.getInstance(cacheName)
+          this.filterPlugin = _filterPlugin.getInstance(cacheName)
           return
         }
       }
@@ -748,7 +792,7 @@ export default {
         //Load master filter
         if (params.read) {
           if (params.read.filterName || params.read.filters) {
-            if((Object.keys(params.read.filters).length)){
+            if ((Object.keys(params.read.filters).length)) {
               await this.filterPlugin.setFilter({
                 name: params.read.filterName || this.$route.name,
                 fields: this.$clone(params.read.filters || {}),
@@ -774,7 +818,7 @@ export default {
             Object.keys(params.read.filters).forEach(key => {
               let filter = params.read.filters[key]
               if (key !== 'date') {
-                this.$set(this.table.filter, (filter.name || key), filter.value)
+                this.table.filter[filter.name || key] = filter.value
               }
             })
             if (!this.params.read.filterName) this.filter.available = true//allow filters
@@ -822,8 +866,50 @@ export default {
         }
       }
     },
+    async requestDataTable(apiRoute, params, pagination) {
+      try {
+        const modelRequest = {
+          data: [],
+          meta: {
+            page: {
+              currentPage: 1,
+              total: 0,
+            },
+          }
+        };
+
+        if (this.isAppOffline) {
+          const cachePaginate = await paginateCacheOffline(
+              apiRoute,
+              this.table.filter.search,
+              pagination.page,
+              pagination.rowsPerPage
+          )
+          if (cachePaginate.data.length > 0) {
+            return cachePaginate
+          }
+          return modelRequest
+        }
+
+        const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
+            .catch(error => {
+              if (!this.isAppOffline) {
+                this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+              }
+              console.error(error)
+              this.loading = false
+            })
+
+        return response || modelRequest
+      } catch (error) {
+        console.log(error);
+        if (!this.isAppOffline) {
+          this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+        }
+      }
+    },
     //Get products
-    getData({pagination, filter}, refresh = false) {
+    async getData({pagination, filter}, refresh = false) {
       let propParams = this.$clone(this.params)
       this.loading = true
 
@@ -861,52 +947,44 @@ export default {
       }
 
       //Request
-      this.$crud.index(propParams.apiRoute, params).then(response => {
-        let dataTable = response.data
+      const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
+      let dataTable = response.data
+      //If is field change format
+      if (this.params.field) {
+        dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
+        this.dataField = response.data[0]
+      }
 
-        //If is field change format
-        if (this.params.field) {
-          dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : []
-          this.dataField = response.data[0]
-        }
+      //Set data to table
+      this.table.data = this.$clone(dataTable);
+      const folderList = foldersStore().transformDataToDragableForderList(dataTable);
+      this.folderList = _.orderBy(folderList, 'position', 'asc');
+      this.table.pagination.page = this.$clone(response.meta.page.currentPage)
+      this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
+      this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
+      this.table.pagination.sortBy = this.$clone(pagination.sortBy)
+      this.table.pagination.descending = this.$clone(pagination.descending)
 
-        //Set data to table
-        this.table.data = this.$clone(dataTable);
-        const folderList = foldersStore().transformDataToDragableForderList(dataTable);
-        this.folderList = _.orderBy(folderList, 'position', 'asc');
-        this.table.pagination.page = this.$clone(response.meta.page.currentPage)
-        this.table.pagination.rowsNumber = this.$clone(response.meta.page.total)
-        this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
-        this.table.pagination.sortBy = this.$clone(pagination.sortBy)
-        this.table.pagination.descending = this.$clone(pagination.descending)
-
-        //Sync master filter
-        if (this.params.read.filterName) {
-          //Set search param
-          this.filterPlugin.addValues({search: params.params.filter.search})
-          //Set pagination
-          this.filterPlugin.setPagination({
-            page: this.$clone(response.meta.page.currentPage),
-            rowsPerPage: this.$clone(response.meta.page.perPage),
-            lastPage: this.$clone(response.meta.page.lastPage),
-          })
-          //Sync local
-          this.table.filter.search = this.$clone(params.params.filter.search)
-        }
-
-        //Dispatch event hook
-        this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
-        //Sync data to drag view
-        this.dataTableDraggable = this.getDataTableDraggable;
-        //Close loading
-        this.loading = false
-      }).catch(error => {
-        this.$apiResponse.handleError(error, () => {
-          this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-          console.error(error)
-          this.loading = false
+      //Sync master filter
+      if (this.params.read.filterName) {
+        //Set search param
+        this.filterPlugin.addValues({search: params.params.filter.search})
+        //Set pagination
+        this.filterPlugin.setPagination({
+          page: this.$clone(response.meta.page.currentPage),
+          rowsPerPage: this.$clone(response.meta.page.perPage),
+          lastPage: this.$clone(response.meta.page.lastPage),
         })
-      })
+        //Sync local
+        this.table.filter.search = this.$clone(params.params.filter.search)
+      }
+
+      //Dispatch event hook
+      this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
+      //Sync data to drag view
+      this.dataTableDraggable = this.getDataTableDraggable;
+      //Close loading
+      this.loading = false
     },
     //Delete category
     deleteItem(item) {
@@ -919,16 +997,16 @@ export default {
           {
             label: this.$tr('isite.cms.label.delete'),
             color: 'red',
-            handler: () => {
+            handler: async () => {
               this.loading = true
-              let propParams = this.$clone(this.params)
+              let propParams = this.$clone(this.params);
+              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title)} - ${item.id}` || ''}};
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField)//get data table
                 dataField.value.splice(item.__index, 1)//Remove field
-
                 //Request
-                this.$crud.update(propParams.apiRoute, dataField.id, dataField).then(response => {
+                this.$crud.update(propParams.apiRoute, dataField.id, dataField, customParams).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
                   this.loading = false
@@ -938,7 +1016,11 @@ export default {
                 })
               } else {
                 //Request
-                this.$crud.delete(propParams.apiRoute, item.id).then(response => {
+                if (this.isAppOffline) {
+                  this.table.data = this.table.data.filter(data => item.id !== data.id);
+                  this.loading = false;
+                }
+                this.$crud.delete(propParams.apiRoute, item.id, customParams).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
 
@@ -948,9 +1030,15 @@ export default {
                   //Close loading
                   this.loading = false
                 }).catch(error => {
-                  this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
+                  if (!this.isAppOffline) {
+                    this.$alert.error({message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom'})
+                  }
                   this.loading = false
                 })
+
+                const CACHE_PATH = 'apiRoutes.qramp.workOrders'
+                cacheOffline.deleteItem(item.id, CACHE_PATH)
+
               }
             }
           }
@@ -1037,7 +1125,18 @@ export default {
         return action.default ?? false;
       })
       //Add default actions
-      actions = [
+      actions = [...actions,
+        //Export
+        {
+          label: this.$tr('isite.cms.label.export'),
+          vIf: this.exportParams,
+          icon: 'fa-light fa-download',
+          action: (item) => this.$refs.exportComponent.showReportItem({
+            item: item,
+            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
+            filter: {id: item.id}
+          })
+        },
         {//Edit action
           icon: 'fa-light fa-pencil',
           color: 'green',
@@ -1047,6 +1146,14 @@ export default {
           action: (item) => {
             this.$emit('update', item)
           }
+        },
+        {//Copy disclosure link action
+          label: this.$tr('isite.cms.label.copyDisclosureLink'),
+          format: (item) => {
+            return {vIf: item.url ? true : false}
+          },
+          icon: "fa-light fa-copy",
+          action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink'),
         },
         {//Share action
           label: this.$tr('isite.cms.label.share'),
@@ -1149,7 +1256,7 @@ export default {
       let response = false
 
       //search mediumThumb
-      if (item.mediaFiles && item.mediaFiles.mainimage)
+      if (item.mediaFiles && item.mediaFiles?.mainimage)
         response = item.mediaFiles.mainimage.mediumThumb
 
       //response
@@ -1340,102 +1447,127 @@ export default {
           ]
         })
       }
-    }
+    },
+
   }
 }
 </script>
 
-<style lang="stylus">
-#componentCrudIndex
-  #backend-page
-    .q-table__top, .q-table__middle, .q-table__bottom
-      border-radius $custom-radius
-      //box-shadow $custom-box-shadow
-      background-color white
+<style lang="scss">
+#componentCrudIndex {
+  .btn-menu-offline {
+    @apply tw-bg-yellow-400;
+  }
+  #backend-page {
+    .q-table__top, .q-table__middle, .q-table__bottom {
+      border-radius: $custom-radius;
+      //box-shadow: $custom-box-shadow;
+      background-color: white;
+    }
 
-  th
-    color $blue-grey
-    font-weight bold
-    font-size 13px !important
+    th {
+      color: $blue-grey;
+      font-weight: bold;
+      font-size: 13px !important;
+    }
 
-  //text-align left !important
+    //text-align: left !important;
 
-  td
-    color #222222
+    td {
+      color: #222222;
+    }
 
-  .q-table__card
-    background-color transparent !important
-    box-shadow none !important
+    .q-table__card {
+      background-color: transparent !important;
+      box-shadow: none !important;
+    }
 
-  .q-table__middle
-    border-radius $custom-radius
-    box-shadow $custom-box-shadow
-    background-color white
+    .q-table__middle {
+      border-radius: $custom-radius;
+      box-shadow: $custom-box-shadow;
+      background-color: white;
+    }
 
-  .q-table__top
-    margin-bottom 16px !important
-    padding 12px 16px !important
-    back(true)
+    .q-table__top {
+      margin-bottom: 16px !important;
+      padding: 12px 16px !important;
+    }
 
-  .q-table__middle
-    min-height 0 !important
-    margin 0 !important
+    .q-table__middle {
+      min-height: 0 !important;
+      margin: 0 !important;
+    }
 
-  .q-table__bottom
-    border-top 1px solid transparent !important
-    margin-top 16px !important
-    padding 12px 16px !important
-    back(true)
+    .q-table__bottom {
+      border-top: 1px solid transparent !important;
+      margin-top: 16px !important;
+      padding: 12px 16px !important;
+    }
 
-  .stick-table
-    th:last-child, td:last-child
-      background-color white
-      position: sticky
-      right: 0
-      z-index: 1
+    .stick-table {
+      th:last-child, td:last-child {
+        background-color: white;
+        position: sticky;
+        right: 0;
+        z-index: 1;
+      }
 
-    th:first-child, td:first-child
-      background-color white
-      position: sticky
-      left: 0
-      z-index: 1
+      th:first-child, td:first-child {
+        background-color: white;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+      }
+    }
 
-  .default-card-grid
-    .default-card-grid_item-image
-      width 100%
-      height 140px
-      background-position center
-      background-size cover
-      background-repeat no-repeat
-      border-radius $custom-radius-items
-      margin 10px 0 10px 0
+    .default-card-grid {
+      .default-card-grid_item-image {
+        width: 100%;
+        height: 140px;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        border-radius: $custom-radius-items;
+        margin: 10px 0 10px 0;
+      }
+    }
 
-  #crudPaginationComponent
-    .q-btn
-      height 30px
-      width 30px
-      min-width 30px !important
+    #crudPaginationComponent {
+      .q-btn {
+        height: 30px;
+        width: 30px;
+        min-width: 30px !important;
+      }
+    }
 
-  #collapseTable
-    padding 0;
-    background-color: $grey-1
+    #collapseTable {
+      padding: 0;
+      background-color: $grey-1;
 
-    #contentRelationData
-      min-height 90px
-      position relative
-      width 100%
+      #contentRelationData {
+        min-height: 90px;
+        position: relative;
+        width: 100%;
+      }
 
-    .q-table, th:last-child, th:first-child, td:last-child, td:first-child
-      background-color: $grey-1
+      .q-table, th:last-child, th:first-child, td:last-child, td:first-child {
+        background-color: $grey-1;
+      }
 
-    .q-table__middle
-      padding 0;
-      box-shadow none;
-      border-radius: 0;
+      .q-table__middle {
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
 
-  #selectedRows
-    border-radius $custom-radius
+    #selectedRows {
+      border-radius: $custom-radius;
+    }
+  }
 
-#dialogFilters
-  min-height max-content !important
+  #dialogFilters {
+    min-height: max-content !important;
+  }
+}
 </style>

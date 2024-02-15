@@ -24,17 +24,17 @@
                 <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
                   <!--Dynamic fake field-->
                   <dynamic-field v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
-                                 @input="setDynamicValues(field.name || key, field)" :key="key"
+                                 @update:modelValue="setDynamicValues(field.name || key, field)" :key="key"
                                  :field="{...field, testId : (field.testId || field.name || key)}"
                                  :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                                 v-if="showField(field, (field.name || key)) && (field.isFakeField || field.fakeFieldName)"
+                                 v-if="showField(field, (field.name || key)) && (field?.isFakeField || field.fakeFieldName)"
                                  @enter="$refs.formContent.submit()"/>
                   <!--Dynamic field-->
                   <dynamic-field v-model="locale.formTemplate[field.name || key]" :key="key"
                                  @input="setDynamicValues(field.name || key, field)"
                                  :field="{...field, testId : (field.testId  || field.name || key)}"
                                  :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                                 v-if="showField(field, (field.name || key)) && !field.isFakeField && !field.fakeFieldName"
+                                 v-if="showField(field, (field.name || key)) && !field?.isFakeField && !field.fakeFieldName"
                                  @enter="$refs.formContent.submit()"/>
                 </div>
               </div>
@@ -47,20 +47,22 @@
 </template>
 
 <script>
+import { eventBus } from 'src/plugins/utils'
 export default {
   props: {
-    value: {default: false},
+    modelValue: {default: false},
     itemId: {default: false},
     field: {default: false},
     params: {default: false}
   },
+  emits: ['update:modelValue','created','updated'],
   components: {},
   watch: {
-    value(newValue) {
+    modelValue(newValue) {
       this.show = this.value
     },
     show(newValue) {
-      this.$emit('input', this.show)
+      this.$emit('update:modelValue', this.show)
       if (newValue) this.initForm()
     },
     'locale.formTemplate': {
@@ -83,7 +85,7 @@ export default {
   },
   mounted() {
     this.$nextTick(function () {
-      this.show = this.value
+      this.show = this.modelValue
     })
   },
   data() {
@@ -191,7 +193,7 @@ export default {
         ),
       ])
       this.orderFields()//order fields to component locale
-      this.show = this.value//Assign props value to show modal
+      this.show = this.modelValue//Assign props value to show modal
       this.success = true//successful
       if (this.isUpdate || this.paramsProps.field) await this.getDataItem()//Get data item
       this.componentStore.create()//Create component in store
@@ -243,7 +245,7 @@ export default {
         //Add to data locale to field
         if (field.isTranslatable) {
           fieldsTranslatables[field.name || key] = field.value
-        } else if (field.isFakeField) {
+        } else if (field?.isFakeField) {
           fields.options[field.name || key] = field.value
         } else if (field.fakeFieldName) {
           if (!fields[field.fakeFieldName]) fields[field.fakeFieldName] = {}
@@ -344,7 +346,7 @@ export default {
 
         //Action after request
         if (requestInfo.response) {
-          this.$root.$emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
+          eventBus.emit(`${propParams.apiRoute}.crud.event.created`)//emmit event
           this.$alert.info({message: `${this.$tr('isite.cms.message.recordCreated')}`})
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasCreated', {entityName: this.params.entityName})
@@ -405,7 +407,7 @@ export default {
 
         //Action after request
         if (requestInfo.response) {
-          this.$root.$emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
+          eventBus.emit(`crudForm${propParams.apiRoute}Updated`)//emmit event
           this.$alert.info({message: this.$tr('isite.cms.message.recordUpdated')})
           //Dispatch hook event
           await this.$hook.dispatchEvent('wasUpdated', {entityName: this.params.entityName})
@@ -503,7 +505,7 @@ export default {
       let response = true//Default response
 
       //Check if is field "masterRecord" and check permission
-      if (field.isFakeField && (fieldName == 'masterRecord')) {
+      if (field?.isFakeField && (fieldName == 'masterRecord')) {
         //Validate permission to create
         if (!this.isUpdate && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.create')) {
           response = false
@@ -525,5 +527,5 @@ export default {
 }
 </script>
 
-<style lang="stylus">
+<style lang="scss">
 </style>

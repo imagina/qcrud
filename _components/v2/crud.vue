@@ -9,7 +9,6 @@
   </div>
 </template>
 <script>
-import form from '@imagina/qcrud/_components/v2/form'
 
 export default {
   props: {
@@ -22,8 +21,8 @@ export default {
       }
     }
   },
+  emits: ['obtained'],
   components: {},
-  watch: {},
   mounted() {
     this.$nextTick(function () {
       this.init()
@@ -123,5 +122,5 @@ export default {
   }
 }
 </script>
-<style lang="stylus">
+<style lang="scss">
 </style>
