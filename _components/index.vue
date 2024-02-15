@@ -1,7 +1,7 @@
 <template>
   <div id="componentCrudIndex">
     <!--Content-->
-    <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
+    <div id="backend-page">
       <!--Page Actions-->
       <div class="q-my-md">
         <page-actions
@@ -1256,7 +1256,7 @@ export default {
       let response = false
 
       //search mediumThumb
-      if (item.mediaFiles && item.mediaFiles.mainimage)
+      if (item.mediaFiles && item.mediaFiles?.mainimage)
         response = item.mediaFiles.mainimage.mediumThumb
 
       //response
