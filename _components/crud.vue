@@ -460,12 +460,13 @@ export default {
         this.dataCrudSelect.itemSelected = newValue ? newValue.toString() : newValue;
     },
     //Set value with last created item:
-    onCreate(data) {
-      if (this.showType('select')) {
-        if (data) {
-          if (Array.isArray(this.dataCrudSelect.itemSelected)) { //multiple
-            if (!this.dataCrudSelect.itemSelected[0]) {
-              this.setValueSelect([data.id]);
+    onCreate(data){
+      this.formEmmit('createdData', data)
+      if(this.showType('select')){
+        if(data){
+          if(Array.isArray(this.dataCrudSelect.itemSelected)){ //multiple
+            if(!this.dataCrudSelect.itemSelected[0]){
+              this.setValueSelect([data.id])
             }
           } else if (!this.dataCrudSelect.itemSelected) {
             this.setValueSelect(data);

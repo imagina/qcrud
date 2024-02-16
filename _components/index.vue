@@ -518,7 +518,7 @@ export default {
       //Add create action
       if (this.params.create && this.params.hasPermission.create) response.push('new')
       // se oculta page action
-      if (this.localShowAs === 'kanban' && this.$refs.kanban) response.push(this.$refs.kanban.extraPageActions);
+      if (this.localShowAs === 'kanban' && this.$refs.kanban) response = [...response, ...this.$refs.kanban.extraPageActions];
       //Response
       return response.filter((item) => !item.vIfAction)
     },
@@ -1125,7 +1125,7 @@ export default {
         return action.default ?? false;
       })
       //Add default actions
-      actions = [...actions,
+      actions = [
         //Export
         {
           label: this.$tr('isite.cms.label.export'),
