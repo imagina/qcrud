@@ -273,7 +273,9 @@ export default {
   methods: {
     async loadComponent() {
       const crudComponent = await this.crudData;
-      this.componentCrudData = markRaw(crudComponent.default);
+      if(crudComponent){
+        this.componentCrudData = markRaw(crudComponent.default);
+      }
       this.$nextTick(function() {
         this.init();
       });
