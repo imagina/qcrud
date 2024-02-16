@@ -225,11 +225,7 @@ export default {
 
       //Response
       return crudData;
-    },
-    //Emit value
-    emitValue() {
-      this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
-    },
+    },    
     //select field props
     selectField() {
       let params = this.$clone(this.paramsProps);
@@ -473,7 +469,12 @@ export default {
           }
         }
       }
-    }
+    },
+    //Emit value
+    emitValue() {
+      console.count('emit')
+      this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
+    },
   }
 };
 </script>
