@@ -1125,7 +1125,7 @@ export default {
         return action.default ?? false;
       })
       //Add default actions
-      actions = [...actions,
+      actions = [
         //Export
         {
           label: this.$tr('isite.cms.label.export'),
