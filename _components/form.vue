@@ -326,7 +326,7 @@ export default {
       Object.keys(form).forEach((key) => {
         let field = form[key];
         //Validate field permission
-        if (field.permission && !this.$auth.hasAccess(field.permission)) return;
+        if (field.permission && !this.$hasAccess(field.permission)) return;
         //Add to data locale to field
         if (field.isTranslatable) {
           fieldsTranslatables[field.name || key] = field.value;
@@ -672,18 +672,18 @@ export default {
       //Check if is field "masterRecord" and check permission
       if (field?.isFakeField && (fieldName == 'masterRecord')) {
         //Validate permission to create
-        if (!this.isUpdate && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.create')) {
+        if (!this.isUpdate && !this.$hasAccess('isite.master.records.create')) {
           response = false;
         }
 
         //Validate permission to update
-        if (this.isUpdate && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.edit')) {
+        if (this.isUpdate && !this.$hasAccess('isite.master.records.edit')) {
           response = false;
         }
       }
 
       //validate field permission
-      if (field.permission && !this.$auth.hasAccess(field.permission)) response = false;
+      if (field.permission && !this.$hasAccess(field.permission)) response = false;
 
       //Response
       return response;
