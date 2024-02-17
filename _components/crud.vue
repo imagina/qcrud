@@ -133,16 +133,16 @@ export default {
 
       //Default permission
       let permissions = {
-        create: params.permission ? this.$auth.hasAccess(`${params.permission}.create`) : true,
-        index: params.permission ? this.$auth.hasAccess(`${params.permission}.index`) : true,
-        edit: params.permission ? this.$auth.hasAccess(`${params.permission}.edit`) : true,
-        destroy: params.permission ? this.$auth.hasAccess(`${params.permission}.destroy`) : true
+        create: params.permission ? this.$hasAccess(`${params.permission}.create`) : true,
+        index: params.permission ? this.$hasAccess(`${params.permission}.index`) : true,
+        edit: params.permission ? this.$hasAccess(`${params.permission}.edit`) : true,
+        destroy: params.permission ? this.$hasAccess(`${params.permission}.destroy`) : true
       };
 
       //Custom permissions
       if (params.customPermissions)
         for (var name in params.customPermissions)
-          permissions[name] = this.$auth.hasAccess(params.customPermissions[name]);
+          permissions[name] = this.$hasAccess(params.customPermissions[name]);
 
       //Repsonse
       return permissions;
@@ -225,11 +225,7 @@ export default {
 
       //Response
       return crudData;
-    },
-    //Emit value
-    emitValue() {
-      this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
-    },
+    },    
     //select field props
     selectField() {
       let params = this.$clone(this.paramsProps);
@@ -473,7 +469,12 @@ export default {
           }
         }
       }
-    }
+    },
+    //Emit value
+    emitValue() {
+      console.count('emit')
+      this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
+    },
   }
 };
 </script>

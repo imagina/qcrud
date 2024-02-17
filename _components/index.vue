@@ -484,10 +484,10 @@ export default {
     },
     //Table Title
     permisionRelation() {
-      return this.params.read.relation.permission ? this.$auth.hasAccess(this.params.read.relation.permission) : true;
+      return this.params.read.relation.permission ? this.$hasAccess(this.params.read.relation.permission) : true;
     },
     tableTitle() {
-      const useLegacyStructure = parseInt(this.$store.getters['qsiteApp/getSettingValueByName']('isite::legacyStructureCMS') || 0)
+      const useLegacyStructure = parseInt(this.$getSetting('isite::legacyStructureCMS') || 0)
       if (this.title)
         return useLegacyStructure ? this.$tr(this.title) : this.title
       if (this.params.read.title)
@@ -675,7 +675,7 @@ export default {
         //Validate vIf
         if ((action?.vIf != undefined) && !action?.vIf) return false
         //Validate permission
-        if ((action.permission != undefined) && !this.$auth.hasAccess(action.permission)) return false
+        if ((action.permission != undefined) && !this.$hasAccess(action.permission)) return false
         //Validate apiRoute
         if (!action.apiRoute) return false
         //Default response
