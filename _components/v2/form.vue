@@ -241,7 +241,7 @@ export default {
       Object.keys(form).forEach((key) => {
         let field = form[key]
         //Validate field permission
-        if (field.permission && !this.$auth.hasAccess(field.permission)) return
+        if (field.permission && !this.$hasAccess(field.permission)) return
         //Add to data locale to field
         if (field.isTranslatable) {
           fieldsTranslatables[field.name || key] = field.value
@@ -518,7 +518,7 @@ export default {
       }
 
       //validate field permission
-      if (field.permission && !this.$auth.hasAccess(field.permission)) response = false
+      if (field.permission && !this.$hasAccess(field.permission)) response = false
 
       //Response
       return response
