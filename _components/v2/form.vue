@@ -16,29 +16,43 @@
             </div>
 
             <!--Form-->
-            <div v-for="(pos,key) in ['formLeft','formRight']" :key="pos"
-                 v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
-                 :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`">
-              <div class="box">
-                <!--Fields-->
-                <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
-                  <!--Dynamic fake field-->
-                  <dynamic-field v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
-                                 @update:modelValue="setDynamicValues(field.name || key, field)" :key="key"
-                                 :field="{...field, testId : (field.testId || field.name || key)}"
-                                 :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                                 v-if="showField(field, (field.name || key)) && (field?.isFakeField || field.fakeFieldName)"
-                                 @enter="$refs.formContent.submit()"/>
-                  <!--Dynamic field-->
-                  <dynamic-field v-model="locale.formTemplate[field.name || key]" :key="key"
-                                 @input="setDynamicValues(field.name || key, field)"
-                                 :field="{...field, testId : (field.testId  || field.name || key)}"
-                                 :language="locale.language" :item-id="itemId" :ref="`field-${field.name || key}`"
-                                 v-if="showField(field, (field.name || key)) && !field?.isFakeField && !field.fakeFieldName"
-                                 @enter="$refs.formContent.submit()"/>
+            <template
+              v-for="(pos,key) in ['formLeft','formRight']"
+              :key="pos"
+            >
+              <div
+                v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
+                :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`"
+              >
+                <div class="box">
+                  <!--Fields-->
+                  <div v-for="(field, key) in  paramsProps[pos]" :key="key" :ref="key">
+                    <!--Dynamic fake field-->
+                    <dynamic-field
+                      v-model="locale.formTemplate[field.fakeFieldName || 'options'][field.name || key]"
+                      @update:modelValue="setDynamicValues(field.name || key, field)" :key="key"
+                      :field="{...field, testId : (field.testId || field.name || key)}"
+                      :language="locale.language"
+                      :item-id="itemId"
+                      :ref="`field-${field.name || key}`"
+                      v-if="showField(field, (field.name || key)) && (field?.isFakeField || field.fakeFieldName)"
+                      @enter="$refs.formContent.submit()"
+                    />
+                    <!--Dynamic field-->
+                    <dynamic-field
+                      v-model="locale.formTemplate[field.name || key]"
+                      :key="key"
+                      @input="setDynamicValues(field.name || key, field)"
+                      :field="{...field, testId : (field.testId  || field.name || key)}"
+                      :language="locale.language"
+                      :item-id="itemId"
+                      :ref="`field-${field.name || key}`"
+                      v-if="showField(field, (field.name || key)) && !field?.isFakeField && !field.fakeFieldName"
+                      @enter="$refs.formContent.submit()"/>
+                  </div>
                 </div>
               </div>
-            </div>
+            </template>
           </q-form>
         </div>
       </div>
