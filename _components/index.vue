@@ -380,8 +380,7 @@
     <!-- Export Component -->
     <master-export v-model="exportParams" ref="exportComponent" export-item/>
     <!-- Qreable Component -->
-    <!--[ptc]-->
-    <!-- <qreable ref="qreableComponent" @created="getDataTable(true)"/> -->
+     <qreable ref="qreableComponent" @created="getDataTable(true)"/>
     <!-- Share-link Component-->
     <share-link ref="shareLinkComponent"/>
   </div>
@@ -394,8 +393,7 @@ import masterExport from "modules/qsite/_components/master/masterExport"
 import recursiveItemDraggable from 'modules/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from 'modules/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
-//[ptc]
-// import qreable from "modules/qqreable/_components/qreable.vue"
+import qreable from "src/modules/qqreable/_components/qreable.vue"
 import _filterPlugin from 'src/plugins/filter'
 import { eventBus } from 'src/plugins/utils'
 import { markRaw } from 'vue';
@@ -409,8 +407,7 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    //[ptc]
-    // qreable
+    qreable
   },
   provide() {
     return {
