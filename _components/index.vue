@@ -129,7 +129,7 @@
                       v-if="permitAction(props.row).edit"
                   >
                     <!--Message change to-->
-                    <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus({...props, col})" v-close-popup>
+                    <q-item class="q-pa-sm cursor-pointer" clickable @click="updateStatus({...props, col})" v-close-popup>
                       <div class="row items-center">
                         <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col.value ? 'green' : 'red'"/>
                         {{
@@ -256,8 +256,8 @@
                                           :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
                                           class="text-caption" no-caps>
                             <!--Message change to-->
-                            <q-item class="q-pa-sm cursor-pointer" v-close-popup
-                                    @click.native="updateStatus({...props, col : col})">
+                            <q-item class="q-pa-sm cursor-pointer" v-close-popup clickable
+                                    @click="updateStatus({...props, col : col})">
                               <div class="row items-center">
                                 <q-icon name="fa-light fa-pencil" class="q-mr-sm"
                                         :color="!col.value ? 'green' : 'red'"/>
