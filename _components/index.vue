@@ -890,7 +890,7 @@ export default {
 
         const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
             .catch(error => {
-              if (!this.isAppOffline) {
+              if (!this.isAppOffline && !error?.config?.signal?.aborted) {
                 this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
               }
               console.error(error)
