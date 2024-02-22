@@ -86,7 +86,7 @@ export default {
     },
     title: { defualt: false }
   },
-  emits: ['update:modelValue','deleted','created','updated'],
+  emits: ['update:modelValue','deleted','created','updated', 'createdData'],
   // Dependency injection
   provide() {
     return {
@@ -225,7 +225,7 @@ export default {
 
       //Response
       return crudData;
-    },    
+    },
     //select field props
     selectField() {
       let params = this.$clone(this.paramsProps);
