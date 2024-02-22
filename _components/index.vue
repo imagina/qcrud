@@ -129,7 +129,7 @@
                       v-if="permitAction(props.row).edit"
                   >
                     <!--Message change to-->
-                    <q-item class="q-pa-sm cursor-pointer" @click.native="updateStatus({...props, col})" v-close-popup>
+                    <q-item class="q-pa-sm cursor-pointer" clickable @click="updateStatus({...props, col})" v-close-popup>
                       <div class="row items-center">
                         <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col.value ? 'green' : 'red'"/>
                         {{
@@ -256,8 +256,8 @@
                                           :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
                                           class="text-caption" no-caps>
                             <!--Message change to-->
-                            <q-item class="q-pa-sm cursor-pointer" v-close-popup
-                                    @click.native="updateStatus({...props, col : col})">
+                            <q-item class="q-pa-sm cursor-pointer" v-close-popup clickable
+                                    @click="updateStatus({...props, col : col})">
                               <div class="row items-center">
                                 <q-icon name="fa-light fa-pencil" class="q-mr-sm"
                                         :color="!col.value ? 'green' : 'red'"/>
@@ -380,8 +380,7 @@
     <!-- Export Component -->
     <master-export v-model="exportParams" ref="exportComponent" export-item/>
     <!-- Qreable Component -->
-    <!--[ptc]-->
-    <!-- <qreable ref="qreableComponent" @created="getDataTable(true)"/> -->
+     <qreable ref="qreableComponent" @created="getDataTable(true)"/>
     <!-- Share-link Component-->
     <share-link ref="shareLinkComponent"/>
   </div>
@@ -394,8 +393,7 @@ import masterExport from "modules/qsite/_components/master/masterExport"
 import recursiveItemDraggable from 'modules/qsite/_components/master/recursiveItemDraggable';
 import foldersStore from 'modules/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
-//[ptc]
-// import qreable from "modules/qqreable/_components/qreable.vue"
+import qreable from "src/modules/qqreable/_components/qreable.vue"
 import _filterPlugin from 'src/plugins/filter'
 import { eventBus } from 'src/plugins/utils'
 import { markRaw } from 'vue';
@@ -409,8 +407,7 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    //[ptc]
-    // qreable
+    qreable
   },
   provide() {
     return {
@@ -801,7 +798,7 @@ export default {
                   this.table.filter = this.$clone(this.filterPlugin.values)
                   if (this.params.read.kanban) {
                     const filterName = this.params.read.kanban.column.filter.name || '';
-                    this.funnelId = this.table.filter[filterName || null];
+                    this.funnelId = Number(this.table.filter[filterName || null]);
                   }
                   this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
                 }
