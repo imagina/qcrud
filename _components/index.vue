@@ -798,7 +798,7 @@ export default {
                   this.table.filter = this.$clone(this.filterPlugin.values)
                   if (this.params.read.kanban) {
                     const filterName = this.params.read.kanban.column.filter.name || '';
-                    this.funnelId = this.table.filter[filterName || null];
+                    this.funnelId = Number(this.table.filter[filterName || null]);
                   }
                   this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
                 }
