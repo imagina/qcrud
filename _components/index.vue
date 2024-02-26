@@ -158,9 +158,7 @@
                                :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
                           >
                             <q-badge :class="col.bgTextColor">
-                              <span>
-                                {{ data.data }}
-                              </span>
+                              <span v-html="data.data" />
                             </q-badge>
                           </div>
                           <!--Label-->
