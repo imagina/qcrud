@@ -472,7 +472,6 @@ export default {
     },
     //Emit value
     emitValue() {
-      console.count('emit')
       this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
     },
   }
