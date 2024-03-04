@@ -76,6 +76,7 @@
 </template>
 
 <script>
+import {debounce} from 'quasar'
 export default {
   props: {
     value: {default: false},
@@ -95,7 +96,7 @@ export default {
     'locale.formTemplate': {
       deep: true,
       handler: function (newValue) {
-        this.componentStore.update()
+        this.fillFormUpdates()
       }
     },
     params: {
@@ -619,7 +620,12 @@ export default {
 
       //Response
       return response
-    }
+    },
+    //Debounce the fillFormUpdates
+    fillFormUpdates: _.debounce(function(formData) {
+      //set in the formTemplate
+      this.componentStore.update()
+    }, 100)
   }
 }
 </script>
