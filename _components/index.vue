@@ -15,6 +15,7 @@
             ref="pageActionRef"
             :tour-name="tourName"
             :help="help"
+            :expires-in="expiresIn"
         />
       </div>
       <!-- Bulk Actions -->
@@ -464,7 +465,8 @@ export default {
       searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
-      filterPlugin: false
+      filterPlugin: false,
+      expiresIn: null
     }
   },
   computed: {
@@ -862,6 +864,7 @@ export default {
 
       //Request
       this.$crud.index(propParams.apiRoute, params).then(response => {
+        this.expiresIn = response.expiresIn
         let dataTable = response.data
 
         //If is field change format
