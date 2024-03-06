@@ -483,11 +483,10 @@ export default {
       return this.params.read.relation.permission ? this.$hasAccess(this.params.read.relation.permission) : true;
     },
     tableTitle() {
-      const useLegacyStructure = parseInt(this.$getSetting('isite::legacyStructureCMS') || 0)
       if (this.title)
-        return useLegacyStructure ? this.$tr(this.title) : this.title
+        return this.$tr(this.title)
       if (this.params.read.title)
-        return useLegacyStructure ? this.$tr(this.params.read.title) : params.read.title
+        return this.$tr(this.params.read.title)
       return ""
     },
     //Table actions
