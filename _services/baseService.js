@@ -19,7 +19,6 @@ const axiosActions = {
    * @returns {Promise<any>}
    */
   create(configName, data, params = {}) {
-    console.log(params)
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
