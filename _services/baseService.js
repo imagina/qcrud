@@ -182,9 +182,8 @@ const axiosActions = {
       if (!configName) return reject('Config name is required')
       if (!criteria) return reject('Criteria is required')
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
-      let requestParams = (params && params.params) ? params.params : false//Get request params
       //Request
-      axios.delete(urlApi, {params: requestParams}).then(response => {
+      axios.delete(urlApi, { ...params }).then(response => {
         this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
