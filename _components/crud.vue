@@ -10,10 +10,12 @@
     <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
                    @update:modelValue="emitValue" @click.native="showEventListener">
       <!--Before options slot-->
-      <div slot="before-options">
-        <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green" no-caps
-               :label="`${paramsProps.create.title || ''}`" v-if="params.create" />
-      </div>
+      <template v-slot:before-options>
+        <div>
+          <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green" no-caps
+                :label="`${paramsProps.create.title || ''}`" v-if="params.create" />
+        </div>
+      </template>
     </dynamic-field>
 
     <!--=== Full Crud ===-->
