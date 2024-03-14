@@ -675,6 +675,7 @@ export default {
     hideExpandedRows() {
       if (this.tableKey) {
           this.$refs[`trExpansion${this.tableKey}`].hide();
+          this.tableKey = null;
       }
     },
     //Row click
