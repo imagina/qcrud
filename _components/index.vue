@@ -15,6 +15,7 @@
             ref="pageActionRef"
             :tour-name="tourName"
             :help="help"
+            :expires-in="expiresIn"
         />
       </div>
       <!-- Bulk Actions -->
@@ -471,7 +472,8 @@ export default {
       tourName: 'admin_crud_index_tour',
       filters: false,
       filterPlugin: false,
-      gridComponent: false
+      gridComponent: false,
+      expiresIn: null
     }
   },
   computed: {
@@ -943,6 +945,7 @@ export default {
 
       //Request
       const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
+      this.expiresIn = response.expiresIn
       let dataTable = response.data
       //If is field change format
       if (this.params.field) {
