@@ -172,17 +172,17 @@ const axiosActions = {
    * @param configName
    * @param criteria
    * @param data
-   * @param params {params : {}, remember: boolean}
+   * @param configOptions {params : {}, remember: boolean}
    * @returns {Promise<any>}
    */
-  delete(configName, criteria, params) {
+  delete(configName, criteria, configOptions) {
     return new Promise((resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!criteria) return reject('Criteria is required')
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Request
-      axios.delete(urlApi, { ...params }).then(response => {
+      axios.delete(urlApi, { ...configOptions }).then(response => {
         this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {

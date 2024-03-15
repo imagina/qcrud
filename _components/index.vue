@@ -394,7 +394,7 @@ import foldersStore from 'modules/qsite/_components/master/folders/store/folders
 import _ from "lodash";
 import qreable from "src/modules/qqreable/_components/qreable.vue"
 import _filterPlugin from 'src/plugins/filter'
-import { eventBus } from 'src/plugins/utils'
+import { eventBus, cacheOffline } from 'src/plugins/utils'
 import { markRaw } from 'vue';
 
 export default {
@@ -1032,8 +1032,7 @@ export default {
                 })
 
                 const CACHE_PATH = 'apiRoutes.qramp.workOrders'
-                cacheOffline.deleteItem(item.id, CACHE_PATH)
-
+                await cacheOffline.deleteItem(item.id, CACHE_PATH)
               }
             }
           }
