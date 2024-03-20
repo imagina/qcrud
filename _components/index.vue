@@ -16,7 +16,20 @@
             :tour-name="tourName"
             :help="help"
             :expires-in="expiresIn"
+            :dynamicFilter="dynamicFilter"
+            :dynamicFilterValues="getDynamicFilterValues"
+            @toggleDynamicFilterModal="toggleDynamicFilterModal"
         />
+        <!-- dynamicFilter -->
+        <dynamicFilter
+          v-if="dynamicFilter"
+          :systemName="systemName"
+          :modelValue="showDynamicFilterModal"
+          :filters="dynamicFilter"
+          @showModal="toggleDynamicFilterModal"
+          @hideModal="toggleDynamicFilterModal"
+          @input="getDataTableWithDynamicFilter"
+         />
       </div>
       <!-- Bulk Actions -->
       <div v-if="selectedRows.length" id="selectedRows"
@@ -41,7 +54,9 @@
         />
         <!-- Kanban View-->
         <kanban v-show="localShowAs === 'kanban' && params.read.kanban"
-                :routes="params.read.kanban" ref="kanban"/>
+                :routes="params.read.kanban" ref="kanban"
+                :dynamicFilterValues="getDynamicFilterValues"
+        />
         <!-- Drag View-->
         <div v-if="localShowAs === 'drag' && dataDraggable.length"
              class="q-pt-sm q-pr-sm q-pl-md">
@@ -394,9 +409,10 @@ import recursiveItemDraggable from 'modules/qsite/_components/master/recursiveIt
 import foldersStore from 'modules/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
 import qreable from "src/modules/qqreable/_components/qreable.vue"
-import _filterPlugin from 'src/plugins/filter'
+//import _filterPlugin from 'src/plugins/filter'
 import { eventBus, cacheOffline } from 'src/plugins/utils'
 import { markRaw } from 'vue';
+import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter'
 
 export default {
   props: {
@@ -407,7 +423,8 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable
+    qreable, 
+    dynamicFilter
   },
   provide() {
     return {
@@ -416,7 +433,6 @@ export default {
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
       getFieldRelationActions: this.getFieldRelationActions,
-      filterPlugin: computed(() => this.filterPlugin)
     }
   },
   watch: {
@@ -471,9 +487,11 @@ export default {
       searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
-      filterPlugin: false,
+      //filterPlugin: false,
       gridComponent: false,
-      expiresIn: null
+      expiresIn: null, 
+      showDynamicFilterModal: false, 
+      dynamicFilterValues: {}
     }
   },
   computed: {
@@ -704,25 +722,20 @@ export default {
       let response = this.params.read.excludeActions || []
       if (this.params.read.noFilter) response.push('filter')
       return response
-    },
-    filterDataTable() {
-      const filterData = this.table.data.filter(item => {
-        if (this.isAppOffline) {
-          return Object.values(item).some(value => {
-            if (value) {
-              const search = this.table.filter.search ? this.table.filter.search.toLowerCase() : null;
-              if (search) {
-                return String(value).toLowerCase().includes(search)
-              } else {
-                return true;
-              }
-            }
-          })
+    }, 
+    dynamicFilter() {
+      if (this.params.read?.filters) {
+        if(Object.keys(this.params.read?.filters).length > 0){
+          return this.params.read?.filters
         }
-
-        return true;
-      });
-      return filterData;
+      }
+      return false
+    },
+    systemName(){
+      return this.params.read?.systemName || this.params?.permission || this.params?.entityName
+    }, 
+    getDynamicFilterValues(){
+      return this.dynamicFilterValues
     }
   },
   methods: {
@@ -748,8 +761,8 @@ export default {
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
-      await this.setFilterPlugin();
-      await this.orderFilters()//Order filters
+      //await this.setFilterPlugin();
+      //await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
       if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
@@ -763,78 +776,29 @@ export default {
       //Success
       this.success = true
     },
-    setFilterPlugin() {
-      if (this.params?.read) {
-        if (this.params.read?.filterName || this.params.read.filters) {
-          let cacheName;
-          if (this.params.read?.filterCacheName) {
-            cacheName = this.params.read?.filterCacheName;
-          } else {
-            const entityName = this.params.entityName ?? ''
-            cacheName = `${this.$route.name}_${entityName}`
-          }
-
-          this.filterPlugin = _filterPlugin.getInstance(cacheName)
-          return
-        }
+    //dynamic filter
+    getDataTableWithDynamicFilter(values){
+      this.dynamicFilterValues = values
+      console.log('getDataTableWithDynamicFilter')
+      const refresh = !this.params.read.kanban;
+      this.table.filter = this.$clone(values)
+      if (this.params.read.kanban) {
+        const filterName = this.params.read.kanban.column.filter.name || '';
+        this.funnelId = this.table.filter[filterName || null];
       }
-      // use the global filter
-      this.filterPlugin = this.$filter
-    },
-    //Order filters
-    orderFilters() {
-      return new Promise(async (resolve, reject) => {
-        let params = this.$clone(this.params)
-        if (this.params.read.noFilter) return resolve(true)
-        //Load master filter
-        if (params.read) {
-          if (params.read.filterName || params.read.filters) {
-            if ((Object.keys(params.read.filters).length)) {
-              await this.filterPlugin.setFilter({
-                name: params.read.filterName || this.$route.name,
-                fields: this.$clone(params.read.filters || {}),
-                callBack: () => {
-                  const refresh = !this.params.read.kanban;
-                  this.table.filter = this.$clone(this.filterPlugin.values)
-                  if (this.params.read.kanban) {
-                    const filterName = this.params.read.kanban.column.filter.name || '';
-                    this.funnelId = Number(this.table.filter[filterName || null]);
-                  }
-                  this.getDataTable(refresh, this.$clone(this.filterPlugin.values), this.$clone(this.filterPlugin.pagination))
-                }
-              })
-            }
-          }
-        }
-
-        //Load local filters
-        if (params.read && params.read.filters) {
-          let filters = params.read.filters
-          if (Object.keys(params.read.filters).length) {
-            //add filters to table filters
-            Object.keys(params.read.filters).forEach(key => {
-              let filter = params.read.filters[key]
-              if (key !== 'date') {
-                this.table.filter[filter.name || key] = filter.value
-              }
-            })
-            if (!this.params.read.filterName) this.filter.available = true//allow filters
-          }
-        }
-        //Resolve
-        resolve(true)
-      })
-    },
+      this.getDataTable(refresh, this.$clone(values), {})
+    },    
     //showPagination
     showPagination(props) {
       return this.windowSize == 'desktop' && props.pagesNumber > 1
     },
     //Request products with params from server table
     async getDataTable(refresh = false, filter = false, pagination = false) {
+      console.count('getDataTable')
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
-        const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(this.filterPlugin.values[filterName] || null);
+        const s = this.params.read.kanban.column.filter.name || '';
+        this.funnelId = String(filter[filterName] || null);
         await this.$refs.kanban.setSearch(this.searchKanban);
         await this.$refs.kanban.init(refresh);
         return;
@@ -962,7 +926,7 @@ export default {
       this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
       this.table.pagination.sortBy = this.$clone(pagination.sortBy)
       this.table.pagination.descending = this.$clone(pagination.descending)
-
+      /*
       //Sync master filter
       if (this.params.read.filterName) {
         //Set search param
@@ -976,6 +940,7 @@ export default {
         //Sync local
         this.table.filter.search = this.$clone(params.params.filter.search)
       }
+      */
 
       //Dispatch event hook
       this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
@@ -1444,8 +1409,11 @@ export default {
           ]
         })
       }
-    },
-
+    }, 
+    toggleDynamicFilterModal(){
+      console.log('try to open')
+      this.showDynamicFilterModal = !this.showDynamicFilterModal
+    }
   }
 }
 </script>
