@@ -779,7 +779,6 @@ export default {
     //dynamic filter
     getDataTableWithDynamicFilter(values){
       this.dynamicFilterValues = values
-      console.log('getDataTableWithDynamicFilter')
       const refresh = !this.params.read.kanban;
       this.table.filter = this.$clone(values)
       if (this.params.read.kanban) {
@@ -797,8 +796,8 @@ export default {
       console.count('getDataTable')
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
-        const s = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(filter[filterName] || null);
+        const filterName = this.params.read.kanban.column.filter.name || '';
+        this.funnelId = String(this.dynamicFilter[filterName] || null);
         await this.$refs.kanban.setSearch(this.searchKanban);
         await this.$refs.kanban.init(refresh);
         return;
@@ -1411,7 +1410,6 @@ export default {
       }
     }, 
     toggleDynamicFilterModal(){
-      console.log('try to open')
       this.showDynamicFilterModal = !this.showDynamicFilterModal
     }
   }
