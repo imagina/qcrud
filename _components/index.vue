@@ -947,6 +947,8 @@ export default {
 
                   //Dispatch event hook
                   this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                  //Emit event delete
+                  this.$emit('deleted')
 
                   //Close loading
                   this.loading = false
