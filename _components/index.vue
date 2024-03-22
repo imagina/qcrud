@@ -28,7 +28,7 @@
           :filters="dynamicFilter"
           @showModal="toggleDynamicFilterModal"
           @hideModal="toggleDynamicFilterModal"
-          @input="getDataTableWithDynamicFilter"
+          @update:modelValue="getDataTableWithDynamicFilter"
          />
       </div>
       <!-- Bulk Actions -->
@@ -778,6 +778,8 @@ export default {
     },
     //dynamic filter
     getDataTableWithDynamicFilter(values){
+      console.log('getDataTableWithDynamicFilter')
+
       this.dynamicFilterValues = values
       const refresh = !this.params.read.kanban;
       this.table.filter = this.$clone(values)
