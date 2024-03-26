@@ -28,7 +28,7 @@
           :filters="dynamicFilter"
           @showModal="toggleDynamicFilterModal"
           @hideModal="toggleDynamicFilterModal"
-          @update:modelValue="getDataTableWithDynamicFilter"
+          @update:modelValue="filters => getDataTable(false, filters)"
          />
       </div>
       <!-- Bulk Actions -->
@@ -55,7 +55,7 @@
         <!-- Kanban View-->
         <kanban v-show="localShowAs === 'kanban' && params.read.kanban"
                 :routes="params.read.kanban" ref="kanban"
-                :dynamicFilterValues="getDynamicFilterValues"
+                :filter="getDynamicFilterValues"
         />
         <!-- Drag View-->
         <div v-if="localShowAs === 'drag' && dataDraggable.length"
@@ -764,7 +764,7 @@ export default {
       //await this.setFilterPlugin();
       //await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
-      if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
+      //if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
         eventBus.emit('setMobileMainAction', {
@@ -778,8 +778,7 @@ export default {
     },
     //dynamic filter
     getDataTableWithDynamicFilter(values){
-      console.log('getDataTableWithDynamicFilter')
-
+      
       this.dynamicFilterValues = values
       const refresh = !this.params.read.kanban;
       this.table.filter = this.$clone(values)
@@ -795,11 +794,12 @@ export default {
     },
     //Request products with params from server table
     async getDataTable(refresh = false, filter = false, pagination = false) {
+      this.dynamicFilterValues = filter
       console.count('getDataTable')
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
         const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(this.dynamicFilter[filterName] || null);
+        this.funnelId = String(this.getDynamicFilterValues[filterName] || null);
         await this.$refs.kanban.setSearch(this.searchKanban);
         await this.$refs.kanban.init(refresh);
         return;
