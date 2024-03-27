@@ -761,8 +761,6 @@ export default {
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
-      //await this.setFilterPlugin();
-      //await this.orderFilters()//Order filters
       this.handlerUrlCrudAction()//Handler url action
       //if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
@@ -776,18 +774,6 @@ export default {
       //Success
       this.success = true
     },
-    //dynamic filter
-    getDataTableWithDynamicFilter(values){
-      
-      this.dynamicFilterValues = values
-      const refresh = !this.params.read.kanban;
-      this.table.filter = this.$clone(values)
-      if (this.params.read.kanban) {
-        const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = this.table.filter[filterName || null];
-      }
-      this.getDataTable(refresh, this.$clone(values), {})
-    },    
     //showPagination
     showPagination(props) {
       return this.windowSize == 'desktop' && props.pagesNumber > 1
@@ -795,7 +781,6 @@ export default {
     //Request products with params from server table
     async getDataTable(refresh = false, filter = false, pagination = false) {
       this.dynamicFilterValues = filter
-      console.count('getDataTable')
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
         const filterName = this.params.read.kanban.column.filter.name || '';
@@ -927,22 +912,6 @@ export default {
       this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
       this.table.pagination.sortBy = this.$clone(pagination.sortBy)
       this.table.pagination.descending = this.$clone(pagination.descending)
-      /*
-      //Sync master filter
-      if (this.params.read.filterName) {
-        //Set search param
-        this.filterPlugin.addValues({search: params.params.filter.search})
-        //Set pagination
-        this.filterPlugin.setPagination({
-          page: this.$clone(response.meta.page.currentPage),
-          rowsPerPage: this.$clone(response.meta.page.perPage),
-          lastPage: this.$clone(response.meta.page.lastPage),
-        })
-        //Sync local
-        this.table.filter.search = this.$clone(params.params.filter.search)
-      }
-      */
-
       //Dispatch event hook
       this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
       //Sync data to drag view
