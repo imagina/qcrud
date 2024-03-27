@@ -403,7 +403,7 @@ export default {
     params: {default: false},
     title: {default: false}
   },
-  emits: ['update','create'],
+  emits: ['update','create', 'deleted'],
   components: {
     masterExport,
     recursiveItemDraggable,
@@ -1024,6 +1024,8 @@ export default {
 
                   //Dispatch event hook
                   this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                  //Emit event delete
+                  this.$emit('deleted')
 
                   //Close loading
                   this.loading = false
