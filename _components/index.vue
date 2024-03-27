@@ -409,7 +409,6 @@ import recursiveItemDraggable from 'modules/qsite/_components/master/recursiveIt
 import foldersStore from 'modules/qsite/_components/master/folders/store/foldersStore.js'
 import _ from "lodash";
 import qreable from "src/modules/qqreable/_components/qreable.vue"
-//import _filterPlugin from 'src/plugins/filter'
 import { eventBus, cacheOffline } from 'src/plugins/utils'
 import { markRaw } from 'vue';
 import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter'
@@ -912,6 +911,13 @@ export default {
       this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage)
       this.table.pagination.sortBy = this.$clone(pagination.sortBy)
       this.table.pagination.descending = this.$clone(pagination.descending)
+
+      //Sync master filter
+      const filterValues = this.getDynamicFilterValues()
+      if(filterValues['search']){
+        this.table.filter.search = filterValues['search']
+      }
+      
       //Dispatch event hook
       this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
       //Sync data to drag view
