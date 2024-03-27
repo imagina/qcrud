@@ -401,7 +401,7 @@ import { markRaw } from 'vue';
 export default {
   props: {
     params: {default: false},
-    title: {default: false}
+    title: {default: ''}
   },
   emits: ['update','create', 'deleted'],
   components: {
@@ -998,7 +998,7 @@ export default {
             handler: async () => {
               this.loading = true
               let propParams = this.$clone(this.params);
-              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title)} - ${item.id}` || ''}};
+              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title || '')} - ${item.id}` || ''}};
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField)//get data table
