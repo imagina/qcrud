@@ -913,7 +913,7 @@ export default {
       this.table.pagination.descending = this.$clone(pagination.descending)
 
       //Sync master filter
-      const filterValues = this.getDynamicFilterValues()
+      const filterValues = this.getDynamicFilterValues
       if(filterValues['search']){
         this.table.filter.search = filterValues['search']
       }
