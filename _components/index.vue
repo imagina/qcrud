@@ -401,9 +401,9 @@ import { markRaw } from 'vue';
 export default {
   props: {
     params: {default: false},
-    title: {default: false}
+    title: {default: ''}
   },
-  emits: ['update','create'],
+  emits: ['update','create', 'deleted'],
   components: {
     masterExport,
     recursiveItemDraggable,
@@ -998,7 +998,7 @@ export default {
             handler: async () => {
               this.loading = true
               let propParams = this.$clone(this.params);
-              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title)} - ${item.id}` || ''}};
+              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title || '')} - ${item.id}` || ''}};
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField)//get data table
@@ -1024,6 +1024,8 @@ export default {
 
                   //Dispatch event hook
                   this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                  //Emit event delete
+                  this.$emit('deleted')
 
                   //Close loading
                   this.loading = false
