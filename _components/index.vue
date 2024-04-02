@@ -1125,17 +1125,6 @@ export default {
       })
       //Add default actions
       actions = [
-        //Export
-        {
-          label: this.$tr('isite.cms.label.export'),
-          vIf: this.exportParams,
-          icon: 'fa-light fa-download',
-          action: (item) => this.$refs.exportComponent.showReportItem({
-            item: item,
-            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
-            filter: {id: item.id}
-          })
-        },
         {//Edit action
           icon: 'fa-light fa-pencil',
           color: 'green',
