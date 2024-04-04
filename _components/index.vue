@@ -416,9 +416,9 @@ import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter'
 export default {
   props: {
     params: {default: false},
-    title: {default: false}
+    title: {default: ''}
   },
-  emits: ['update','create'],
+  emits: ['update','create', 'deleted'],
   components: {
     masterExport,
     recursiveItemDraggable,
@@ -486,7 +486,6 @@ export default {
       searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
-      //filterPlugin: false,
       gridComponent: false,
       expiresIn: null, 
       showDynamicFilterModal: false, 
@@ -728,7 +727,7 @@ export default {
           return this.params.read?.filters
         }
       }
-      return false
+      return {}
     },
     systemName(){
       return this.params.read?.systemName || this.params?.permission || this.params?.entityName
@@ -939,7 +938,7 @@ export default {
             handler: async () => {
               this.loading = true
               let propParams = this.$clone(this.params);
-              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title)} - ${item.id}` || ''}};
+              let customParams = {params: {titleOffline: `Delete ${this.$tr(this.title || '')} - ${item.id}` || ''}};
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField)//get data table
@@ -965,6 +964,8 @@ export default {
 
                   //Dispatch event hook
                   this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                  //Emit event delete
+                  this.$emit('deleted')
 
                   //Close loading
                   this.loading = false
@@ -1064,17 +1065,6 @@ export default {
       })
       //Add default actions
       actions = [
-        //Export
-        {
-          label: this.$tr('isite.cms.label.export'),
-          vIf: this.exportParams,
-          icon: 'fa-light fa-download',
-          action: (item) => this.$refs.exportComponent.showReportItem({
-            item: item,
-            exportParams: {fileName: `${this.exportParams.fileName}-${item.id}`},
-            filter: {id: item.id}
-          })
-        },
         {//Edit action
           icon: 'fa-light fa-pencil',
           color: 'green',

@@ -22,7 +22,7 @@
     <div v-if="success">
       <!--Index component-->
       <crud-index v-if="showType('full')" :params="$clone(paramsProps)" ref="crudIndex"
-                  @create="create" @update="update" :title="title" />
+                  @create="create" @update="update" @deleted="formEmmit('deleted')" :title="title" />
       <!--Modal create/update component-->
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
