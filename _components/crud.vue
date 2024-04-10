@@ -22,7 +22,7 @@
     <div v-if="success">
       <!--Index component-->
       <crud-index v-if="showType('full')" :params="$clone(paramsProps)" ref="crudIndex"
-                  @create="create" @update="update" @deleted="formEmmit('deleted')" :title="title" />
+      @create="create" @update="update" @deleted="formEmmit('deleted')" :title="title" />
       <!--Modal create/update component-->
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
@@ -419,7 +419,7 @@ export default {
     //watch emit update from form component
     formEmmit(type = 'created', response = false) {
       if (this.type == 'full') {
-        this.$refs.crudIndex.getDataTable(true);
+        this.getDataTable(true);
       } else this.getIndexOptions();
       this.$emit(type, response);
     },
@@ -476,6 +476,9 @@ export default {
     emitValue() {
       this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
     },
+    getDataTable(refresh) {
+      this.$refs.crudIndex.getDataTable(refresh);
+    }
   }
 };
 </script>
