@@ -412,6 +412,7 @@ import qreable from "src/modules/qqreable/_components/qreable.vue"
 import { eventBus, cacheOffline } from 'src/plugins/utils'
 import { markRaw } from 'vue';
 import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter'
+//import paginateCacheOffline from 'src/plugins/paginateCacheOffline'
 
 export default {
   props: {
@@ -823,18 +824,19 @@ export default {
           }
         };
 
-        if (this.isAppOffline) {
-          const cachePaginate = await paginateCacheOffline(
-              apiRoute,
-              this.table.filter.search,
-              pagination.page,
-              pagination.rowsPerPage
-          )
-          if (cachePaginate.data.length > 0) {
-            return cachePaginate
-          }
-          return modelRequest
-        }
+        //Using the service worker for caching makes paginateCacheOffline unnecessary.
+        // if (this.isAppOffline) {
+        //   const cachePaginate = await paginateCacheOffline(
+        //       apiRoute,
+        //       this.table.filter.search,
+        //       pagination.page,
+        //       pagination.rowsPerPage
+        //   )
+        //   if (cachePaginate.data.length > 0) {
+        //     return cachePaginate
+        //   }
+        //   return modelRequest
+        // }
 
         const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
             .catch(error => {

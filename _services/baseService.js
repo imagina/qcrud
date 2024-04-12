@@ -53,9 +53,10 @@ const axiosActions = {
         key: key,
         seconds: params.cacheTime,
         refresh: window.navigator.onLine ? params.refresh : false,
+        inCache: isOffline,
         callBack: () => {
           return new Promise(async (resolve, reject) => {
-            await axios.get(urlApi, {params: params.params}).then(response => {
+            await axios.get(urlApi, {params: { ...params.params }, headers: { 'x-refresh': params.refresh } }).then(response => {
               resolve(response)//Response
             }).catch(error => {
               apiResponse.handleError(error, () => {
