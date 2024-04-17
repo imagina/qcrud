@@ -43,20 +43,28 @@ const axiosActions = {
    * @param params {params : {}, remember: boolean}
    * @returns {Promise<any>}
    */
-  index(configName, params = {}, isOffline = false) {
+  index(configName, params = {}, inCache = false) {
     return new Promise((resolve, reject) => {
       params = {params: {}, refresh: false, cacheTime: (3600 * 3), cacheKey: null, ...params}//Validate params params
       if (!configName) return reject('Config name is required')//Validate config name
-      let urlApi = (config(configName) || configName)//Get url from config
-      let key = params.cacheKey || `${configName}::${isOffline ? 'offline' : `requestParams[${JSON.stringify(params.params)}]`}`//Key to cache
+      const urlApi = (config(configName) || configName)//Get url from config
+      const key = params.cacheKey || `${configName}::${inCache ? 'offline' : `requestParams[${JSON.stringify(params.params)}]`}` //Key to cache
       remember.async({
-        key: key,
+        key,
         seconds: params.cacheTime,
         refresh: window.navigator.onLine ? params.refresh : false,
-        inCache: isOffline,
+        inCache,
         callBack: () => {
           return new Promise(async (resolve, reject) => {
-            await axios.get(urlApi, {params: { ...params.params }, headers: { 'x-refresh': params.refresh } }).then(response => {
+            await axios.get(
+              urlApi, 
+              { 
+                params: { ...params.params }, 
+                headers: { 
+                  'x-refresh': params.refresh, 
+                  'x-cache': inCache 
+                } 
+              }).then(response => {
               resolve(response)//Response
             }).catch(error => {
               apiResponse.handleError(error, () => {
