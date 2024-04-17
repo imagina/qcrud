@@ -58,7 +58,7 @@ import { eventBus } from 'src/plugins/utils';
 import { markRaw } from 'vue';
 
 export default {
-  beforeDestroy() {
+  beforeUnmount() {
     eventBus.off(`${this.paramsProps.apiRoute}.crud.event.created`);
   },
   props: {
