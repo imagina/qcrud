@@ -417,9 +417,9 @@ export default {
       });
     },
     //watch emit update from form component
-    formEmmit(type = 'created', response = false) {
+    async formEmmit(type = 'created', response = false) {
       if (this.type == 'full') {
-        this.getDataTable(true);
+        await this.getDataTable(true);
       } else this.getIndexOptions();
       this.$emit(type, response);
     },
@@ -476,8 +476,8 @@ export default {
     emitValue() {
       this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
     },
-    getDataTable(refresh) {
-      this.$refs.crudIndex.getDataTable(refresh);
+    async getDataTable(refresh) {
+      await this.$refs.crudIndex.getDataTable(refresh);
     }
   }
 };
