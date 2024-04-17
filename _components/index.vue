@@ -812,7 +812,7 @@ export default {
         }
       }
     },
-    async requestDataTable(apiRoute, params, pagination) {
+    async requestDataTable(apiRoute, params, pagination, caching=false) {
       try {
         const modelRequest = {
           data: [],
@@ -824,7 +824,7 @@ export default {
           }
         };
 
-        if (this.isAppOffline) {
+        if (this.isAppOffline && caching) {
           const cachePaginate = await paginateCacheOffline(
             apiRoute,
             this.table.filter.search,
@@ -838,7 +838,7 @@ export default {
           return modelRequest
         }
 
-        const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
+        const response = await this.$crud.index(apiRoute, params, caching)
             .catch(error => {
               if (!this.isAppOffline && !error?.config?.signal?.aborted) {
                 this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
@@ -894,7 +894,7 @@ export default {
       }
 
       //Request
-      const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
+      const response = await this.requestDataTable(propParams.apiRoute, params, pagination, propParams.caching);
       this.expiresIn = response.expiresIn
       let dataTable = response.data
       //If is field change format
