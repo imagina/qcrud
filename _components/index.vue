@@ -801,12 +801,16 @@ export default {
       if (this.isActionableColumn(col)) {
 
         //if the col has an action callback
-        if (col.action) {
+        if (typeof col.action === 'function') {
           await col.action(row)
         } else {
           //finding the default action
           let defaultAction = this.fieldActions(col).find(action => {
-            return action.default ?? false
+            if (typeof col.action === 'string') {
+              return action?.name === col.action
+            } else {
+              return action.default ?? false
+            }
           })
           if (defaultAction.action) await defaultAction.action(row)
         }
@@ -1069,6 +1073,7 @@ export default {
       actions = [
         {//Edit action
           icon: 'fa-light fa-pencil',
+          name: 'edit',
           color: 'green',
           default: defaultAction ? false : true,
           label: this.$tr('isite.cms.label.edit'),
@@ -1079,6 +1084,7 @@ export default {
         },
         {//Copy disclosure link action
           label: this.$tr('isite.cms.label.copyDisclosureLink'),
+          name: 'copyDisclosureLink',
           format: (item) => {
             return {vIf: item.url ? true : false}
           },
@@ -1087,6 +1093,7 @@ export default {
         },
         {//Share action
           label: this.$tr('isite.cms.label.share'),
+          name: 'share',
           format: (item) => {
             return {vIf: (item.url || item.embed) ? true : false}
           },
@@ -1096,6 +1103,7 @@ export default {
         },
         {//Delete action
           icon: 'fa-light fa-trash-can',
+          name: 'delete',
           color: 'red',
           label: this.$tr('isite.cms.label.delete'),
           vIf: this.permitAction(field).destroy,
@@ -1106,6 +1114,7 @@ export default {
         //Export
         {
           label: this.$tr('isite.cms.label.export'),
+          name: 'export',
           vIf: this.exportParams,
           icon: 'fa-light fa-download',
           action: (item) => this.$refs.exportComponent.showReportItem({
