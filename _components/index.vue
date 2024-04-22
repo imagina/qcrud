@@ -828,20 +828,6 @@ export default {
           }
         };
 
-        if (this.isAppOffline && caching) {
-          const cachePaginate = await paginateCacheOffline(
-            apiRoute,
-            this.table.filter.search,
-            pagination.page,
-            pagination.rowsPerPage,
-            params
-          )
-          if (cachePaginate.data.length > 0) {
-            return cachePaginate
-          }
-          return modelRequest
-        }
-
         const response = await this.$crud.index(apiRoute, params, caching)
             .catch(error => {
               if (!this.isAppOffline && !error?.config?.signal?.aborted) {
