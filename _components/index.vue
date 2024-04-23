@@ -1393,6 +1393,7 @@ export default {
     }, 
     updateDynamicFilterValues(filters){
       this.dynamicFilterValues = filters
+      this.table.filter = filters
       this.getDataTable(false, filters, {page: 1})
     }
   }
