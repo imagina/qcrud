@@ -885,8 +885,15 @@ export default {
       params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
       if (!params.params.filter || !params.params.filter.order) {
+        let sortBy = pagination.sortBy || 'id'
+
+        // checks if sortBy is in read.requestParams.notToSnakeCase
+        if (!params.params?.notToSnakeCase?.includes(sortBy)) {
+         sortBy = this.$helper.convertStringToSnakeCase(sortBy)
+        }
+
         params.params.filter.order = {
-          field: pagination.sortBy ? this.$helper.convertStringToSnakeCase(pagination.sortBy) : 'id',
+          field: sortBy,
           way: (pagination.descending != undefined) ? (pagination.descending ? 'desc' : 'asc') : 'desc'
         }
       }
