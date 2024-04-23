@@ -11,7 +11,7 @@
             :title="tableTitle"
             @search="val => search(val)"
             @new="handlerActionCreate()"
-            @refresh="getDataTable(true, getDynamicFilterValues)"
+            @refresh="getDataTable(true)"
             ref="pageActionRef"
             :tour-name="tourName"
             :help="help"
@@ -28,7 +28,7 @@
           :filters="dynamicFilter"
           @showModal="toggleDynamicFilterModal"
           @hideModal="toggleDynamicFilterModal"
-          @update:modelValue="filters => getDataTable(false, filters)"
+          @update:modelValue="filters => updateDynamicFilterValues(filters)"
          />
       </div>
       <!-- Bulk Actions -->
@@ -779,7 +779,8 @@ export default {
     },
     //Request products with params from server table
     async getDataTable(refresh = false, filter = {}, pagination = false) {
-      this.dynamicFilterValues = filter
+      const filters = this.getDynamicFilterValues
+      //this.dynamicFilterValues = filter
       //Call data table
       if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
         const filterName = this.params.read.kanban.column.filter.name || '';
@@ -790,7 +791,7 @@ export default {
       } else {
         this.getData({
               pagination: {...this.table.pagination, ...(pagination || {})},
-              filter: {...this.table.filter, ...(filter || {})}
+              filter: {...this.table.filter, ...(filters || {})}
             },
             refresh)
       }
@@ -1389,6 +1390,11 @@ export default {
     }, 
     toggleDynamicFilterModal(){
       this.showDynamicFilterModal = !this.showDynamicFilterModal
+    }, 
+    updateDynamicFilterValues(filters){
+      this.dynamicFilterValues = filters
+      this.table.filter = filters
+      this.getDataTable(false, filters, {page: 1})
     }
   }
 }
