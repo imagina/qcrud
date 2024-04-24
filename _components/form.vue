@@ -497,10 +497,12 @@ export default {
     async executeUpdateRequest() {
       const propParams = this.$clone(this.paramsProps);
       const formData = this.$clone(await this.getDataForm());
+      const requestParams = propParams.update?.requestParams || {};
       const customParams = {
-        ...(propParams.update?.requestParams || {}),
+        ...(requestParams),
         params: {
-          titleOffline: this.modalProps.title || ''
+          titleOffline: this.modalProps.title || '',
+          ...(requestParams?.params || {}),
         },
       };
       let criteria = this.$clone(this.itemId);
