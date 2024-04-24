@@ -412,7 +412,6 @@ import qreable from "src/modules/qqreable/_components/qreable.vue"
 import { eventBus, cacheOffline } from 'src/plugins/utils'
 import { markRaw } from 'vue';
 import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter'
-import paginateCacheOffline from 'src/plugins/paginateCacheOffline'
 
 export default {
   props: {
