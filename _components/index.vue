@@ -497,7 +497,9 @@ export default {
     deleteHtml() {
       return data => {
         if(!data) return '';
-        return data.replace(/<[^>]+>/g, '')
+        return typeof data === 'string' ?
+          data.replace(/<[^>]+>/g, '') :
+          data;
       }
     },
     isAppOffline() {
