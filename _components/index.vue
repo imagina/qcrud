@@ -1132,7 +1132,7 @@ export default {
         {
           label: this.$tr('isite.cms.label.export'),
           name: 'export',
-          vIf: this.exportParams,
+          vIf: !!this.exportParams,
           icon: 'fa-light fa-download',
           action: (item) => this.$refs.exportComponent.showReportItem({
             item: item,
@@ -1292,10 +1292,22 @@ export default {
     isActionableColumn(col) {
 
       //if the columns has an action callback
-      if (col.action) return true;
+      if (col.action && typeof col.action !== 'string') return true;
 
       //default columns
-      return ['title', 'name', 'id'].includes(col.name);
+      if (['title', 'name', 'id'].includes(col.name) || col.action) {
+        //finding the default action
+        let defaultAction = this.fieldActions(col).find(action => {
+          if (typeof col.action === 'string') {
+            return action?.name === col.action
+          } else {
+            return action.default ?? false
+          }
+        })
+        return defaultAction.vIf != undefined ? defaultAction.vIf : true
+      }
+
+      return false
     },
     //Select all fields
     selectAllFields() {
