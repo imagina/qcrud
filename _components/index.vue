@@ -186,7 +186,7 @@
                           >
                           </div>
                           <q-tooltip v-if="col.tooltip == undefined || col.tooltip">
-                            {{ col.tooltip || data.data }}
+                            <div v-html="deleteHtml(col.tooltip || data.data)" />
                           </q-tooltip>
                         </div>
                       </template>
@@ -307,7 +307,7 @@
                                 >
                                 </div>
                                 <q-tooltip>
-                                  <div v-html="col.tooltip || data.data"></div>
+                                  <div v-html="deleteHtml(col.tooltip || data.data)" />
                                   <label v-if="isActionableColumn(col)" class="text-weight-bold">
                                     {{ $tr('isite.cms.label.clickToAction') }}
                                   </label>
@@ -423,7 +423,7 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable, 
+    qreable,
     dynamicFilter
   },
   provide() {
@@ -488,12 +488,18 @@ export default {
       tourName: 'admin_crud_index_tour',
       filters: false,
       gridComponent: false,
-      expiresIn: null, 
-      showDynamicFilterModal: false, 
+      expiresIn: null,
+      showDynamicFilterModal: false,
       dynamicFilterValues: {}
     }
   },
   computed: {
+    deleteHtml() {
+      return data => {
+        if(!data) return '';
+        return data.replace(/<[^>]+>/g, '')
+      }
+    },
     isAppOffline() {
       return this.$store.state.qofflineMaster.isAppOffline;
     },
@@ -721,7 +727,7 @@ export default {
       let response = this.params.read.excludeActions || []
       if (this.params.read.noFilter) response.push('filter')
       return response
-    }, 
+    },
     dynamicFilter() {
       if (this.params.read?.filters) {
         if(Object.keys(this.params.read?.filters).length > 0){
@@ -732,7 +738,7 @@ export default {
     },
     systemName(){
       return this.params.read?.systemName || this.params?.permission || this.params?.entityName
-    }, 
+    },
     getDynamicFilterValues(){
       return this.dynamicFilterValues
     }
@@ -930,7 +936,7 @@ export default {
       if(filterValues['search']){
         this.table.filter.search = filterValues['search']
       }
-      
+
       //Dispatch event hook
       this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
       //Sync data to drag view
@@ -1394,10 +1400,10 @@ export default {
           ]
         })
       }
-    }, 
+    },
     toggleDynamicFilterModal(){
       this.showDynamicFilterModal = !this.showDynamicFilterModal
-    }, 
+    },
     updateDynamicFilterValues(filters){
       this.dynamicFilterValues = filters
       this.table.filter = filters
