@@ -423,7 +423,7 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable, 
+    qreable,
     dynamicFilter
   },
   provide() {
@@ -488,8 +488,8 @@ export default {
       tourName: 'admin_crud_index_tour',
       filters: false,
       gridComponent: false,
-      expiresIn: null, 
-      showDynamicFilterModal: false, 
+      expiresIn: null,
+      showDynamicFilterModal: false,
       dynamicFilterValues: {}
     }
   },
@@ -721,7 +721,7 @@ export default {
       let response = this.params.read.excludeActions || []
       if (this.params.read.noFilter) response.push('filter')
       return response
-    }, 
+    },
     dynamicFilter() {
       if (this.params.read?.filters) {
         if(Object.keys(this.params.read?.filters).length > 0){
@@ -732,7 +732,7 @@ export default {
     },
     systemName(){
       return this.params.read?.systemName || this.params?.permission || this.params?.entityName
-    }, 
+    },
     getDynamicFilterValues(){
       return this.dynamicFilterValues
     }
@@ -930,7 +930,7 @@ export default {
       if(filterValues['search']){
         this.table.filter.search = filterValues['search']
       }
-      
+
       //Dispatch event hook
       this.$hook.dispatchEvent('wasListed', {entityName: this.params.entityName})
       //Sync data to drag view
@@ -1123,7 +1123,7 @@ export default {
         {
           label: this.$tr('isite.cms.label.export'),
           name: 'export',
-          vIf: this.exportParams,
+          vIf: !!this.exportParams,
           icon: 'fa-light fa-download',
           action: (item) => this.$refs.exportComponent.showReportItem({
             item: item,
@@ -1283,10 +1283,22 @@ export default {
     isActionableColumn(col) {
 
       //if the columns has an action callback
-      if (col.action) return true;
+      if (col.action && typeof col.action !== 'string') return true;
 
       //default columns
-      return ['title', 'name', 'id'].includes(col.name)
+      if (['title', 'name', 'id'].includes(col.name) || col.action) {
+        //finding the default action
+        let defaultAction = this.fieldActions(col).find(action => {
+          if (typeof col.action === 'string') {
+            return action?.name === col.action
+          } else {
+            return action.default ?? false
+          }
+        })
+        return defaultAction.vIf != undefined ? defaultAction.vIf : true
+      }
+
+      return false
     },
     //Select all fields
     selectAllFields() {
@@ -1394,10 +1406,10 @@ export default {
           ]
         })
       }
-    }, 
+    },
     toggleDynamicFilterModal(){
       this.showDynamicFilterModal = !this.showDynamicFilterModal
-    }, 
+    },
     updateDynamicFilterValues(filters){
       this.dynamicFilterValues = filters
       this.table.filter = filters
