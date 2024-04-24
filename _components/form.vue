@@ -363,7 +363,7 @@ export default {
         //Request if exist item ID
         if (!this.paramsProps.field) {
           //Request
-          if (this.isAppOffline) {
+          if (this.isAppOffline && propParams.caching) {
             cacheOffline.getItemById(this.itemId, propParams.apiRoute)
               .then(response => {
                 this.locale.form = this.$clone(response);
@@ -541,10 +541,6 @@ export default {
         const response = await this.executeUpdateRequest();
         requestInfo.response = await response.response;
         requestInfo.error = await response.errorResponse;
-
-        if (this.isAppOffline) {
-          requestInfo.response = true;
-        }
 
         //Action after request
         if (requestInfo.response) {

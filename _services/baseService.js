@@ -48,7 +48,7 @@ const axiosActions = {
       params = {params: {}, refresh: false, cacheTime: (3600 * 3), cacheKey: null, ...params}//Validate params params
       if (!configName) return reject('Config name is required')//Validate config name
       const urlApi = (config(configName) || configName)//Get url from config
-      const key = params.cacheKey || `${configName}::${inCache ? 'offline' : `requestParams[${JSON.stringify(params.params)}]`}` //Key to cache
+      const key = `${configName}::${JSON.stringify(params.params)}` //Key to cache
       remember.async({
         key,
         seconds: params.cacheTime,
@@ -96,7 +96,7 @@ const axiosActions = {
       if (!configName) return reject('Config name is required')//Validate Config name
       if (!criteria) return reject('Criteria is required')//Validate criteria
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
-      let key = `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
+      let key = `${configName}::${JSON.stringify(params.params)}`//Key to cache
 
       remember.async({
         key: key,

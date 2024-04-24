@@ -816,28 +816,19 @@ export default {
         }
       }
     },
-    async requestDataTable(apiRoute, params, pagination, caching=false) {
+    async requestDataTable(apiRoute, params, caching=false) {
       try {
-        const modelRequest = {
-          data: [],
-          meta: {
-            page: {
-              currentPage: 1,
-              total: 0,
-            },
-          }
-        };
 
         const response = await this.$crud.index(apiRoute, params, caching)
-            .catch(error => {
-              if (!this.isAppOffline && !error?.config?.signal?.aborted) {
-                this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
-              }
-              console.error(error)
-              this.loading = false
-            })
+          .catch(error => {
+            if (!this.isAppOffline && !error?.config?.signal?.aborted) {
+              this.$alert.error({message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom'})
+            }
+            console.error(error)
+            this.loading = false
+          })
 
-        return response || modelRequest
+        return response
       } catch (error) {
         console.log(error);
         if (!this.isAppOffline) {
@@ -853,9 +844,6 @@ export default {
       //Reset selected Rows
       this.selectedRows = [];
       this.selectedRowsAll = false;
-
-      //Refresh all data
-      if (refresh) this.$cache.remove({allKey: this.params.apiRoute})
 
       //Params to request
       let params = {
@@ -884,7 +872,7 @@ export default {
       }
 
       //Request
-      const response = await this.requestDataTable(propParams.apiRoute, params, pagination, propParams.caching);
+      const response = await this.requestDataTable(propParams.apiRoute, params, propParams.caching);
       this.expiresIn = response.expiresIn
       let dataTable = response.data
       //If is field change format
@@ -967,9 +955,6 @@ export default {
                   }
                   this.loading = false
                 })
-
-                const CACHE_PATH = 'apiRoutes.qramp.workOrders'
-                await cacheOffline.deleteItem(item.id, CACHE_PATH)
               }
             }
           }
