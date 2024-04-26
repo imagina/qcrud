@@ -140,6 +140,8 @@ export default {
       //Validate params props
       if (!this.paramsProps) return {};
 
+      const modalActions = this.paramsProps?.modalActions;
+
       //Response
       return {
         title: (!this.isUpdate && !this.field) ? this.paramsProps.create.title :
@@ -148,11 +150,22 @@ export default {
         loading: this.loading,
         actions: [
           {
+            action: () => this.show = false,
+            ...(modalActions?.cancel || {}),
+            props: {
+              color: 'gray',
+              label: this.$tr('isite.cms.label.cancel'),
+              ...(modalActions?.cancel?.props || {})
+            }
+          },
+          {
+            action: () => this.$refs.formContent.submit(),
+            ...(modalActions?.save || {}),
             props: {
               color: 'green',
-              label: (!this.isUpdate && !this.field) ? this.$tr('isite.cms.label.save') : this.$tr('isite.cms.label.update')
-            },
-            action: () => this.$refs.formContent.submit()
+              label: (!this.isUpdate && !this.field) ? this.$tr('isite.cms.label.save') : this.$tr('isite.cms.label.update'),
+              ...(modalActions?.save?.props || {})
+            }
           }
         ]
       };
