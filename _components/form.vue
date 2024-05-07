@@ -392,7 +392,9 @@ export default {
           }
 
           this.$crud.show(propParams.apiRoute, this.itemId, params).then(response => {
-            this.locale.form = this.$clone(response.data);
+            this.locale.form = this.paramsProps.update.mapData ?
+              this.paramsProps.update.mapData(this.$clone(response.data)) :
+              this.$clone(response.data);
             this.loading = false;//hide loading
             resolve(true);
           }).catch(error => {
