@@ -397,6 +397,8 @@ export default {
       if (this.params.create && this.params.hasPermission.create) response.push('new')
       // se oculta page action
       if (this.localShowAs === 'kanban' && this.$refs.kanban) response.push(this.$refs.kanban.extraPageActions);
+      // extras for page action
+      if(this.params?.extraActions?.length > 0) response.push(...this.params.extraActions);
       //Response
       return response.filter((item) => !item.vIfAction)
     },
