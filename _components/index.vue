@@ -460,7 +460,8 @@ export default {
         pagination: {
           page: 1,
           rowsNumber: '',
-          rowsPerPage: 10
+          rowsPerPage: 10,
+          descending: true
         },
         filter: {
           search: null
@@ -540,7 +541,7 @@ export default {
       if (this.params.read.search !== false) response.push('search');
       //Add create action
       if (this.params.create && this.params.hasPermission.create) {
-        if(this.params.create?.actions?.length > 0) {
+        if (this.params.create?.actions?.length > 0) {
           response.push(
             {
               props: {
@@ -557,7 +558,7 @@ export default {
       // se oculta page action
       if (this.localShowAs === 'kanban' && this.$refs.kanban) response = [...response, ...this.$refs.kanban.extraPageActions];
       // extras for page action
-      if(this.params?.extraActions?.length > 0) response.push(...this.params.extraActions);
+      if (this.params?.extraActions?.length > 0) response.push(...this.params.extraActions);
       //Response
       return response.filter((item) => !item.vIfAction);
     },
@@ -889,11 +890,6 @@ export default {
     async getData({ pagination, filter }, refresh = false) {
       let propParams = this.$clone(this.params);
       this.loading = true;
-
-      //fixs null computed table pagination
-      if(pagination.sortBy == null){
-        pagination.sortBy = this.table.pagination.sortBy ?? 'id'
-      }
 
       //Reset selected Rows
       this.selectedRows = [];
