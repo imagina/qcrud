@@ -394,7 +394,21 @@ export default {
       //Add search action
       if (this.params.read.search !== false) response.push('search')
       //Add create action
-      if (this.params.create && this.params.hasPermission.create) response.push('new')
+      if (this.params.create && this.params.hasPermission.create) {
+        if(this.params.create?.actions?.length > 0) {
+          response.push(
+            { 
+              props: {
+                label: this.$tr(`isite.cms.label.new`),
+                icon: 'fa-duotone fa-plus',
+              },
+              type: 'btn-dropdown',
+              items: this.params.create?.actions || [],
+            })
+        } else {
+          response.push('new')
+        }
+      }
       // se oculta page action
       if (this.localShowAs === 'kanban' && this.$refs.kanban) response.push(this.$refs.kanban.extraPageActions);
       // extras for page action
