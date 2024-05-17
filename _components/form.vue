@@ -404,7 +404,7 @@ export default {
             })
           } else {
             //Do request
-            this.$crud.create(propParams.apiRoute, formData).then(response => {
+            this.$crud.create(propParams.apiRoute, formData, propParams.create?.requestParams || {}).then(response => {
               requestInfo.response = response
               return resolve(true)
             }).catch(error => {
