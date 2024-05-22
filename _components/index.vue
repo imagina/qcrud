@@ -455,6 +455,16 @@ export default {
       success: false,//Global status of component
       loading: true,//Loading
       windowWith: window.innerWidth, //windows size
+      modelRequest: {
+        data: [],
+        expiresIn: null,
+        meta: {
+          page: {
+            currentPage: 1,
+            total: 0
+          }
+        }
+      },
       table: {//Object config table
         data: [],
         pagination: {
@@ -796,6 +806,12 @@ export default {
           callBack: () => this.handlerActionCreate()
         });
       }
+      this.$store.dispatch(
+        'qofflineMaster/OFFLINE_REQUESTS',
+        {
+          callback: this.getDataTable
+        }
+      )
       //Success
       this.success = true;
     },
@@ -845,31 +861,20 @@ export default {
     },
     async requestDataTable(apiRoute, params, pagination) {
       try {
-        const modelRequest = {
-          data: [],
-          meta: {
-            page: {
-              currentPage: 1,
-              total: 0
-            }
-          }
-        };
 
         if (this.isAppOffline) {
           const cachePaginate = await paginateCacheOffline(
-            apiRoute,
-            this.table.filter.search,
-            pagination.page,
+            apiRoute, 
+            this.table.filter.search, 
+            pagination.page, 
             pagination.rowsPerPage,
-            params
           );
           if (cachePaginate.data.length > 0) {
             return cachePaginate;
           }
-          return modelRequest;
         }
 
-        const response = await this.$crud.index(apiRoute, params, this.isAppOffline)
+        const response = await this.$crud.index(apiRoute, params)
           .catch(error => {
             if (!this.isAppOffline && !error?.config?.signal?.aborted) {
               this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' });
@@ -877,8 +882,12 @@ export default {
             console.error(error);
             this.loading = false;
           });
-
-        return response || modelRequest;
+        
+        if (response) {
+          this.modelRequest = response;
+        }
+        
+        return response || this.modelRequest;
       } catch (error) {
         console.log(error);
         if (!this.isAppOffline) {
@@ -894,9 +903,6 @@ export default {
       //Reset selected Rows
       this.selectedRows = [];
       this.selectedRowsAll = false;
-
-      //Refresh all data
-      if (refresh) this.$cache.remove({ allKey: this.params.apiRoute });
 
       //Params to request
       let params = {
@@ -933,20 +939,20 @@ export default {
 
       //Request
       const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
-      this.expiresIn = response.expiresIn;
-      let dataTable = response.data;
+      this.expiresIn = response?.expiresIn;
+      let dataTable = response?.data;
       //If is field change format
       if (this.params.field) {
-        dataTable = (response.data[0] && response.data[0].value) ? response.data[0].value : [];
-        this.dataField = response.data[0];
+        dataTable = (response?.data[0] && response?.data[0]?.value) ? response?.data[0]?.value : [];
+        this.dataField = response?.data[0];
       }
 
       //Set data to table
       this.table.data = this.$clone(dataTable);
       const folderList = foldersStore().transformDataToDragableForderList(dataTable);
       this.folderList = _.orderBy(folderList, 'position', 'asc');
-      this.table.pagination.page = this.$clone(response.meta.page.currentPage);
-      this.table.pagination.rowsNumber = this.$clone(response.meta.page.total);
+      this.table.pagination.page = this.$clone(response?.meta.page.currentPage);
+      this.table.pagination.rowsNumber = this.$clone(response?.meta.page.total);
       this.table.pagination.rowsPerPage = this.$clone(pagination.rowsPerPage);
       this.table.pagination.sortBy = this.$clone(pagination.sortBy);
       this.table.pagination.descending = this.$clone(pagination.descending);
@@ -978,7 +984,7 @@ export default {
             handler: async () => {
               this.loading = true;
               let propParams = this.$clone(this.params);
-              let customParams = { params: { titleOffline: `Delete ${this.$tr(this.title || '')} - ${item.id}` || '' } };
+              let customParams = { params: { titleOffline: `Delete ${this.$tr(this.title || '')}` || '' } };
               //If is crud field
               if (this.params.field) {
                 let dataField = this.$clone(this.dataField);//get data table
@@ -1016,8 +1022,7 @@ export default {
                   this.loading = false;
                 });
 
-                const CACHE_PATH = 'apiRoutes.qramp.workOrders';
-                await cacheOffline.deleteItem(item.id, CACHE_PATH);
+                await cacheOffline.deleteItem(item.id, propParams.apiRoute)
               }
             }
           }
