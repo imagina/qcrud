@@ -683,7 +683,7 @@ export default {
             }
           }
         }
-      }, 100);
+      }, 1000);
     },
     //validate if should show field
     showField(field, fieldName) {
