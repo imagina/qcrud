@@ -490,7 +490,8 @@ export default {
           );
           this.loading = false;//login hide
           if (requestInfo.error) {//Message Validate
-            let errorMsg = JSON.parse(requestInfo.error);
+            const isString = typeof requestInfo.error === 'string';
+            let errorMsg = isString ? JSON.parse(requestInfo.error) : requestInfo.error;
             if (errorMsg.email) {
               this.$alert.error({
                 message: this.$tr('iprofile.cms.message.emailExist'),
@@ -505,6 +506,7 @@ export default {
               );
             }
           }
+          this.show = false;
         }
 
       }
@@ -532,7 +534,7 @@ export default {
           // Call custom method
           response = await propParams.update.method(criteria, formData, customParams);
         } else {
-          await cacheOffline.updateRecord(propParams.apiRoute, formData, criteria);
+          response = await cacheOffline.updateRecord(propParams.apiRoute, formData, criteria);
 
           response = await this.$crud.update(
             propParams.apiRoute,
@@ -560,10 +562,6 @@ export default {
         const response = await this.executeUpdateRequest();
         requestInfo.response = await response.response;
         requestInfo.error = await response.errorResponse;
-
-        if (this.isAppOffline) {
-          requestInfo.response = true;
-        }
 
         //Action after request
         if (requestInfo.response) {
