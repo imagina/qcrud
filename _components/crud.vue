@@ -213,7 +213,8 @@ export default {
       //Merge with custom data
       if (this.customData && (typeof this.customData == 'object')) {
         for (var itemName in this.customData) {
-          let itemValue = this.$clone(this.customData[itemName]);
+          let valueCrudData = this.customData[itemName]
+          let itemValue = (typeof valueCrudData == 'function') ? valueCrudData : this.$clone(valueCrudData);
           crudData[itemName] = (typeof itemValue == 'object') ? { ...crudData[itemName], ...itemValue } : itemValue;
           if (itemName == 'getDataForm') crudData[itemName] = this.customData[itemName];
         }
