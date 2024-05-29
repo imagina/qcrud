@@ -105,7 +105,7 @@
                 v-for="(col, keyCol) in parseColumnsByRow(props.cols, props.row)"
                 :key="col.name"
                 :props="props"
-                :class="col.bgColor ? 'bg-'+col.bgColor : ''"
+                :class="`${isDisableRow(props?.row) && col.name != 'actions' ? 'disabled no-pointer-events' : ''} ${col.bgColor ? 'bg-'+col.bgColor : ''}`"
               >
                 <!-- Select row -->
                 <div v-if="col.name === 'selectColumn'">
@@ -864,9 +864,9 @@ export default {
 
         if (this.isAppOffline) {
           const cachePaginate = await paginateCacheOffline(
-            apiRoute, 
-            this.table.filter.search, 
-            pagination.page, 
+            apiRoute,
+            this.table.filter.search,
+            pagination.page,
             pagination.rowsPerPage,
           );
           if (cachePaginate.data.length > 0) {
@@ -882,11 +882,11 @@ export default {
             console.error(error);
             this.loading = false;
           });
-        
+
         if (response) {
           this.modelRequest = response;
         }
-        
+
         return response || this.modelRequest;
       } catch (error) {
         console.log(error);
@@ -1101,15 +1101,14 @@ export default {
     },
     //Return field actions
     fieldActions(field) {
-      let actions = this.$clone(this.params.read.actions || []);
-      let response = [];
+      const readActions = this.$clone(this.params.read.actions || []);
 
-      //
-      let defaultAction = actions.find(action => {
+      //Default action
+      let defaultAction = readActions.find(action => {
         return action.default ?? false;
       });
       //Add default actions
-      actions = [
+      let response = [
         {//Edit action
           icon: 'fa-light fa-pencil',
           name: 'edit',
@@ -1161,17 +1160,18 @@ export default {
             exportParams: { fileName: `${this.exportParams.fileName}-${item.id}` },
             filter: { id: item.id }
           })
-        },
-        ...actions
-      ];
+    },
+    ].map(mainAction => {
+        const mergeAction = readActions.find(a => a?.name === mainAction?.name);
+        if(mergeAction) mainAction = { ...mainAction, ...mergeAction}
+        return mainAction
+      });
 
-      //Order field actions
-      if (actions && actions.length) {
-        actions.forEach(action => {
-          //if (action.format) action = {...action, ...action.format(field)}
-          response.push(action);
-        });
-      }
+      const responseNameActions = response.map(item => item.name)
+      response = [
+        ...response,
+        ...readActions.filter(a => !responseNameActions.includes(a?.name))
+      ]
       //response
       return response;
     },
@@ -1445,6 +1445,11 @@ export default {
       this.dynamicFilterValues = filters;
       this.table.filter = filters;
       this.getDataTable(false, filters, { page: 1 });
+    },
+    isDisableRow(row, type = '') {
+      const disabledRow = this.params?.read?.disabled?.row
+      if(disabledRow) return disabledRow(row)
+      return false
     }
   }
 };
