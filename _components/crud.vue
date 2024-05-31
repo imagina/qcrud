@@ -13,7 +13,7 @@
       <template v-slot:before-options>
         <div>
           <q-btn class="btnCreateCrud full-width" flat icon="fas fa-plus" color="green" no-caps
-                :label="`${paramsProps.create.title || ''}`" v-if="params.create" />
+                 :label="`${paramsProps.create.title || ''}`" v-if="params.create" />
         </div>
       </template>
     </dynamic-field>
@@ -22,7 +22,7 @@
     <div v-if="success">
       <!--Index component-->
       <crud-index v-if="showType('full')" :params="$clone(paramsProps)" ref="crudIndex"
-      @create="create" @update="update" @deleted="formEmmit('deleted')" :title="title" />
+                  @create="create" @update="update" @deleted="formEmmit('deleted')" :title="title" />
       <!--Modal create/update component-->
       <crud-form v-model="showModal" v-show="(params.create || params.update) && showModal"
                  :params="paramsProps" :item-id="itemIdToEdit" :field="fieldData"
@@ -88,7 +88,7 @@ export default {
     },
     title: { defualt: false }
   },
-  emits: ['update:modelValue','deleted','created','updated', 'createdData'],
+  emits: ['update:modelValue', 'deleted', 'created', 'updated', 'createdData'],
   // Dependency injection
   provide() {
     return {
@@ -380,7 +380,7 @@ export default {
         //Set data to update
         if (item.id.field) this.fieldData = item.id.field;
         //Go to edit
-        if (params.update.to) this.$router.push({ name: params.update.to, params: item });
+        if (params.update.to) this.$router.push({ name: params.update.to, params: { id: item.id } });
         //Edit by method
         else if (params.update.method) params.update.method(item);
         else {
@@ -460,12 +460,12 @@ export default {
         this.dataCrudSelect.itemSelected = newValue ? newValue.toString() : newValue;
     },
     //Set value with last created item:
-    onCreate(data){
+    onCreate(data) {
       this.formEmmit('createdData', data)
-      if(this.showType('select')){
-        if(data){
-          if(Array.isArray(this.dataCrudSelect.itemSelected)){ //multiple
-            if(!this.dataCrudSelect.itemSelected[0]){
+      if (this.showType('select')) {
+        if (data) {
+          if (Array.isArray(this.dataCrudSelect.itemSelected)) { //multiple
+            if (!this.dataCrudSelect.itemSelected[0]) {
               this.setValueSelect([data.id])
             }
           } else if (!this.dataCrudSelect.itemSelected) {
