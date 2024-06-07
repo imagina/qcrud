@@ -1237,7 +1237,7 @@ export default {
       if (col.action) return true;
 
       //default columns
-      return ['title', 'name', 'id'].includes(col.name)
+      return this.params.update ? ['title', 'name', 'id'].includes(col.name) : false
     },
     //Select all fields
     selectAllFields() {
