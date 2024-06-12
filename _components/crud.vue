@@ -479,7 +479,7 @@ export default {
       this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
     },
     async getDataTable(refresh) {
-      await this.$refs.crudIndex.getDataTable(refresh);
+      if(this.$refs.crudIndex) await this.$refs.crudIndex.getDataTable(refresh);
     }
   }
 };
