@@ -329,8 +329,8 @@
           <template #bottom="props">
             <div
               :class="`bottonCrud full-width flex items-center ${windowSize == 'mobile' ? 'justify-center' : 'justify-between'}`">
-              <div :class="`text-blue-grey ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
-                {{ $tr('isite.cms.label.showing') }} {{ countPage(props) }} {{ $trp('isite.cms.label.entry') }}
+              <div class="sm:tw-text-sm":class="`text-blue-grey ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
+                {{ $tr('isite.cms.label.showing') }} <b>{{ countPage(props) }}</b> {{ $trp('isite.cms.label.entry') }}
               </div>
               <div class="col-12 q-ml-sm q-mr-lg flex flex-center">
                 <q-pagination
@@ -340,8 +340,11 @@
                   :value="props.pagination"
                   @click.prevent="getDataTable()"
                   round
-                  color="blue-grey"
+                  input-class="no-shadow"
+                  color="while"
+                  text-color="primary"
                   active-color="primary"
+                  active-text-color="white"
                   :max="props.pagesNumber"
                   :max-pages="6"
                   :ellipses="false"
@@ -350,8 +353,8 @@
                 />
               </div>
               <div class="flex items-center">
-                <div class="flex items-center">
-                  <div>{{ $tr('isite.cms.label.show') }}</div>
+                <div class="flex items-center tw-mr-4 text-blue-grey">
+                  <span class="sm:tw-text-sm">{{ $tr('isite.cms.label.show') }}</span>
                   <q-select
                     v-model="table.pagination.rowsPerPage"
                     :options="rowsPerPageOption"
@@ -361,29 +364,32 @@
                     class="q-mx-sm text-caption"
                     outlined
                   />
-                  <div>{{ $trp('isite.cms.label.entry') }}</div>
+                  <span class="sm:tw-text-sm">{{ $trp('isite.cms.label.entry') }}</span>
                 </div>
                 <div class="actionsBtnPag">
                   <q-btn
-                    icon="fas fa-chevron-left"
                     color="primary"
-                    size="sm"
-                    round
+                    class="tw-mr-2"
                     dense
+                    size="14px"
+                    round
                     flat
                     :disable="props.isFirstPage"
                     @click="props.prevPage"
-                  />
+                  >
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </q-btn>
                   <q-btn
-                    icon="fas fa-chevron-right"
                     color="primary"
-                    size="sm"
-                    round
                     dense
+                    size="14px"
+                    round
                     flat
                     :disable="props.isLastPage"
                     @click="props.nextPage"
-                  />
+                  >
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </q-btn>
                 </div>
               </div>
             </div>
@@ -1465,7 +1471,6 @@ export default {
     .q-table__top, .q-table__middle, .q-table__bottom {
       border-radius: $custom-radius;
       //box-shadow: $custom-box-shadow;
-      background-color: white;
     }
 
     th {
@@ -1483,6 +1488,11 @@ export default {
     .q-table__card {
       background-color: transparent !important;
       box-shadow: none !important;
+    }
+
+    .q-table th,
+    .q-table td {
+      border-color: $grey-2;
     }
 
     .q-table__middle {
