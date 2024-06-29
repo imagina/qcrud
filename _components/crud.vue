@@ -411,7 +411,7 @@ export default {
     //watch emit update from form component
     formEmmit(type = 'created', response = false) {
       if (this.type == 'full') {
-        this.$refs.crudIndex.getDataTable(true)
+        this.getDataTable(true)
       } else this.getIndexOptions()
       this.$emit(type, response)
     },
@@ -463,6 +463,9 @@ export default {
           }
         }
       }
+    },
+    async getDataTable(refresh) {
+      if(this.$refs.crudIndex) await this.$refs.crudIndex.getDataTable(refresh);
     }
   }
 }
