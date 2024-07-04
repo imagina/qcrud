@@ -1055,9 +1055,8 @@ export default {
         },
         {//Share action
           label: this.$tr('isite.cms.label.share'),
-          vIf: !this.excludeActions.includes('share'),
           format: (item) => {
-            return {vIf: (item.url || item.embed) ? true : false}
+            return {vIf: (item.url || item.embed) && !this.excludeActions.includes('share') ? true : false}
           },
           color: 'info',
           icon: "fa-light fa-share-alt",
