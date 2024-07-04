@@ -1048,13 +1048,14 @@ export default {
           color: 'green',
           default: defaultAction ? false : true,
           label: this.$tr('isite.cms.label.edit'),
-          vIf: this.permitAction(field).edit,
+          vIf: this.permitAction(field).edit && !this.excludeActions.includes('edit'),
           action: (item) => {
             this.$emit('update', item)
           }
         },
         {//Share action
           label: this.$tr('isite.cms.label.share'),
+          vIf: !this.excludeActions.includes('share'),
           format: (item) => {
             return {vIf: (item.url || item.embed) ? true : false}
           },
@@ -1066,7 +1067,7 @@ export default {
           icon: 'fa-light fa-trash-can',
           color: 'red',
           label: this.$tr('isite.cms.label.delete'),
-          vIf: this.permitAction(field).destroy,
+          vIf: this.permitAction(field).destroy && !this.excludeActions.includes('destroy'),
           action: (item) => {
             this.deleteItem(item)
           }
@@ -1074,7 +1075,7 @@ export default {
         //Export
         {
           label: this.$tr('isite.cms.label.export'),
-          vIf: this.exportParams,
+          vIf: this.exportParams &&!this.excludeActions.includes('export'),
           icon: 'fa-light fa-download',
           action: (item) => this.$refs.exportComponent.showReportItem({
             item: item,
