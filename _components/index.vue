@@ -2,7 +2,7 @@
   <div id="componentCrudIndex">
     <!--Content-->
     <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
-      <!--Page Actions-->
+      <!--Page Actions-->      
       <div class="q-my-md">
         <page-actions
             :extra-actions="tableActions"
@@ -16,6 +16,7 @@
             :tour-name="tourName"
             :help="help"
             :expires-in="expiresIn"
+            :api-route="params.apiRoute"
         />
       </div>
       <!-- Bulk Actions -->
