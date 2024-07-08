@@ -10,6 +10,15 @@ function replaceParamsApiRoute(apiRoute, params) {
   return apiRoute
 }
 
+//Map the attributes as snakeCase
+async function attributesToSnakeCase(data, params) {
+  let siteSettings = await cache.get.item('qsite.settings');
+  //Search locale settings
+  let locales = siteSettings.data.siteSettings.find(item => item.name == 'core::locales');
+  locales = locales ? locales.value : [];
+  //Merge the locales to notToSnakeCase
+  return helper.toSnakeCase(data, { ...params, keysNotToSnakeCase: locales });
+}
 
 const axiosActions = {
   /**
@@ -19,12 +28,15 @@ const axiosActions = {
    * @returns {Promise<any>}
    */
   create(configName, data, params = {}) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!data) return reject('Data is required')
       let urlApi = (config(configName) || configName)//Get url from config
-      let dataRequest = helper.toSnakeCase(data, {notToSnakeCase: (params.notToSnakeCase || [])})
+      let dataRequest = await attributesToSnakeCase(
+        data,
+        { notToSnakeCase: (params.notToSnakeCase || []) }
+      );
 
       //Request
       axios.post(urlApi, {attributes: dataRequest}).then(async response => {
@@ -117,16 +129,20 @@ const axiosActions = {
    * @returns {Promise<any>}
    */
   update(configName, criteria, data, params = {params: {}}) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!criteria) return reject('Criteria is required')
       if (!data) return reject('Data is required')
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Get request params
-      let requestParams = Object.assign((params.params || {}), {
-        attributes: helper.toSnakeCase(data, {notToSnakeCase: (params.notToSnakeCase || [])})
-      })
+      let requestParams = {
+        ...(params.params || {}),
+        attributes: await attributesToSnakeCase(
+          data,
+          { notToSnakeCase: (params.notToSnakeCase || []) }
+        )
+      };
       //Request
       axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
@@ -146,15 +162,19 @@ const axiosActions = {
    * @returns {Promise<any>}
    */
   bulkOrder(configName, data, params = {params: {}}) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       //Validations
       if (!configName) return reject('Config name is required')
       if (!data) return reject('Data is required')
       let urlApi = `${(config(configName) || configName)}/bulk/order`//Get url from config
       //Get request params
-      let requestParams = Object.assign((params.params || {}), {
-        attributes: helper.toSnakeCase(data, {notToSnakeCase: (params.notToSnakeCase || [])})
-      })
+      let requestParams = {
+        ...(params.params || {}),
+        attributes: await attributesToSnakeCase(
+          data,
+          { notToSnakeCase: (params.notToSnakeCase || []) }
+        )
+      };
       //Request
       axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
