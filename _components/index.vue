@@ -16,7 +16,6 @@
             :tour-name="tourName"
             :help="help"
             :expires-in="expiresIn"
-            :api-route="params.apiRoute"
         />
       </div>
       <!-- Bulk Actions -->
