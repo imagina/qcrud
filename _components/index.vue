@@ -588,7 +588,7 @@ export default {
       }
 
       //Verify if includes qrs
-      if (this.params?.read?.requestParams?.include?.includes('qrs')) {
+      if (this.params?.read?.requestParams?.include?.includes('qrs') && this.params.update) {
         //Create column QR, if exist in include
         const columnQr = {
           name: 'qr', label: 'QR',
@@ -1048,7 +1048,7 @@ export default {
           color: 'green',
           default: defaultAction ? false : true,
           label: this.$tr('isite.cms.label.edit'),
-          vIf: this.permitAction(field).edit && !this.excludeActions.includes('edit'),
+          vIf: this.permitAction(field).edit,
           action: (item) => {
             this.$emit('update', item)
           }
