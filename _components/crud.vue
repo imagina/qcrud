@@ -1,5 +1,11 @@
 <template>
   <div id="crudContentPage">
+    <!---recycle --->
+    <recycle 
+      v-if="isRecyleCrud" 
+      :showModal="recycleModal"
+      @closeModal="recycleModal = false"
+    />
     <!--=== Dynamic component to get crud data ===-->
     <component :is="componentCrudData" ref="componentCrudData" @hook:mounted="init"/>
 
@@ -51,6 +57,7 @@
 //Component
 import crudIndex from '@imagina/qcrud/_components/index'
 import crudForm from '@imagina/qcrud/_components/form'
+import recycle from '@imagina/qcrud/_components/recycle'
 
 export default {
   beforeDestroy() {
@@ -89,7 +96,7 @@ export default {
       update: this.update,
     };
   },
-  components: {crudIndex, crudForm},
+  components: {crudIndex, crudForm, recycle},
   watch: {
     value(newValue, oldValue) {
       if (!newValue || (JSON.stringify(newValue) != JSON.stringify(oldValue))) {
@@ -120,7 +127,8 @@ export default {
         rootOptions: [],//Save all options
       },
       dataFieldsCustom: {},
-      itemCrudFields: false//Fields from item to replace form fields
+      itemCrudFields: false, //Fields from item to replace form fields,
+      recycleModal: false
     }
   },
   computed: {
@@ -195,6 +203,33 @@ export default {
     paramsProps() {
       if (!this.$refs.componentCrudData) return {}
       let crudData = this.$clone(this.$refs.componentCrudData.crudData || {})//
+
+      if(this.isRecyleCrud){
+        crudData.read['excludeActions'] =  ['new', 'edit', 'destroy', 'sync', 'export', 'share', 'recycle']       
+        crudData['update'] = false
+        // add new actions
+        crudData.read['actions'] = [
+          {//restore item action
+            icon: 'fa-light fa-floppy-disk-circle-arrow-right',
+            color: 'green',
+            label: 'Manage register',
+            //vIf: ,
+            action: (item) => {
+            /*
+              this.item = item
+              this.action = 'restore'
+              this.modal.show = true
+              this.$emit('restore', item)
+              */
+            this.recycleModal = true
+             console.log('show modal')
+            }
+          },        
+        ]
+      }
+      
+
+
       crudData.hasPermission = this.hasPermission//Add permission validated
 
       //Merge fields with dataFieldsCustom
@@ -265,6 +300,22 @@ export default {
       }
       //Repsonse
       return fieldConfig
+    },
+    isRecyleCrud(){
+      const params = decodeURI(window.location).split('?')
+      if(Array.isArray(params) ){
+        if(params.length > 1){
+          const query =  params[1]
+            .split('&')
+            .map(param => param.split('='))
+            .reduce((values, [ key, value ]) => {
+              values[ key ] = value
+              return values
+            }, {})
+          return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false          
+        }
+      }
+      return false  
     }
   },
   methods: {
