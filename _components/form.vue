@@ -468,7 +468,11 @@ export default {
 
         //Action after request
         if (requestInfo.response) {
-          eventBus.emit(`${propParams.apiRoute}.crud.event.created`);//emmit event
+          //emmit event
+          eventBus.emit(`${propParams.apiRoute}.crud.event.created`, {
+            data: requestInfo.response.data,
+            crudId: propParams.crudId
+          });
 
           this.messageWindow(
             'info',

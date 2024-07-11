@@ -7,7 +7,7 @@
     <q-btn class="btnJustCreate btn-small" v-bind="defaultProps" rounded unelevated
            @click="create()" v-if="showType('button-create')" />
     <!--=== Select to List and Create ===-->
-    <dynamic-field v-model="dataCrudSelect.itemSelected" :field="selectField" v-if="showType('select')"
+    <dynamic-field v-model="itemSelected" :field="selectField" :key="selectFieldKey" v-if="showType('select')"
                    @update:modelValue="emitValue" @click.native="showEventListener">
       <!--Before options slot-->
       <template v-slot:before-options>
@@ -29,7 +29,7 @@
                  @update:modelValue="val => showModal = val"
                  @created="(response) => formEmmit('created', response)"
                  @updated="formEmmit('updated')"
-                 @createdData="(response) => onCreate(response)"
+                 @createdData="(response) => formEmmit('createdData', response)"
       />
     </div>
 
@@ -104,7 +104,7 @@ export default {
     }
   },
   beforeMount() {
-    this.loadComponent();
+    this.init();
   },
   data() {
     return {
@@ -115,17 +115,14 @@ export default {
       dialogPermissions: {
         show: false
       },
+      selectField: null,
       showModal: false,//vmodel modal
       fieldData: false,//Field data
       itemIdToEdit: false,//item ID to edit
-      dataCrudSelect: {
-        loading: false,
-        itemSelected: null,//Item to emmit if is crudSelect
-        options: [],//options to show in select
-        rootOptions: []//Save all options
-      },
+      itemSelected: this.crudProps?.multiple ? [] : null,
       dataFieldsCustom: {},
-      itemCrudFields: false//Fields from item to replace form fields
+      itemCrudFields: false,//Fields from item to replace form fields
+      selectFieldKey: this.$uid()
     };
   },
   computed: {
@@ -225,139 +222,70 @@ export default {
         crudData.formRight = {};
       }
 
+      //Validate if exist crudId
+      crudData.crudId = crudData.crudId || this.$uid();
+
       //Response
       return crudData;
-    },
-    //select field props
-    selectField() {
-      let params = this.$clone(this.paramsProps);
-      //Instance the field config
-      const fieldConfig = {
-        value: null,
-        type: this.defaultConfig.filterByQuery ? 'select' : 'treeSelect',
-        props: {
-          label: (this.params ? this.params.create.title : ''),
-          options: this.defaultConfig.filterByQuery ? [] : this.$array.tree((this.dataCrudSelect.rootOptions || []), {
-            label: 'label',
-            id: 'value'
-          }),
-          clearable: false,
-          appendToBody: true,
-          sortValueBy: 'INDEX',
-          searchNested: true,
-          flat: this.crudProps.multiple ? true : false,
-          loading: this.dataCrudSelect.loading,
-          readonly: this.dataCrudSelect.loading,
-          ...this.crudProps,
-          imageField: this.imageField
-        },
-        loadOptions: !this.defaultConfig.filterByQuery ? false : {
-          apiRoute: params.apiRoute,
-          select: {
-            ...this.defaultConfig.options,
-            id: this.defaultConfig.options.value || 'id'
-          },
-          filterByQuery: true,
-          requestParams: {
-            ...(params.read.requestParams || {}),
-            ...(this.defaultConfig.requestParams || {})
-          }
-        }
-      };
-      //Repsonse
-      return fieldConfig;
     }
   },
   methods: {
+    init() {
+      this.loadComponent();
+    },
+    //Load dynamic component
     async loadComponent() {
       const crudComponent = await this.crudData;
-      if (crudComponent.default) {
-        this.componentCrudData = markRaw(crudComponent.default);
-      }
+      if (crudComponent.default) this.componentCrudData = markRaw(crudComponent.default);
       this.$nextTick(function() {
-        this.init();
+        if (this.$refs.componentCrudData && this.$refs.componentCrudData.crudData) {
+          this.params = this.$clone(this.$refs.componentCrudData.crudData);//asing crudData to params
+          this.loading = false; //hidden Loading
+          this.success = true;//udate success
+          //Set value select
+          this.setValueSelect();
+          this.setSelectField();
+          //Listen event to created
+          eventBus.on(`${this.paramsProps.apiRoute}.crud.event.created`, (data) => {
+            this.selectFieldKey = this.$uid();
+            //Select the created record
+            if (data.crudId == this.paramsProps.crudId) this.onCreate(data.data);
+          });
+        }
       });
     },
-    showEventListener() {
-      const el = document.querySelector('.btnCreateCrud');
-      if (el) {
-        el.addEventListener('click', this.showCreateModal);
-      }
-    },
-    showCreateModal(e) {
-      this.create();
-      e.stopPropagation();
-    },
-    //init form
-    async init() {
-      if (this.$refs.componentCrudData && this.$refs.componentCrudData.crudData) {
-        this.params = this.$clone(this.$refs.componentCrudData.crudData);//asing crudData to params
-        //Set default value selected
-        this.dataCrudSelect.itemSelected = (this.crudProps && this.crudProps.multiple) ? [] : null;
-        this.loading = false; //hidden Loading
-        this.success = true;//udate success
-        this.getIndexOptions();//Get indexOptions if is crudSelect
-        //Listen event to created
-        eventBus.on(`${this.paramsProps.apiRoute}.crud.event.created`, this.getIndexOptions);
-        //Set value select
-        this.setValueSelect();
-      }
-    },
-    //Return options if is crudSelect
-    getIndexOptions() {
-      if (this.type != 'select') return false;
-
-      if (this.defaultConfig.filterByQuery) {
-
-      } else {
-        this.dataCrudSelect.loading = true;
+    //Define select field props
+    setSelectField() {
+      if (this.showType('select')) {
         let params = this.$clone(this.paramsProps);
-        let responseOptions = [];//Default Value
-
-        //Order params to request
-        let requestParams = {
-          refresh: true,
-          params: params.read.requestParams || {}
+        //Instance the field config
+        this.selectField = {
+          value: null,
+          type: this.defaultConfig.filterByQuery ? 'select' : 'treeSelect',
+          props: {
+            key: this.$uid(),
+            label: (this.params?.create.title || ''),
+            clearable: false,
+            sortValueBy: 'INDEX',
+            searchNested: true,
+            flat: this.crudProps.multiple,
+            ...this.crudProps,
+            imageField: this.imageField
+          },
+          loadOptions: {
+            apiRoute: params.apiRoute,
+            select: {
+              ...this.defaultConfig.options,
+              id: this.defaultConfig.options.value || 'id'
+            },
+            filterByQuery: this.defaultConfig.filterByQuery,
+            requestParams: {
+              ...(params.read.requestParams || {}),
+              ...(this.defaultConfig.requestParams || {})
+            }
+          }
         };
-
-        //Merge woth request params if exist
-        if (this.defaultConfig.requestParams) requestParams.params = {
-          ...requestParams.params,
-          ...this.defaultConfig.requestParams
-        };
-
-        //Request to get data
-        this.$crud.index(params.apiRoute, requestParams).then(response => {
-
-          //Set all items to response
-          response.data.forEach(item => {
-            responseOptions.push({
-              ...item,
-              label: item[this.defaultConfig.options.label],
-              value: item[this.defaultConfig.options.value].toString()
-            });
-          });
-          this.dataCrudSelect.loading = false;
-        }).catch(error => {
-          this.$apiResponse.handleError(error, () => {
-            this.dataCrudSelect.loading = false;
-          });
-        });
-
-        //Set options
-        this.dataCrudSelect.rootOptions = responseOptions;
-        this.dataCrudSelect.options = responseOptions;
       }
-    },
-    //Filter options when is crudSelect
-    filterOptions(val, update) {
-      update(() => {
-        this.dataCrudSelect.options = this.$helper.filterOptions(
-          val,
-          this.dataCrudSelect.rootOptions,
-          this.dataCrudSelect.itemSelected
-        );
-      });
     },
     //watch emit create from index component
     create(dataCustom = {}) {
@@ -420,9 +348,7 @@ export default {
     },
     //watch emit update from form component
     async formEmmit(type = 'created', response = false) {
-      if (this.type == 'full') {
-        await this.getDataTable(true);
-      } else this.getIndexOptions();
+      if (this.type == 'full') await this.getDataTable(true);
       this.$emit(type, response);
     },
     //Validate type to show
@@ -449,37 +375,48 @@ export default {
     },
     //Set value to select
     setValueSelect(data = false) {
-      let newValue = data ? data : this.$clone(this.modelValue);
+      let newValue = data || this.$clone(this.modelValue);
+      let itemSelected = null;
+
       if (Array.isArray(newValue)) {
-        let responseSelected = [];
-        newValue.forEach(item => responseSelected.push(item.toString()));
-        this.dataCrudSelect.itemSelected = this.$clone(responseSelected);
+        itemSelected = newValue.map(item => item.toString());
       } else if (typeof newValue == 'object')
-        this.dataCrudSelect.itemSelected = newValue ? newValue : newValue;
-      else
-        this.dataCrudSelect.itemSelected = newValue ? newValue.toString() : newValue;
+        itemSelected = newValue;
+      else if (newValue)
+        itemSelected = newValue.toString();
+
+      //Set value
+      this.itemSelected = itemSelected;
     },
     //Set value with last created item:
     onCreate(data) {
-      this.formEmmit('createdData', data)
       if (this.showType('select')) {
         if (data) {
-          if (Array.isArray(this.dataCrudSelect.itemSelected)) { //multiple
-            if (!this.dataCrudSelect.itemSelected[0]) {
-              this.setValueSelect([data.id])
-            }
-          } else if (!this.dataCrudSelect.itemSelected) {
-            this.setValueSelect(data);
+          if (Array.isArray(this.itemSelected)) { //multiple
+            this.setValueSelect([...this.itemSelected, data.id]);
+          } else if (!this.itemSelected) {
+            this.setValueSelect(data.id);
           }
         }
       }
     },
     //Emit value
     emitValue() {
-      this.$emit('update:modelValue', this.dataCrudSelect.itemSelected);
+      this.$emit('update:modelValue', this.itemSelected);
     },
+
     async getDataTable(refresh) {
-      if(this.$refs.crudIndex) await this.$refs.crudIndex.getDataTable(refresh);
+      if (this.$refs.crudIndex) await this.$refs.crudIndex.getDataTable(refresh);
+    },
+    showEventListener() {
+      const el = document.querySelector('.btnCreateCrud');
+      if (el) {
+        el.addEventListener('click', this.showCreateModal);
+      }
+    },
+    showCreateModal(e) {
+      this.create();
+      e.stopPropagation();
     }
   }
 };
