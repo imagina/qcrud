@@ -282,7 +282,10 @@ export default {
             requestParams: {
               ...(params.read.requestParams || {}),
               ...(this.defaultConfig.requestParams || {})
-            }
+            },
+            ...this.defaultConfig.loadedOptions ? {
+              loadedOptions: (items) => this.defaultConfig.loadedOptions(items)
+            }: {}
           }
         };
       }
