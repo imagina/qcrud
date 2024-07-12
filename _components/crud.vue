@@ -249,7 +249,10 @@ export default {
           eventBus.on(`${this.paramsProps.apiRoute}.crud.event.created`, (data) => {
             this.selectFieldKey = this.$uid();
             //Select the created record
-            if (data.crudId == this.paramsProps.crudId) this.onCreate(data.data);
+            if (data.crudId == this.paramsProps.crudId) {
+              this.onCreate(data.data);
+              this.emitValue()
+            }
           });
         }
       });
@@ -283,9 +286,7 @@ export default {
               ...(params.read.requestParams || {}),
               ...(this.defaultConfig.requestParams || {})
             },
-            ...this.defaultConfig.loadedOptions ? {
-              loadedOptions: (items) => this.defaultConfig.loadedOptions(items)
-            }: {}
+            loadedOptions: this.defaultConfig.loadedOptions || null
           }
         };
       }
@@ -395,10 +396,11 @@ export default {
     onCreate(data) {
       if (this.showType('select')) {
         if (data) {
+          const fieldData = this.defaultConfig?.options?.value || 'id'
           if (Array.isArray(this.itemSelected)) { //multiple
-            this.setValueSelect([...this.itemSelected, data.id]);
+            this.setValueSelect([...this.itemSelected, data[fieldData]]);
           } else if (!this.itemSelected) {
-            this.setValueSelect(data.id);
+            this.setValueSelect(data[fieldData]);
           }
         }
       }

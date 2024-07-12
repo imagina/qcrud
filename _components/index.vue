@@ -1107,7 +1107,7 @@ export default {
     },
     //Return field actions
     fieldActions(field) {
-      const readActions = this.$clone(this.params.read.actions || []);
+      let readActions = this.$clone(this.params.read.actions || []);
 
       //Default action
       let defaultAction = readActions.find(action => {
@@ -1119,6 +1119,7 @@ export default {
           icon: 'fa-light fa-pencil',
           name: 'edit',
           color: 'green',
+          sortOrder: 1,
           default: defaultAction ? false : true,
           label: this.$tr('isite.cms.label.edit'),
           vIf: this.permitAction(field).edit,
@@ -1129,6 +1130,7 @@ export default {
         {//Copy disclosure link action
           label: this.$tr('isite.cms.label.copyDisclosureLink'),
           name: 'copyDisclosureLink',
+          sortOrder: 1,
           format: (item) => {
             return { vIf: item.url ? true : false };
           },
@@ -1138,6 +1140,7 @@ export default {
         {//Share action
           label: this.$tr('isite.cms.label.share'),
           name: 'share',
+          sortOrder: 1,
           format: (item) => {
             return { vIf: (item.url || item.embed) ? true : false };
           },
@@ -1148,6 +1151,7 @@ export default {
         {//Delete action
           icon: 'fa-light fa-trash-can',
           name: 'delete',
+          sortOrder: 99,
           color: 'red',
           label: this.$tr('isite.cms.label.delete'),
           vIf: this.permitAction(field).destroy,
@@ -1161,6 +1165,7 @@ export default {
           name: 'export',
           vIf: !!this.exportParams,
           icon: 'fa-light fa-download',
+          sortOrder: 98,
           action: (item) => this.$refs.exportComponent.showReportItem({
             item: item,
             exportParams: { fileName: `${this.exportParams.fileName}-${item.id}` },
@@ -1174,10 +1179,12 @@ export default {
       });
 
       const responseNameActions = response.map(item => item.name)
+      readActions = readActions.map(item => ({ ...item,sortOrder: item.sortOrder || 2 }))
       response = [
         ...response,
         ...readActions.filter(a => !responseNameActions.includes(a?.name))
-      ]
+      ].sort((a,b) => a.sortOrder - b.sortOrder)
+
       //response
       return response;
     },
