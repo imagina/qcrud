@@ -283,9 +283,7 @@ export default {
               ...(params.read.requestParams || {}),
               ...(this.defaultConfig.requestParams || {})
             },
-            ...this.defaultConfig.loadedOptions ? {
-              loadedOptions: (items) => this.defaultConfig.loadedOptions(items)
-            }: {}
+            loadedOptions: this.defaultConfig.loadedOptions || null
           }
         };
       }
@@ -398,7 +396,8 @@ export default {
           if (Array.isArray(this.itemSelected)) { //multiple
             this.setValueSelect([...this.itemSelected, data.id]);
           } else if (!this.itemSelected) {
-            this.setValueSelect(data.id);
+            const fieldData = this.defaultConfig?.options?.value || 'id'
+            this.setValueSelect(data[fieldData]);
           }
         }
       }
