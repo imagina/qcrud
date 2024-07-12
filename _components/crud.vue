@@ -249,7 +249,10 @@ export default {
           eventBus.on(`${this.paramsProps.apiRoute}.crud.event.created`, (data) => {
             this.selectFieldKey = this.$uid();
             //Select the created record
-            if (data.crudId == this.paramsProps.crudId) this.onCreate(data.data);
+            if (data.crudId == this.paramsProps.crudId) {
+              this.onCreate(data.data);
+              this.emitValue()
+            }
           });
         }
       });
