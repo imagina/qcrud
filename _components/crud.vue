@@ -396,10 +396,10 @@ export default {
     onCreate(data) {
       if (this.showType('select')) {
         if (data) {
+          const fieldData = this.defaultConfig?.options?.value || 'id'
           if (Array.isArray(this.itemSelected)) { //multiple
-            this.setValueSelect([...this.itemSelected, data.id]);
+            this.setValueSelect([...this.itemSelected, data[fieldData]]);
           } else if (!this.itemSelected) {
-            const fieldData = this.defaultConfig?.options?.value || 'id'
             this.setValueSelect(data[fieldData]);
           }
         }
