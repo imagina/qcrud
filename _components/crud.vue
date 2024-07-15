@@ -4,7 +4,7 @@
     <recycle 
       v-if="isRecyleCrud" 
       :showModal="recycleModal"
-      @closeModal="recycleModal = false"
+      
     />
     <!--=== Dynamic component to get crud data ===-->
     <component :is="componentCrudData" ref="componentCrudData" @hook:mounted="init"/>
@@ -204,32 +204,11 @@ export default {
       if (!this.$refs.componentCrudData) return {}
       let crudData = this.$clone(this.$refs.componentCrudData.crudData || {})//
 
+
+      /*recycle bin*/
       if(this.isRecyleCrud){
-        crudData.read['excludeActions'] =  ['new', 'edit', 'destroy', 'sync', 'export', 'share', 'recycle']       
-        crudData['update'] = false
-        // add new actions
-        crudData.read['actions'] = [
-          {//restore item action
-            icon: 'fa-light fa-floppy-disk-circle-arrow-right',
-            color: 'green',
-            label: 'Manage register',
-            //vIf: ,
-            action: (item) => {
-            /*
-              this.item = item
-              this.action = 'restore'
-              this.modal.show = true
-              this.$emit('restore', item)
-              */
-            this.recycleModal = true
-             console.log('show modal')
-            }
-          },        
-        ]
+        crudData = this.addRecycleBinParams(crudData)
       }
-      
-
-
       crudData.hasPermission = this.hasPermission//Add permission validated
 
       //Merge fields with dataFieldsCustom
@@ -517,6 +496,29 @@ export default {
     },
     async getDataTable(refresh) {
       if(this.$refs.crudIndex) await this.$refs.crudIndex.getDataTable(refresh);
+    }, 
+    addRecycleBinParams(crudData){
+      crudData.read['excludeActions'] =  ['new', 'edit', 'destroy', 'sync', 'export', 'share', 'recycle']
+
+      const requestParams = {
+        filter: {onlyTrashed : true}
+      }
+
+      crudData.read['requestParams'] = { ...crudData.read.requestParams || {}, ...requestParams}
+      crudData['update'] = false
+        
+      crudData.read['actions'] = [
+        {
+          icon: 'fa-light fa-floppy-disk-circle-arrow-right',
+          color: 'green',
+          label: 'Manage register',
+          //vIf: ,
+          action: (item) => {            
+            this.recycleModal = true
+          }
+        },        
+      ]
+      return crudData
     }
   }
 }

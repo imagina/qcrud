@@ -2,7 +2,6 @@
   <div>
     <master-modal 
       v-model="showModal"
-      :title="`${this.itemLabel}`" 
     >
       <div>
         <p v-if="item" class="q-my-md">
@@ -62,7 +61,7 @@ data() {
               color: 'green'
             },
             action: () => {
-                console.log('restore the item')
+              this.restoreAlert({})
             }
           }
         ]
@@ -82,7 +81,7 @@ data() {
               color: 'negative'
             },
             action: () => {               
-              this.deletePermanently({})
+              this.deletePermanentlyAlert({})
             }
           }
         ]
@@ -99,7 +98,25 @@ methods: {
   init(){
 
   },
-  deletePermanently(item) {
+  restoreAlert(item) {
+    this.$alert.info({
+      mode: 'modal',
+      //title: `ID: ${item.id}`,
+      message: '¿Estás seguro que quieres restaurar este registro?',
+      actions: [
+        {label: this.$tr('isite.cms.label.cancel'), color: 'grey'},
+        {
+          label: 'Restore',
+          color: 'green',
+          handler: () => {
+            //Request
+            console.log('delete permanently')
+          }
+        }
+      ]
+    })
+  },
+  deletePermanentlyAlert(item) {
     this.$alert.error({
       mode: 'modal',
       //title: `ID: ${item.id}`,
