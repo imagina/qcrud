@@ -206,12 +206,11 @@ export default {
         if (crudData.formRight && crudData.formRight[fieldName])
           crudData.formRight[fieldName].value = this.dataFieldsCustom[fieldName];
       }
-
       //Merge with custom data
       if (this.customData && (typeof this.customData == 'object')) {
         for (var itemName in this.customData) {
           let itemValue = this.$clone(this.customData[itemName]);
-          crudData[itemName] = (typeof itemValue == 'object') ? { ...crudData[itemName], ...itemValue } : itemValue;
+          crudData[itemName] = (typeof itemValue == 'object') && !Array.isArray(itemValue) ? { ...crudData[itemName], ...itemValue } : itemValue;
           if (itemName == 'getDataForm') crudData[itemName] = this.customData[itemName];
         }
       }
@@ -224,7 +223,6 @@ export default {
 
       //Validate if exist crudId
       crudData.crudId = crudData.crudId || this.$uid();
-
       //Response
       return crudData;
     }
