@@ -100,7 +100,13 @@
             </q-tr>
           </template>
           <template v-slot:body="props">
-            <q-tr :props="props">
+            <q-tr 
+              :props="props"
+              :class="{
+                'tw-bg-yellow-100': props.row.offline,
+                'tw-bg-white': !props.row.offline,
+              }"
+            >
               <q-td
                 v-for="(col, keyCol) in parseColumnsByRow(props.cols, props.row)"
                 :key="col.name"
