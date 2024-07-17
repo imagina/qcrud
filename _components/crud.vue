@@ -524,23 +524,27 @@ export default {
         name: 'deletedAt',
         label: 'Deleted at', 
         field: 'deletedAt',
+        align: 'left',
         format: val => val ? this.$trd(val) : '-',
       }
 
+      /*add deleteAt column*/
       crudData.read.columns.splice(crudData.read.columns.length - 1, 0, deletedAt)
-        
-      crudData.read['actions'] = [
-        {
-          icon: 'fa-light fa-floppy-disk-circle-arrow-right',
-          color: 'green',
-          label: 'Manage register',
-          //vIf: ,
-          action: (item) => {
+
+      /* add display modal action to id and title cols */
+      Object.keys(crudData.read.columns).forEach((col) => {
+        if(crudData.read.columns[col]['name'] == 'id' || crudData.read.columns[col]['name'] == 'title' ){
+          crudData.read.columns[col] = {
+            ...crudData.read.columns[col], 
+            action: (item) => {
             this.recycleModel.show = true
             this.recycleModel.item = item
+            }
           }
-        },        
-      ]
+        }
+      })
+      /* remove actions col  */
+      crudData.read.columns.pop();
       return crudData
     }, 
     deleteItemPermanently(item){      
