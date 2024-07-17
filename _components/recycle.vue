@@ -2,20 +2,21 @@
   <div>
     <master-modal 
       v-model="showModal"
+      :title="`Restore or Delete ID: ${item.id}`"
     >
       <div>
         <p v-if="item" class="q-my-md">
           Register: {{ item.id }} - {{ itemLabel }}
         </p>
-        <dynamic-field :field="this.restore" /> 
-        <dynamic-field :field="this.delete" /> 
+        <dynamic-field :field="this.restore" v-if="canRestore"/> 
+        <dynamic-field :field="this.delete" v-if="canDelete"/> 
       </div>
       <q-separator />
       <div class="row justify-center q-gutter-md q-my-sm">
         <q-btn 
           unelevated 
           rounded 
-          label="Cancel" 
+          :label="this.$tr('isite.cms.label.restore')" 
           color="grey-4"
           textColor="black"
           no-caps
@@ -33,12 +34,22 @@
 
 export default {
 props: {
- showModal: false 
-}, 
+  value: {default: false},
+  item: {}
+},
+watch: {
+  value(newValue) {    
+    this.showModal = newValue
+  }, 
+  showModal(newValue){
+    if(!newValue){
+      this.$emit('closeModal')
+    }
+  } 
+},
 data() {
-  return {
-    crudId: this.$uid(),    
-    item: null,    
+  return {    
+    showModal: this.value,
     info: {
       type: 'banner',
       props: {
@@ -61,7 +72,7 @@ data() {
               color: 'green'
             },
             action: () => {
-              this.restoreAlert({})
+              this.$emit('restore', this.item)
             }
           }
         ]
@@ -80,8 +91,8 @@ data() {
               label: 'Delete this register permanently',
               color: 'negative'
             },
-            action: () => {               
-              this.deletePermanentlyAlert({})
+            action: () => {                             
+              this.$emit('delete', this.item)
             }
           }
         ]
@@ -92,48 +103,14 @@ data() {
 computed: {
   itemLabel(){    
     return this.item ? this.item.name || this.item.title || this.item.userName || this.item.first_name || '' : ''
-  },   
+  },
+  canRestore(){
+    return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.restore')
+  }, 
+  canDelete(){
+    return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.delete')
+  }
 }, 
-methods: {
-  init(){
-
-  },
-  restoreAlert(item) {
-    this.$alert.info({
-      mode: 'modal',
-      //title: `ID: ${item.id}`,
-      message: '¿Estás seguro que quieres restaurar este registro?',
-      actions: [
-        {label: this.$tr('isite.cms.label.cancel'), color: 'grey'},
-        {
-          label: 'Restore',
-          color: 'green',
-          handler: () => {
-            //Request
-            console.log('delete permanently')
-          }
-        }
-      ]
-    })
-  },
-  deletePermanentlyAlert(item) {
-    this.$alert.error({
-      mode: 'modal',
-      //title: `ID: ${item.id}`,
-      message: this.$tr('isite.cms.message.deleteRecord'),
-      actions: [
-        {label: this.$tr('isite.cms.label.cancel'), color: 'grey'},
-        {
-          label: this.$tr('isite.cms.label.delete'),
-          color: 'red',
-          handler: () => {
-            //Request
-            console.log('delete permanently')
-          }
-        }
-      ]
-    })
-  },      
-}  
+methods: {}  
 }
 </script>

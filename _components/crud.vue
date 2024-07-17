@@ -2,9 +2,12 @@
   <div id="crudContentPage">
     <!---recycle --->
     <recycle 
-      v-if="isRecyleCrud" 
-      :showModal="recycleModal"
-      
+      v-if="isRecyleCrud"
+      v-model="recycleModel.show"
+      :item="recycleModel.item"
+      @closeModal="recycleModel.show = false"
+      @delete="val => deleteItemPermanently(val)"
+      @restore="val => restoreItem(val)"
     />
     <!--=== Dynamic component to get crud data ===-->
     <component :is="componentCrudData" ref="componentCrudData" @hook:mounted="init"/>
@@ -128,7 +131,10 @@ export default {
       },
       dataFieldsCustom: {},
       itemCrudFields: false, //Fields from item to replace form fields,
-      recycleModal: false
+      recycleModel: {
+        show: false,
+        item: {}
+      }
     }
   },
   computed: {
@@ -281,18 +287,21 @@ export default {
       return fieldConfig
     },
     isRecyleCrud(){
-      const params = decodeURI(window.location).split('?')
-      if(Array.isArray(params) ){
-        if(params.length > 1){
-          const query =  params[1]
-            .split('&')
-            .map(param => param.split('='))
-            .reduce((values, [ key, value ]) => {
-              values[ key ] = value
-              return values
-            }, {})
-          return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false          
-        }
+      const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index')
+      if(!permission){
+        const params = decodeURI(window.location).split('?')
+        if(Array.isArray(params) ){
+          if(params.length > 1){
+            const query =  params[1]
+              .split('&')
+              .map(param => param.split('='))
+              .reduce((values, [ key, value ]) => {
+                values[ key ] = value
+                return values
+              }, {})
+            return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false          
+          }
+        }        
       }
       return false  
     }
@@ -440,6 +449,9 @@ export default {
     },
     //watch emit update from form component
     formEmmit(type = 'created', response = false) {
+      if(this.isRecyleCrud && type == 'deleted') {
+        this.recycleModel.show = false
+      }
       if (this.type == 'full') {
         this.getDataTable(true)
       } else this.getIndexOptions()
@@ -497,15 +509,25 @@ export default {
     async getDataTable(refresh) {
       if(this.$refs.crudIndex) await this.$refs.crudIndex.getDataTable(refresh);
     }, 
+    /*reycle custom crudData*/
     addRecycleBinParams(crudData){
       crudData.read['excludeActions'] =  ['new', 'edit', 'destroy', 'sync', 'export', 'share', 'recycle']
-
+      
       const requestParams = {
         filter: {onlyTrashed : true}
       }
 
       crudData.read['requestParams'] = { ...crudData.read.requestParams || {}, ...requestParams}
       crudData['update'] = false
+
+      const deletedAt = {
+        name: 'deletedAt',
+        label: 'Deleted at', 
+        field: 'deletedAt',
+        format: val => val ? this.$trd(val) : '-',
+      }
+
+      crudData.read.columns.splice(crudData.read.columns.length - 1, 0, deletedAt)
         
       crudData.read['actions'] = [
         {
@@ -513,12 +535,20 @@ export default {
           color: 'green',
           label: 'Manage register',
           //vIf: ,
-          action: (item) => {            
-            this.recycleModal = true
+          action: (item) => {
+            this.recycleModel.show = true
+            this.recycleModel.item = item
           }
         },        
       ]
       return crudData
+    }, 
+    deleteItemPermanently(item){      
+      this.$refs.crudIndex.deleteItem(item, true)
+    }, 
+    restoreItem(item){
+      console.dir(item)
+      this.$refs.crudIndex.restoreItem(item)
     }
   }
 }

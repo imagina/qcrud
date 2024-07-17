@@ -912,7 +912,7 @@ export default {
       })
     },
     //Delete category
-    deleteItem(item) {
+    deleteItem(item, forceDelete = false) {
       this.$alert.error({
         mode: 'modal',
         title: `ID: ${item.id}`,
@@ -941,7 +941,14 @@ export default {
                 })
               } else {
                 //Request
-                this.$crud.delete(propParams.apiRoute, item.id).then(response => {
+                let requestParams = {}                
+                if(forceDelete){
+                  requestParams.params = {                    
+                    filter: {forceDelete: true}
+                  }
+                }
+
+                this.$crud.delete(propParams.apiRoute, item.id, requestParams ).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
 
@@ -957,6 +964,39 @@ export default {
                   this.loading = false
                 })
               }
+            }
+          }
+        ]
+      })
+    },
+    //Restore item
+    restoreItem(item) {
+      this.$alert.warning({
+        mode: 'modal',
+        title: `ID: ${item.id}`,
+        message: '¿Estás seguro que quieres restaurar este registro?',
+        actions: [
+          {label: this.$tr('isite.cms.label.cancel'), color: 'grey'},
+          {
+            label: this.$tr('isite.cms.label.restore'),
+            color: 'green',
+            handler: () => {
+              this.loading = true
+              let propParams = this.$clone(this.params)
+              this.$crud.update(propParams.apiRoute, `${item.id}/restore/`, {} ).then(response => {
+                this.$alert.info({message: 'item restored'})
+                this.getDataTable(true)
+
+                //Dispatch event hook
+                this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                //Emit event delete
+                this.$emit('deleted')
+                //Close loading
+                this.loading = false
+              }).catch(error => {
+                this.$alert.error({message: this.$tr('isite.cms.message.recordNotRestored'), pos: 'bottom'})
+                this.loading = false
+              })
             }
           }
         ]
