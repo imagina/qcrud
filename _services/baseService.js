@@ -144,7 +144,7 @@ const axiosActions = {
         )
       };
       //Request
-      axios.put(urlApi, requestParams).then(async response => {
+      axios.put(urlApi, requestParams, { headers: { 'X-Config-Name': configName } }).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
         resolve(response.data)//Successful response
       }).catch(error => {
@@ -201,7 +201,7 @@ const axiosActions = {
       if (!criteria) return reject('Criteria is required')
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Request
-      axios.delete(urlApi, { ...configOptions }).then(response => {
+      axios.delete(urlApi, { ...configOptions, headers: { 'X-Config-Name': configName } }).then(response => {
         this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
