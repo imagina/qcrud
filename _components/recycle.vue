@@ -6,7 +6,7 @@
     >
       <div>
         <dynamic-field :field="this.restore" v-if="canRestore"/> 
-        <dynamic-field :field="this.delete" v-if="canDelete"/> 
+        <dynamic-field :field="this.delete" v-if="canDestroy"/> 
       </div>
       <q-separator />
       <div class="row justify-end q-gutter-md q-my-sm">
@@ -100,10 +100,10 @@ computed: {
     return this.item ? this.item.name || this.item.title || this.item.userName || this.item.first_name || '' : ''
   },
   canRestore(){
-    return !this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.restore')
+    return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.restore')
   }, 
-  canDelete(){
-    return !this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.delete')
+  canDestroy(){
+    return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.destroy')
   }
 }, 
 methods: {}  

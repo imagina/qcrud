@@ -1,14 +1,5 @@
 <template>
-  <div id="crudContentPage">
-    <!---recycle --->
-    <recycle 
-      v-if="isRecyleCrud"
-      v-model="recycleModel.show"
-      :item="recycleModel.item"
-      @closeModal="recycleModel.show = false"
-      @delete="val => deleteItemPermanently(val)"
-      @restore="val => restoreItem(val)"
-    />
+  <div id="crudContentPage">    
     <!--=== Dynamic component to get crud data ===-->
     <component :is="componentCrudData" ref="componentCrudData" @hook:mounted="init"/>
 
@@ -27,6 +18,15 @@
 
     <!--=== Full Crud ===-->
     <div v-if="success">
+      <!---recycle --->
+      <recycle 
+        v-if="isRecyleCrud && showType('full')"
+        v-model="recycleModel.show"
+        :item="recycleModel.item"
+        @closeModal="recycleModel.show = false"
+        @delete="val => deleteItemPermanently(val)"
+        @restore="val => restoreItem(val)"
+      />
       <!--Index component-->
       <crud-index v-if="showType('full')" :params="$clone(paramsProps)" ref="crudIndex"
                   @create="create" @update="update" @deleted="formEmmit('deleted')" :title="title"/>
@@ -288,7 +288,7 @@ export default {
     },
     isRecyleCrud(){
       const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index')
-      if(!permission){
+      if(permission){
         const params = decodeURI(window.location).split('?')
         if(Array.isArray(params) ){
           if(params.length > 1){
@@ -532,17 +532,19 @@ export default {
       crudData.read.columns.splice(crudData.read.columns.length - 1, 0, deletedAt)
 
       /* add display modal action to id and title cols */
-      Object.keys(crudData.read.columns).forEach((col) => {
-        if(crudData.read.columns[col]['name'] == 'id' || crudData.read.columns[col]['name'] == 'title' ){
-          crudData.read.columns[col] = {
-            ...crudData.read.columns[col], 
-            action: (item) => {
-            this.recycleModel.show = true
-            this.recycleModel.item = item
+      if(this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.restore') || this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.destroy')){
+        Object.keys(crudData.read.columns).forEach((col) => {
+          if(crudData.read.columns[col]['name'] == 'id' || crudData.read.columns[col]['name'] == 'title' ){
+            crudData.read.columns[col] = {
+              ...crudData.read.columns[col], 
+              action: (item) => {
+              this.recycleModel.show = true
+              this.recycleModel.item = item
+              }
             }
           }
-        }
-      })
+        })
+      }
       /* remove actions col  */
       crudData.read.columns.pop();
       return crudData
