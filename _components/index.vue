@@ -1016,7 +1016,18 @@ export default {
                   this.table.data = this.table.data.filter(data => item.id !== data.id);
                   this.loading = false;
                 }
-                this.$crud.delete(propParams.apiRoute, item.id, customParams).then(response => {
+                this.$crud.delete(
+                  propParams.apiRoute, 
+                  item.id, 
+                  {
+                    data: {
+                      attributes: {
+                        id: item.id,
+                        titleOffline: `Delete ${this.$tr(this.title || '')}`
+                      }
+                    }
+                  }
+                ).then(response => {
                   this.$alert.info({ message: this.$tr('isite.cms.message.recordDeleted') });
                   this.getDataTable(true);
 
