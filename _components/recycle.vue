@@ -96,14 +96,11 @@ data() {
   }
 },
 computed: {
-  itemLabel(){    
-    return this.item ? this.item.name || this.item.title || this.item.userName || this.item.first_name || '' : ''
-  },
   canRestore(){
-    return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.restore')
+    return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.restore') || false
   }, 
   canDestroy(){
-    return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.destroy')
+    return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.destroy') || false
   }
 }, 
 methods: {}  
