@@ -287,21 +287,29 @@ export default {
       return fieldConfig
     },
     isRecyleCrud(){
-      const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index')
-      if(permission){
-        const params = decodeURI(window.location).split('?')
-        if(Array.isArray(params) ){
-          if(params.length > 1){
-            const query =  params[1]
-              .split('&')
-              .map(param => param.split('='))
-              .reduce((values, [ key, value ]) => {
-                values[ key ] = value
-                return values
-              }, {})
-            return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false          
+      const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index') || false
+      const params = decodeURI(window.location).split('?')
+      if(Array.isArray(params) ){
+        if(params.length > 1){
+          const query =  params[1]
+            .split('&')
+            .map(param => param.split('='))
+            .reduce((values, [ key, value ]) => {
+              values[ key ] = value
+              return values
+            }, {})
+
+          if(permission){
+            return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false
+          } else {
+            /*recycle-bin from url queries*/
+            const newQueryParams = {
+              ...this.$route.query,
+              'recycle-bin': undefined,
+            }
+            this.$router.replace({ query: newQueryParams });
           }
-        }        
+        }
       }
       return false  
     }
@@ -521,8 +529,8 @@ export default {
       crudData['update'] = false
 
       const deletedAt = {
-        name: 'deletedAt',
-        label: 'Deleted at', 
+        name: 'deletedAt',        
+        label: this.$tr('isite.cms.label.deletedAt'), 
         field: 'deletedAt',
         align: 'left',
         format: val => val ? this.$trd(val) : '-',
