@@ -66,7 +66,7 @@ const axiosActions = {
       if (!configName) return reject('Config name is required')//Validate config name
       let urlApi = (config(configName) || configName)//Get url from config
       let key = params.cacheKey || `${configName}::${isOffline ? 'offline' : `requestParams[${JSON.stringify(params.params)}]`}`//Key to cache
-      console.log(key);
+
       remember.async({
         key: key,
         seconds: params.cacheTime,
