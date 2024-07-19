@@ -21,9 +21,9 @@
       <!---recycle --->
       <recycle 
         v-if="isRecyleCrud && showType('full')"
-        v-model="recycleModel.show"
-        :item="recycleModel.item"
-        @closeModal="recycleModel.show = false"
+        v-model="recycleModal.show"
+        :item="recycleModal.item"
+        @closeModal="recycleModal.show = false"
         @delete="val => deleteItemPermanently(val)"
         @restore="val => restoreItem(val)"
       />
@@ -131,7 +131,7 @@ export default {
       },
       dataFieldsCustom: {},
       itemCrudFields: false, //Fields from item to replace form fields,
-      recycleModel: {
+      recycleModal: {
         show: false,
         item: {}
       }
@@ -286,8 +286,7 @@ export default {
       //Repsonse
       return fieldConfig
     },
-    isRecyleCrud(){
-      const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index') || false
+    getUrlParams(){
       const params = decodeURI(window.location).split('?')
       if(Array.isArray(params) ){
         if(params.length > 1){
@@ -297,19 +296,25 @@ export default {
             .reduce((values, [ key, value ]) => {
               values[ key ] = value
               return values
-            }, {})
-
-          if(permission){
-            return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false
-          } else {
-            /*recycle-bin from url queries*/
-            const newQueryParams = {
-              ...this.$route.query,
-              'recycle-bin': undefined,
-            }
-            this.$router.replace({ query: newQueryParams });
-          }
+          }, {})
+          return query
+        }          
+      }
+      return {}
+    },
+    isRecyleCrud(){
+      const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index') || false
+      const query = this.getUrlParams
+      if(permission){
+        return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false        
+      } else {
+        /*recycle-bin from url queries*/
+        const newQueryParams = {
+          ...this.$route.query,
+          'recycle-bin': undefined,
+          'recycle-bin-manage': undefined
         }
+        this.$router.replace({ query: newQueryParams });
       }
       return false  
     }
@@ -458,7 +463,7 @@ export default {
     //watch emit update from form component
     formEmmit(type = 'created', response = false) {
       if(this.isRecyleCrud && type == 'deleted') {
-        this.recycleModel.show = false
+        this.recycleModal.show = false
       }
       if (this.type == 'full') {
         this.getDataTable(true)
@@ -546,8 +551,8 @@ export default {
             crudData.read.columns[col] = {
               ...crudData.read.columns[col], 
               action: (item) => {
-              this.recycleModel.show = true
-              this.recycleModel.item = item
+              this.recycleModal.show = true
+              this.recycleModal.item = item
               }
             }
           }
@@ -561,9 +566,8 @@ export default {
       this.$refs.crudIndex.deleteItem(item, true)
     }, 
     restoreItem(item){
-      console.dir(item)
       this.$refs.crudIndex.restoreItem(item)
-    }
+    },
   }
 }
 </script>

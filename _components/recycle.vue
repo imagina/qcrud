@@ -2,7 +2,7 @@
   <div>
     <master-modal 
       v-model="showModal"      
-      :title="this.$tr('isite.cms.label.registerId', {id: item.id})"
+      :title="this.$tr('isite.cms.label.registerId', {id: itemData.id})"
     >
       <div>
         <dynamic-field :field="this.restore" v-if="canRestore"/> 
@@ -18,7 +18,7 @@
           textColor="black"
           no-caps
           size="md"
-          @click="$emit('closeModal')"
+          @click="closeModal()"
         />
       </div>
 
@@ -42,11 +42,19 @@ watch: {
     if(!newValue){
       this.$emit('closeModal')
     }
-  } 
+  }, 
+  item(newValue){
+    this.itemData = newValue
+  }
+ 
+},
+mounted(){
+  this.init()
 },
 data() {
   return {    
     showModal: this.value,
+    itemData: this.item,
     info: {
       type: 'banner',
       props: {
@@ -68,7 +76,7 @@ data() {
               color: 'green'
             },
             action: () => {
-              this.$emit('restore', this.item)
+              this.$emit('restore', this.itemData)
             }
           }
         ]
@@ -87,7 +95,7 @@ data() {
               color: 'negative'
             },
             action: () => {                             
-              this.$emit('delete', this.item)
+              this.$emit('delete', this.itemData)
             }
           }
         ]
@@ -103,6 +111,35 @@ computed: {
     return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.destroy') || false
   }
 }, 
-methods: {}  
+methods: {
+  init(){
+    const query = this.getUrlParams()
+    if(query['recycle-bin-manage']){
+      console.log(query['recycle-bin-manage'])
+      this.showModal = true
+      this.itemData = {id: query['recycle-bin-manage']}
+    }       
+  },
+  closeModal(){
+    this.showModal = false
+    this.$emit('closeModal')
+  },
+  getUrlParams(){
+    const params = decodeURI(window.location).split('?')
+    if(Array.isArray(params) ){
+      if(params.length > 1){
+        const query =  params[1]
+          .split('&')
+          .map(param => param.split('='))
+          .reduce((values, [ key, value ]) => {
+            values[ key ] = value
+            return values
+        }, {})
+        return query
+      }          
+    }
+    return {}
+  },
+}  
 }
 </script>
