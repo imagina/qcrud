@@ -871,7 +871,7 @@ export default {
         }
       }
     },
-    async requestDataTable(apiRoute, params, pagination) {
+    async requestDataTable(apiRoute, params, pagination, caching) {
       try {
 
         if (this.isAppOffline) {
@@ -880,13 +880,14 @@ export default {
             this.table.filter.search,
             pagination.page,
             pagination.rowsPerPage,
+            this.params?.read?.requestParams?.filter
           );
           if (cachePaginate.data.length > 0) {
             return cachePaginate;
           }
         }
 
-        const response = await this.$crud.index(apiRoute, params)
+        const response = await this.$crud.index(apiRoute, params, caching)
           .catch(error => {
             if (!this.isAppOffline && !error?.config?.signal?.aborted) {
               this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' });
@@ -950,7 +951,7 @@ export default {
       }
 
       //Request
-      const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
+      const response = await this.requestDataTable(propParams.apiRoute, params, pagination, propParams.caching);
       this.expiresIn = response?.expiresIn;
       let dataTable = response?.data;
       //If is field change format
