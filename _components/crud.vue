@@ -212,6 +212,7 @@ export default {
 
 
       /*recycle bin*/
+      crudData['path'] = crudData['path'] ? crudData['path'] : false
       if(this.isRecyleCrud){
         crudData = this.addRecycleBinParams(crudData)
       }
