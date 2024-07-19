@@ -55,13 +55,13 @@ data() {
     info: {
       type: 'banner',
       props: {
-        color: 'info',
+        color: 'negative',
         icon: 'fas fa-exclamation-triangle',
         message: '', 
         actions: [
           {
             props: {
-              label: 'go to to solve conflict',
+              label: this.$tr('isite.cms.label.solveConflict'),
               color: 'green'
             },
             action: () => {
@@ -76,14 +76,14 @@ data() {
 computed: {
 }, 
 methods: {
-  setInfo(){    
-    this.info.props.message = this.data.messages[0].message
+  setInfo(){
+    this.info.props.message = this.data?.messages ? this.data.messages[0].message : ''
   },
   setItem(){
     this.item = {...this.data.data[0]}
   }, 
   conflictHandler(){    
-    console.log('goto')
+    //if item has softdelete
     if(this.item['deletedAt'] == null){      
       this.gotoUpdateItem()
     } else {
@@ -96,8 +96,7 @@ methods: {
   },
   gotoRecycleBin(){
     const paramsUrl = {['recycle-bin']: true, ['recycle-bin-manage']: this.item.id}
-    this.openTab(paramsUrl)
-    
+    this.openTab(paramsUrl)    
   }, 
   openTab(paramsUrl){
     const routeData = this.$router.resolve({name: this.$route.name, query: paramsUrl});

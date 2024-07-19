@@ -520,7 +520,6 @@ export default {
     showConflictModal(error){
       //register slug exist or softdeleted
       if(error.response.status == 409) {
-        console.log('show modal')
         this.conflict.show = true 
         this.conflict.data = error.response.data
       }
