@@ -818,12 +818,6 @@ export default {
           callBack: () => this.handlerActionCreate()
         });
       }
-      this.$store.dispatch(
-        'qofflineMaster/OFFLINE_REQUESTS',
-        {
-          callback: this.getDataTable
-        }
-      )
       this.addEventListenersSW()
       //Success
       this.success = true;
