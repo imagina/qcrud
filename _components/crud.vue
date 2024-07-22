@@ -306,16 +306,17 @@ export default {
     isRecyleCrud(){
       const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index') || false
       const query = this.getUrlParams
-      if(permission){
-        return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false        
-      } else {
-        /*recycle-bin from url queries*/
-        const newQueryParams = {
-          ...this.$route.query,
-          'recycle-bin': undefined,
-          'recycle-bin-manage': undefined
+
+      if(query['recycle-bin']){
+        if(permission){
+          return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false
+        } else {
+          /*remove recycle-bin from url queries*/
+          const newQueryParams = {...this.$route.query}
+          delete newQueryParams['recycle-bin']
+          delete newQueryParams['recycle-bin-manage']
+          this.$router.replace({ query: newQueryParams });
         }
-        this.$router.replace({ query: newQueryParams });
       }
       return false  
     }
