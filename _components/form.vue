@@ -420,7 +420,7 @@ export default {
               requestInfo.response = response
               return resolve(true)
             }).catch(error => {
-              requestInfo.error = error.response?.data?.errors || {}
+              requestInfo.error = error.response?.data?.errors || ''
               this.showConflictModal(error)
               return resolve(true)
             })
