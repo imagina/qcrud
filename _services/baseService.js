@@ -41,6 +41,7 @@ const axiosActions = {
       //Request
       axios.post(urlApi, {attributes: dataRequest}).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
+        this.clearCache()
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -60,6 +61,7 @@ const axiosActions = {
       if (!configName) return reject('Config name is required')//Validate config name
       let urlApi = (config(configName) || configName)//Get url from config
       let key = params.cacheKey || `${configName}::${isOffline ? 'offline' : `requestParams[${JSON.stringify(params.params)}]`}`//Key to cache
+
       remember.async({
         key: key,
         seconds: params.cacheTime,
@@ -146,6 +148,7 @@ const axiosActions = {
       //Request
       axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
+        this.clearCache()
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
