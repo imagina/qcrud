@@ -4,11 +4,6 @@ import config from 'src/setup/plugin'
 import apiResponse from 'modules/qcrud/_plugins/apiResponse'
 import {debounce} from 'quasar'
 
-function headerOffline(configName) {
-  const isOffline = !navigator.onLine
-  return isOffline ? { 'X-Config-Name': configName } : {}
-}
-
 //Replace params in apiRoute
 function replaceParamsApiRoute(apiRoute, params) {
   for (var paramName in params) apiRoute = apiRoute.replace(`{${paramName}}`, params[paramName].toString())
@@ -151,7 +146,7 @@ const axiosActions = {
         )
       };
       //Request
-      axios.put(urlApi, requestParams, { headers: headerOffline(configName) }).then(async response => {
+      axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
         this.clearCache()
         resolve(response.data)//Successful response
@@ -209,7 +204,7 @@ const axiosActions = {
       if (!criteria) return reject('Criteria is required')
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Request
-      axios.delete(urlApi, { ...configOptions, headers: { ...configOptions?.headers, ...headerOffline(configName)  } }).then(response => {
+      axios.delete(urlApi, { ...configOptions }).then(response => {
         this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {

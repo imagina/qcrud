@@ -448,13 +448,6 @@ export default {
       getFieldRelationActions: this.getFieldRelationActions
     };
   },
-  watch: {
-    isAppOffline: {
-      handler: function() {
-        this.getDataTable(true);
-      }
-    }
-  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
@@ -805,6 +798,13 @@ export default {
       const end = showTable < rowsPerPage ? totalPage : page * showTable;
       return `${start} - ${end} ${this.$tr('isite.cms.label.of')} ${totalPage}`;
     },
+    addEventListenersSW() {
+      navigator.serviceWorker.addEventListener('message', async eventListener => {    
+        if (eventListener.data === 'sync-data') {
+          this.getDataTable(true);
+        }
+      })
+    },
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
@@ -818,12 +818,7 @@ export default {
           callBack: () => this.handlerActionCreate()
         });
       }
-      this.$store.dispatch(
-        'qofflineMaster/OFFLINE_REQUESTS',
-        {
-          callback: this.getDataTable
-        }
-      )
+      this.addEventListenersSW()
       //Success
       this.success = true;
     },
@@ -1047,6 +1042,7 @@ export default {
                 });
 
                 await cacheOffline.deleteItem(item.id, propParams.apiRoute)
+                if (this.isAppOffline) this.getDataTable(true);
               }
             }
           }
