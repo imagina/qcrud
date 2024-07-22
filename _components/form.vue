@@ -445,21 +445,34 @@ export default {
         let propParams = this.$clone(this.paramsProps);
         let formData = this.$clone(await this.getDataForm());
         let requestInfo = { response: false, error: false };//Default request response
+        const offlineId = new Date().valueOf()
 
         try {
           if (propParams.create.method) {
             requestInfo.response = await propParams.create.method(formData);
           } else {
             try {
+
               requestInfo.response = await this.$crud.create(
                 propParams.apiRoute,
-                { ...formData, titleOffline: this.modalProps.title || '' },
+                { 
+                  ...formData, 
+                  titleOffline: this.modalProps.title || '',
+                  offlineId: this.isAppOffline ? offlineId : null,
+                },
                 propParams.create?.requestParams || {}
               );
             } catch (err) {
               requestInfo.error = err;
             }
-            await this.saveInCache(propParams.apiRoute, requestInfo.response?.data, formData);
+
+            const payloadOffline = {
+              ...formData,
+              id: offlineId,
+              titleOffline: this.modalProps.title || '',
+              offline: this.isAppOffline,
+            }
+            await this.saveInCache(propParams.apiRoute, requestInfo.response?.data, payloadOffline);
             if (this.isAppOffline) requestInfo.response = true;
           }
         } catch (err) {
@@ -538,7 +551,11 @@ export default {
           // Call custom method
           response = await propParams.update.method(criteria, formData, customParams);
         } else {
-          response = await cacheOffline.updateRecord(propParams.apiRoute, formData, criteria);
+          const payloadOffline = {
+            ...formData,
+            offline: this.isAppOffline,
+          }
+          response = await cacheOffline.updateRecord(propParams.apiRoute, payloadOffline, criteria);
 
           response = await this.$crud.update(
             propParams.apiRoute,
