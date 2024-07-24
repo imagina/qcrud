@@ -764,6 +764,7 @@ export default {
       return response;
     },
     dynamicFilter() {
+      if (this.isAppOffline) return false;
       if (this.params.read?.filters) {
         if (Object.keys(this.params.read?.filters).length > 0) {
           return this.params.read?.filters;
