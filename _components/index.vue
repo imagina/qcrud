@@ -450,13 +450,6 @@ export default {
       getFieldRelationActions: this.getFieldRelationActions
     };
   },
-  watch: {
-    isAppOffline: {
-      handler: function() {
-        this.getDataTable(true);
-      }
-    }
-  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
@@ -774,6 +767,7 @@ export default {
       return response;
     },
     dynamicFilter() {
+      if (this.isAppOffline) return false;
       if (this.params.read?.filters) {
         if (Object.keys(this.params.read?.filters).length > 0) {
           return this.params.read?.filters;
@@ -808,6 +802,13 @@ export default {
       const end = showTable < rowsPerPage ? totalPage : page * showTable;
       return `${start} - ${end} ${this.$tr('isite.cms.label.of')} ${totalPage}`;
     },
+    addEventListenersSW() {
+      navigator.serviceWorker.addEventListener('message', async eventListener => {    
+        if (eventListener.data === 'sync-data') {
+          this.getDataTable(true);
+        }
+      })
+    },
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
@@ -821,12 +822,7 @@ export default {
           callBack: () => this.handlerActionCreate()
         });
       }
-      this.$store.dispatch(
-        'qofflineMaster/OFFLINE_REQUESTS',
-        {
-          callback: this.getDataTable
-        }
-      )
+      this.addEventListenersSW()
       //Success
       this.success = true;
     },
@@ -874,7 +870,7 @@ export default {
         }
       }
     },
-    async requestDataTable(apiRoute, params, pagination) {
+    async requestDataTable(apiRoute, params, pagination, caching) {
       try {
 
         if (this.isAppOffline) {
@@ -883,13 +879,14 @@ export default {
             this.table.filter.search,
             pagination.page,
             pagination.rowsPerPage,
+            this.params?.read?.requestParams?.filter
           );
           if (cachePaginate.data.length > 0) {
             return cachePaginate;
           }
         }
 
-        const response = await this.$crud.index(apiRoute, params)
+        const response = await this.$crud.index(apiRoute, params, caching)
           .catch(error => {
             if (!this.isAppOffline && !error?.config?.signal?.aborted) {
               this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' });
@@ -953,7 +950,7 @@ export default {
       }
 
       //Request
-      const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
+      const response = await this.requestDataTable(propParams.apiRoute, params, pagination, propParams.caching);
       this.expiresIn = response?.expiresIn;
       let dataTable = response?.data;
       //If is field change format
@@ -1049,6 +1046,7 @@ export default {
                 });
 
                 await cacheOffline.deleteItem(item.id, propParams.apiRoute)
+                if (this.isAppOffline) this.getDataTable(true);
               }
             }
           }
