@@ -3,7 +3,7 @@
     <!--Content-->
     <div id="backend-page">
       <!--Page Actions-->
-      <div class="q-my-md">
+      <div class="q-mb-md">
         <page-actions
           :extra-actions="tableActions"
           :excludeActions="excludeActions"
