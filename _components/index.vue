@@ -18,6 +18,7 @@
           :expires-in="expiresIn"
           :dynamicFilter="dynamicFilter"
           :dynamicFilterValues="getDynamicFilterValues"
+          :dynamicFilterSummary="dynamicFilterSummary"
           @toggleDynamicFilterModal="toggleDynamicFilterModal"
         />
         <!-- dynamicFilter -->
@@ -29,6 +30,7 @@
           @showModal="toggleDynamicFilterModal"
           @hideModal="toggleDynamicFilterModal"
           @update:modelValue="filters => updateDynamicFilterValues(filters)"
+          @update:summary="summary => dynamicFilterSummary = summary"
         />
       </div>
       <!-- Bulk Actions -->
@@ -507,7 +509,8 @@ export default {
       gridComponent: false,
       expiresIn: null,
       showDynamicFilterModal: false,
-      dynamicFilterValues: {}
+      dynamicFilterValues: {},
+      dynamicFilterSummary: {}
     };
   },
   computed: {
