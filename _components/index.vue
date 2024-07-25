@@ -1096,8 +1096,8 @@ export default {
       //Request Data
       let requestData = {
         id: item.row.id,
-        [item.col.name]: (typeof item.row[item.col.name] == 'boolean') ? !item.row[item.col.name] :
-          parseInt(item.row[item.col.name]) ? 0 : 1
+        [item.col.field]: (typeof item.row[item.col.field] == 'boolean') ? !item.row[item.col.field] :
+          parseInt(item.row[item.col.field]) ? 0 : 1
       };
 
       //Validate if is translatable
