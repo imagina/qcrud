@@ -148,7 +148,7 @@
                     flat
                     padding="sm none"
                     class="text-caption"
-                    :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
+                    :label="statusOptionsLabel(col, props.row)"
                     no-caps
                     v-if="permitAction(props.row).edit"
                   >
@@ -281,7 +281,7 @@
                               flat
                               padding="sm none"
                               class="text-caption"
-                              :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
+                              :label="statusOptionsLabel(col, props.row)"
                               no-caps
                               v-if="permitAction(props.row).edit"
                             >
@@ -801,6 +801,11 @@ export default {
 
         return options.filter(opt => opt.value != row[col.name])
       
+      }
+    },
+    statusOptionsLabel(){
+      return (col, row) => {
+        return this.statusOptions(col, row).find(opt => opt.value == row[col.name]).label ?? ''
       }
     }
   },
