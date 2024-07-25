@@ -153,7 +153,7 @@
                     v-if="permitAction(props.row).edit"
                   >
                     <!--Message change to-->
-                    <q-item v-for="option in statusOptions(col, props)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props, col, option.value)"
+                    <q-item v-for="option in statusOptions(col, props.row)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props, col, option.value)"
                             v-close-popup>
                       <div class="row items-center">
                         <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="col?.options ? (!col.value ? 'green' : 'red') : ''" />
