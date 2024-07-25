@@ -102,7 +102,7 @@
             </q-tr>
           </template>
           <template v-slot:body="props">
-            <q-tr 
+            <q-tr
               :props="props"
               :class="{
                 'tw-bg-yellow-100': props.row.offline,
@@ -144,7 +144,7 @@
                      class="text-left">
                   <!--Action-->
                   <q-btn-dropdown
-                    :color="col.value ? 'green' : 'red'"
+                    :color="!col?.options ? (col.value ? 'green' : 'red') : ''"
                     flat
                     padding="sm none"
                     class="text-caption"
@@ -153,10 +153,10 @@
                     v-if="permitAction(props.row).edit"
                   >
                     <!--Message change to-->
-                    <q-item v-for="option in statusOptions(col, props.row)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props.row, col, option.value)"
+                    <q-item v-for="option in statusOptions(col, props.row, true)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props.row, col, option.value)"
                             v-close-popup>
                       <div class="row items-center">
-                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="col?.options ? (!col.value ? 'green' : 'red') : ''" />
+                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col?.options ? (!col.value ? 'green' : 'red') : ''" />
                         {{
                           $tr('isite.cms.message.changeTo', { text: option.label })
                         }}
@@ -277,7 +277,7 @@
                           <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
                                class="text-left">
                             <q-btn-dropdown
-                              :color="col.value ? 'green' : 'red'"
+                              :color="!col?.options ? (col.value ? 'green' : 'red') : ''"
                               flat
                               padding="sm none"
                               class="text-caption"
@@ -286,10 +286,10 @@
                               v-if="permitAction(props.row).edit"
                             >
                               <!--Message change to-->
-                              <q-item v-for="option in statusOptions(col, props)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props.row, col, option.value)"
+                              <q-item v-for="option in statusOptions(col, props, true)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props.row, col, option.value)"
                                       v-close-popup>
                                 <div class="row items-center">
-                                  <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="col?.options ? (!col.value ? 'green' : 'red') : ''" />
+                                  <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col?.options ? (!col.value ? 'green' : 'red') : ''" />
                                   {{
                                     $tr('isite.cms.message.changeTo', { text: option.label })
                                   }}
@@ -794,8 +794,8 @@ export default {
       return this.dynamicFilterValues;
     },
     statusOptions(){
-      return (col, row) => {
-        let options = col?.options ?? [
+      return (col, row, isFilter = false) => {
+        let options = col?.options || [
           {
             label: this.$tr('isite.cms.label.disabled'),
             value: 0
@@ -805,14 +805,18 @@ export default {
             value: 1
           }
         ];
+        const valueRow = row[col.name] || 0;
+        return options.filter(opt => {
+          if(isFilter) return opt.value != valueRow;
+          return true;
+        })
 
-        return options.filter(opt => opt.value != row[col.name])
-      
       }
     },
     statusOptionsLabel(){
       return (col, row) => {
-        return this.statusOptions(col, row).find(opt => opt.value == row[col.name]).label ?? ''
+        const valueRow = row[col.name] || 0;
+        return this.statusOptions(col, row).find(opt => opt.value == valueRow)?.label || ''
       }
     }
   },
@@ -837,7 +841,7 @@ export default {
       return `${start} - ${end} ${this.$tr('isite.cms.label.of')} ${totalPage}`;
     },
     addEventListenersSW() {
-      navigator.serviceWorker.addEventListener('message', async eventListener => {    
+      navigator.serviceWorker.addEventListener('message', async eventListener => {
         if (eventListener.data === 'sync-data') {
           this.getDataTable(true);
         }
@@ -1052,8 +1056,8 @@ export default {
                   this.loading = false;
                 }
                 this.$crud.delete(
-                  propParams.apiRoute, 
-                  item.id, 
+                  propParams.apiRoute,
+                  item.id,
                   {
                     data: {
                       attributes: {
