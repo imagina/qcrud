@@ -153,12 +153,12 @@
                     v-if="permitAction(props.row).edit"
                   >
                     <!--Message change to-->
-                    <q-item class="q-pa-sm cursor-pointer" clickable @click="updateStatus({...props, col})"
+                    <q-item v-for="option in statusOptions(col, props)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props, col, option.value)"
                             v-close-popup>
                       <div class="row items-center">
-                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col.value ? 'green' : 'red'" />
+                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="col?.options ? (!col.value ? 'green' : 'red') : ''" />
                         {{
-                          $tr('isite.cms.message.changeTo', { text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled')) })
+                          $tr('isite.cms.message.changeTo', { text: option.label })
                         }}
                       </div>
                     </q-item>
@@ -276,17 +276,22 @@
                           <!-- status columns -->
                           <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
                                class="text-left">
-                            <q-btn-dropdown :color="col.value ? 'green' : 'red'" flat padding="sm none"
-                                            :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
-                                            class="text-caption" no-caps>
+                            <q-btn-dropdown
+                              :color="col.value ? 'green' : 'red'"
+                              flat
+                              padding="sm none"
+                              class="text-caption"
+                              :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
+                              no-caps
+                              v-if="permitAction(props.row).edit"
+                            >
                               <!--Message change to-->
-                              <q-item class="q-pa-sm cursor-pointer" v-close-popup clickable
-                                      @click="updateStatus({...props, col : col})">
+                              <q-item v-for="option in statusOptions(col, props)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props, col, option.value)"
+                                      v-close-popup>
                                 <div class="row items-center">
-                                  <q-icon name="fa-light fa-pencil" class="q-mr-sm"
-                                          :color="!col.value ? 'green' : 'red'" />
+                                  <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="col?.options ? (!col.value ? 'green' : 'red') : ''" />
                                   {{
-                                    $tr('isite.cms.message.changeTo', { text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled')) })
+                                    $tr('isite.cms.message.changeTo', { text: option.label })
                                   }}
                                 </div>
                               </q-item>
@@ -780,6 +785,23 @@ export default {
     },
     getDynamicFilterValues() {
       return this.dynamicFilterValues;
+    },
+    statusOptions(){
+      return (col, row) => {
+        options = col?.options ?? [
+          {
+            label: $tr('isite.cms.label.disabled'),
+            value: 0
+          },
+          {
+            label: $tr('isite.cms.label.enabled'),
+            value: 1
+          }
+        ];
+
+        return options.filter(opt => opt.value != row[col.name])
+      
+      }
     }
   },
   methods: {
@@ -1091,29 +1113,28 @@ export default {
       }
     },
     //Update item status
-    updateStatus(item) {
+    updateStatus(row, col, value) {
       this.loading = true;
       //Request Data
       let requestData = {
-        id: item.row.id,
-        [item.col.field]: (typeof item.row[item.col.field] == 'boolean') ? !item.row[item.col.field] :
-          parseInt(item.row[item.col.field]) ? 0 : 1
+        id: row.id,
+        [col.name]: value
       };
 
       //Validate if is translatable
-      if (item.col.isTranslatable) {
+      if (col.isTranslatable) {
         requestData[this.$store.state.qsiteApp.defaultLocale] = {
-          [item.col.name]: requestData[item.col.name]
+          [col.name]: value
         };
-        delete requestData[item.col.name];
+        delete requestData[col.name];
       }
 
       //Request
-      this.$crud.update(this.params.apiRoute, item.row.id, requestData).then(response => {
+      this.$crud.update(this.params.apiRoute, row.id, requestData).then(response => {
         //Change value status in data
         this.table.data = this.$clone(this.table.data.map(itemData => {
           //Change status
-          if (itemData.id == item.row.id) itemData[item.col.name] = requestData[item.col.name];
+          if (itemData.id == row.id) itemData[col.name] = requestData[col.name];
           return itemData;//Response
         }));
         this.loading = false;
