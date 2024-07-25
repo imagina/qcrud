@@ -21,8 +21,6 @@
       </div>
 
     </master-modal>    
-    <!-- banner info -->
-    
   </div>
 </template>
 <script>
@@ -34,18 +32,19 @@ props: {
   
 },
 watch: {
-  value(newValue) {    
+  value(newValue) {
     this.showModal = newValue
   }, 
   showModal(newValue){
+    this.setInfo()
     if(!newValue){
       this.$emit('closeModal')
     }
   }, 
   data(newValue){
     this.data = newValue
-    this.setInfo()
     this.setItem()
+    this.setInfo()
   }
 },
 data() {
@@ -74,20 +73,27 @@ data() {
   }
 },
 computed: {
-}, 
+  itemIsDeleted(){
+    return this.item['deletedAt'] == null ? false : true
+  }
+},
 methods: {
   setInfo(){
-    this.info.props.message = this.data?.messages ? this.data.messages[0].message : ''
+    if(this.itemIsDeleted){
+      this.info.props.message = this.$tr('isite.cms.label.conflict.deletedMessage')
+    } else {
+      this.info.props.message = this.$tr('isite.cms.label.conflict.duplicatedMessage')
+    }
   },
   setItem(){
     this.item = {...this.data.data[0]}
   }, 
   conflictHandler(){    
-    //if item has softdelete
-    if(this.item['deletedAt'] == null){      
-      this.gotoUpdateItem()
+    //if item has softdelete    
+    if(this.itemIsDeleted){      
+      this.gotoRecycleBin()      
     } else {
-      this.gotoRecycleBin()
+      this.gotoUpdateItem()      
     }
   },
   gotoUpdateItem(){

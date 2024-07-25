@@ -16,7 +16,7 @@
             :tour-name="tourName"
             :help="help"
             :expires-in="expiresIn"
-            :path="params.path"
+            :permission="params.permission"
         />
       </div>
       <!-- Bulk Actions -->
