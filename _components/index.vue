@@ -455,6 +455,13 @@ export default {
       getFieldRelationActions: this.getFieldRelationActions
     };
   },
+  watch: {
+    isAppOffline: {
+      handler: function() {
+        this.getDataTable(true);
+      }
+    }
+  },
   created() {
     this.$helper.setDynamicSelectList({});
   },
@@ -842,6 +849,7 @@ export default {
       this.handlerUrlCrudAction();//Handler url action
       //if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
+      if (this.isAppOffline) this.getDataTable();
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
         eventBus.emit('setMobileMainAction', {
           icon: 'fas fa-plus',
