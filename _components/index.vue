@@ -790,11 +790,11 @@ export default {
       return (col, row) => {
         let options = col?.options ?? [
           {
-            label: $tr('isite.cms.label.disabled'),
+            label: this.$tr('isite.cms.label.disabled'),
             value: 0
           },
           {
-            label: $tr('isite.cms.label.enabled'),
+            label: this.$tr('isite.cms.label.enabled'),
             value: 1
           }
         ];
