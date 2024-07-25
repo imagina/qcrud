@@ -788,7 +788,7 @@ export default {
     },
     statusOptions(){
       return (col, row) => {
-        options = col?.options ?? [
+        let options = col?.options ?? [
           {
             label: $tr('isite.cms.label.disabled'),
             value: 0
