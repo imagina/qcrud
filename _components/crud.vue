@@ -15,7 +15,7 @@
                :label="`${paramsProps.create.title || ''}`" v-if="params.create"/>
       </div>
     </dynamic-field>
-    <!---recycle bin--->
+    <!--=== Recycle bin ===-->
     <recycle
       ref="recycleBin"        
       v-model="recycleModal.show"

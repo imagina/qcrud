@@ -46,7 +46,7 @@ const axiosActions = {
         await cache.remove({allKey: configName})//Clear api Route cache
         this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
-      }).catch(error => {        
+      }).catch(error => {
         reject(error);//Failed response
       })
     })

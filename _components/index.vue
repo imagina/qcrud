@@ -2,7 +2,7 @@
   <div id="componentCrudIndex">
     <!--Content-->
     <div :id="appConfig.mode === 'ipanel' ? 'backend-page' : ''" class="backend-page">
-      <!--Page Actions-->      
+      <!--Page Actions-->
       <div class="q-my-md">
         <page-actions
             :extra-actions="tableActions"
