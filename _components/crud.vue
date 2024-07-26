@@ -1,5 +1,5 @@
 <template>
-  <div id="crudContentPage">
+  <div id="crudContentPage">    
     <!--=== Dynamic component to get crud data ===-->
     <component :is="componentCrudData" ref="componentCrudData" @hook:mounted="init"/>
 
@@ -15,6 +15,15 @@
                :label="`${paramsProps.create.title || ''}`" v-if="params.create"/>
       </div>
     </dynamic-field>
+    <!--=== Recycle bin ===-->
+    <recycle
+      ref="recycleBin"        
+      v-model="recycleModal.show"
+      :item="recycleModal.item"
+      @closeModal="recycleModal.show = false"
+      @delete="val => deleteItemPermanently(val)"
+      @restore="val => restoreItem(val)"
+    />
 
     <!--=== Full Crud ===-->
     <div v-if="success">
@@ -51,6 +60,7 @@
 //Component
 import crudIndex from '@imagina/qcrud/_components/index'
 import crudForm from '@imagina/qcrud/_components/form'
+import recycle from '@imagina/qcrud/_components/recycle'
 
 export default {
   beforeDestroy() {
@@ -89,7 +99,7 @@ export default {
       update: this.update,
     };
   },
-  components: {crudIndex, crudForm},
+  components: {crudIndex, crudForm, recycle},
   watch: {
     value(newValue, oldValue) {
       if (!newValue || (JSON.stringify(newValue) != JSON.stringify(oldValue))) {
@@ -120,7 +130,12 @@ export default {
         rootOptions: [],//Save all options
       },
       dataFieldsCustom: {},
-      itemCrudFields: false//Fields from item to replace form fields
+      itemCrudFields: false, //Fields from item to replace form fields,
+      isRecyleCrud: false,
+      recycleModal: {
+        show: false,
+        item: {}
+      }
     }
   },
   computed: {
@@ -195,6 +210,11 @@ export default {
     paramsProps() {
       if (!this.$refs.componentCrudData) return {}
       let crudData = this.$clone(this.$refs.componentCrudData.crudData || {})//
+
+      /*recycle bin*/      
+      if(this.isRecyleCrud){
+        crudData = this.addRecycleBinParams(crudData)
+      }
       crudData.hasPermission = this.hasPermission//Add permission validated
 
       //Merge fields with dataFieldsCustom
@@ -279,7 +299,9 @@ export default {
       e.stopPropagation();
     },
     //init form
-    async init() {
+    async init() {      
+      if(this.$refs['recycleBin']) this.isRecyleCrud = this.$refs.recycleBin.isRecyleCrud      
+      
       if (this.$refs.componentCrudData && this.$refs.componentCrudData.crudData) {
         this.params = this.$clone(this.$refs.componentCrudData.crudData)//asing crudData to params
         //Set default value selected
@@ -410,6 +432,9 @@ export default {
     },
     //watch emit update from form component
     formEmmit(type = 'created', response = false) {
+      if(this.isRecyleCrud && type == 'deleted') {
+        this.recycleModal.show = false
+      }
       if (this.type == 'full') {
         this.getDataTable(true)
       } else this.getIndexOptions()
@@ -466,7 +491,53 @@ export default {
     },
     async getDataTable(refresh) {
       if(this.$refs.crudIndex) await this.$refs.crudIndex.getDataTable(refresh);
-    }
+    }, 
+    /*reycle custom crudData*/
+    addRecycleBinParams(crudData){
+      crudData.read['excludeActions'] =  ['new', 'edit', 'destroy', 'sync', 'export', 'share', 'recycle']
+      
+      const requestParams = {
+        filter: {onlyTrashed : true}
+      }
+
+      crudData.read['requestParams'] = { ...crudData.read.requestParams || {}, ...requestParams}
+      crudData['update'] = false
+
+      const deletedAt = {
+        name: 'deletedAt',        
+        label: this.$tr('isite.cms.label.deletedAt'), 
+        field: 'deletedAt',
+        align: 'left',
+        format: val => val ? this.$trd(val) : '-',
+      }
+
+      /*add deleteAt column*/
+      crudData.read.columns.splice(crudData.read.columns.length - 1, 0, deletedAt)
+
+      /* add display modal action to id and title cols */
+      if(this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.restore') || this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.destroy')){
+        Object.keys(crudData.read.columns).forEach((col) => {
+          if(crudData.read.columns[col]['name'] == 'id' || crudData.read.columns[col]['name'] == 'title' ){
+            crudData.read.columns[col] = {
+              ...crudData.read.columns[col], 
+              action: (item) => {
+                this.recycleModal.show = true
+                this.recycleModal.item = item
+              }
+            }
+          }
+        })
+      }
+      /* remove actions col  */
+      crudData.read.columns.pop();
+      return crudData
+    }, 
+    deleteItemPermanently(item){      
+      this.$refs.crudIndex.deleteItem(item, true)
+    }, 
+    restoreItem(item){
+      this.$refs.crudIndex.restoreItem(item)
+    },
   }
 }
 </script>
