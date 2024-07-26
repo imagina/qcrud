@@ -1,6 +1,5 @@
 <template>
   <div id="componentCrudIndex">
-    modal : {{ showDynamicFilterModal }}
     <!--Content-->
     <div id="backend-page">
       <!--Page Actions-->
