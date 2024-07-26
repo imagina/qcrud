@@ -15,18 +15,18 @@
                :label="`${paramsProps.create.title || ''}`" v-if="params.create"/>
       </div>
     </dynamic-field>
+    <!---recycle bin--->
+    <recycle
+      ref="recycleBin"        
+      v-model="recycleModal.show"
+      :item="recycleModal.item"
+      @closeModal="recycleModal.show = false"
+      @delete="val => deleteItemPermanently(val)"
+      @restore="val => restoreItem(val)"
+    />
 
     <!--=== Full Crud ===-->
     <div v-if="success">
-      <!---recycle --->
-      <recycle 
-        v-if="isRecyleCrud && showType('full')"
-        v-model="recycleModal.show"
-        :item="recycleModal.item"
-        @closeModal="recycleModal.show = false"
-        @delete="val => deleteItemPermanently(val)"
-        @restore="val => restoreItem(val)"
-      />
       <!--Index component-->
       <crud-index v-if="showType('full')" :params="$clone(paramsProps)" ref="crudIndex"
                   @create="create" @update="update" @deleted="formEmmit('deleted')" :title="title"/>
@@ -131,6 +131,7 @@ export default {
       },
       dataFieldsCustom: {},
       itemCrudFields: false, //Fields from item to replace form fields,
+      isRecyleCrud: false,
       recycleModal: {
         show: false,
         item: {}
@@ -210,9 +211,7 @@ export default {
       if (!this.$refs.componentCrudData) return {}
       let crudData = this.$clone(this.$refs.componentCrudData.crudData || {})//
 
-
-      /*recycle bin*/
-      crudData['path'] = crudData['path'] ? crudData['path'] : false
+      /*recycle bin*/      
       if(this.isRecyleCrud){
         crudData = this.addRecycleBinParams(crudData)
       }
@@ -286,39 +285,6 @@ export default {
       }
       //Repsonse
       return fieldConfig
-    },
-    getUrlParams(){
-      const params = decodeURI(window.location).split('?')
-      if(Array.isArray(params) ){
-        if(params.length > 1){
-          const query =  params[1]
-            .split('&')
-            .map(param => param.split('='))
-            .reduce((values, [ key, value ]) => {
-              values[ key ] = value
-              return values
-          }, {})
-          return query
-        }          
-      }
-      return {}
-    },
-    isRecyleCrud(){
-      const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index') || false
-      const query = this.getUrlParams
-
-      if(query['recycle-bin']){
-        if(permission){
-          return query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false
-        } else {
-          /*remove recycle-bin from url queries*/
-          const newQueryParams = {...this.$route.query}
-          delete newQueryParams['recycle-bin']
-          delete newQueryParams['recycle-bin-manage']
-          this.$router.replace({ query: newQueryParams });
-        }
-      }
-      return false  
     }
   },
   methods: {
@@ -333,7 +299,9 @@ export default {
       e.stopPropagation();
     },
     //init form
-    async init() {
+    async init() {      
+      if(this.$refs['recycleBin']) this.isRecyleCrud = this.$refs.recycleBin.isRecyleCrud      
+      
       if (this.$refs.componentCrudData && this.$refs.componentCrudData.crudData) {
         this.params = this.$clone(this.$refs.componentCrudData.crudData)//asing crudData to params
         //Set default value selected
@@ -553,8 +521,8 @@ export default {
             crudData.read.columns[col] = {
               ...crudData.read.columns[col], 
               action: (item) => {
-              this.recycleModal.show = true
-              this.recycleModal.item = item
+                this.recycleModal.show = true
+                this.recycleModal.item = item
               }
             }
           }

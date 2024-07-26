@@ -24,7 +24,7 @@
 
     </master-modal>    
     <!-- banner info -->
-    <dynamic-field :field="info" />
+    <dynamic-field :field="info" v-if="isRecyleCrud" />
   </div>
 </template>
 <script>
@@ -32,7 +32,15 @@
 export default {
 props: {
   value: {default: false},
-  item: {}
+  item: { 
+    required: false,
+    type: Object, 
+    default: () => {
+      return {
+        id: null
+      }
+    }
+  }
 },
 watch: {
   value(newValue) {    
@@ -104,6 +112,24 @@ data() {
   }
 },
 computed: {
+  isRecyleCrud(){
+    const permission = this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.index') || false
+    const query = this.getUrlParams()
+    let response = false
+
+    if(query['recycle-bin']){
+      if(permission){
+        response = query['recycle-bin'] ? (query['recycle-bin'] == 'true') : false
+      } else {
+        /*remove recycle-bin from url queries*/
+        const newQueryParams = {...this.$route.query}
+        delete newQueryParams['recycle-bin']
+        delete newQueryParams['recycle-bin-manage']
+        this.$router.replace({ query: newQueryParams });
+      }
+    }
+    return response
+  },
   canRestore(){
     return this.$store.getters['quserAuth/hasAccess']('isite.soft-delete.restore') || false
   }, 
@@ -112,13 +138,15 @@ computed: {
   }
 }, 
 methods: {
-  init(){
+  init(){    
+    this.openModal();   
+  },
+  openModal(){
     const query = this.getUrlParams()
     if(query['recycle-bin-manage']){
-      console.log(query['recycle-bin-manage'])
       this.showModal = true
       this.itemData = {id: query['recycle-bin-manage']}
-    }       
+    }
   },
   closeModal(){
     this.showModal = false
