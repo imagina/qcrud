@@ -1,5 +1,6 @@
 <template>
   <div id="componentCrudIndex">
+    modal : {{ showDynamicFilterModal }}
     <!--Content-->
     <div id="backend-page">
       <!--Page Actions-->
@@ -27,8 +28,8 @@
           :systemName="systemName"
           :modelValue="showDynamicFilterModal"
           :filters="dynamicFilter"
-          @showModal="toggleDynamicFilterModal"
-          @hideModal="toggleDynamicFilterModal"
+          @showModal="showDynamicFilterModal = true"
+          @hideModal="showDynamicFilterModal = false"
           @update:modelValue="filters => updateDynamicFilterValues(filters)"
           @update:summary="summary => dynamicFilterSummary = summary"
         />
