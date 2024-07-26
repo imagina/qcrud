@@ -440,7 +440,6 @@ export default {
           this.$emit('createdData', requestInfo.response.data)
           if (this.params.create?.callback) this.params.create.callback(requestInfo.response.data)
         } else {
-          this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
           this.loading = false//login hide
           if (requestInfo.error) {//Message Validate
             let errorMsg = JSON.parse(requestInfo.error)
@@ -513,7 +512,6 @@ export default {
           if (this.params.update?.callback) this.params.update.callback(requestInfo.response.data)
         } else {
           this.loading = false
-          this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
         }
       }
     },
