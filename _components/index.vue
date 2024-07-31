@@ -810,8 +810,8 @@ export default {
       return `${start} - ${end} ${this.$tr('isite.cms.label.of')} ${totalPage}`;
     },
     addEventListenersSW() {
-      navigator.serviceWorker.addEventListener('message', async eventListener => {    
-        if (eventListener.data === 'sync-data') {
+      navigator.serviceWorker.addEventListener('message', async eventListener => {
+        if (eventListener.data === 'synchronized-data') {
           this.getDataTable(true);
         }
       })
