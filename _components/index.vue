@@ -842,7 +842,7 @@ export default {
     },
     addEventListenersSW() {
       navigator.serviceWorker.addEventListener('message', async eventListener => {
-        if (eventListener.data === 'sync-data') {
+        if (eventListener.data === 'synchronized-data') {
           this.getDataTable(true);
         }
       })
