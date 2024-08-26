@@ -20,6 +20,7 @@
           :dynamicFilterValues="getDynamicFilterValues"
           :dynamicFilterSummary="dynamicFilterSummary"
           @toggleDynamicFilterModal="toggleDynamicFilterModal"
+          @activateTour="$tour.start(tourName)"
         />
         <!-- dynamicFilter -->
         <dynamicFilter
@@ -1280,8 +1281,6 @@ export default {
               });
             });
           }
-        } else {
-          this.$tour.start(this.tourName);
         }
       }, 500);
     },
