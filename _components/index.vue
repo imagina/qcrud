@@ -551,8 +551,10 @@ export default {
         if ((action.vIf != undefined) && !action.vIf) return false
         //Validate permission
         if ((action.permission != undefined) && !this.$auth.hasAccess(action.permission)) return false
+        // Validate type
+        if(action?.bulkActionType) return true
         //Validate apiRoute
-        if (!action.apiRoute) return false
+        if (!action.apiRoute ) return false
         //Default response
         return true
       }).map(action => {
@@ -1142,6 +1144,18 @@ export default {
         if (this.selectedRows.includes(item.id)) return true
         else return false
       }).map(item => item[criteria])
+      if(act.bulkActionType) {
+        const refBulkActions = this.$refs.pageActionRef.$refs.bulkActions;
+        if(refBulkActions) {
+          refBulkActions.showReport();
+          refBulkActions.selectedAction = refBulkActions.field.props.options.find(item => item.value === act.bulkActionType) || null;
+          refBulkActions.handleChangeBulkActions(refBulkActions.selectedAction);
+          refBulkActions.rowIds = selectedDataByCriteria;
+          this.loading = false;
+          return  
+        }
+      }
+      
       //Instance request params
       var requestParams = {
         attributes: {
