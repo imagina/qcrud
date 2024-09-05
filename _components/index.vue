@@ -1150,6 +1150,7 @@ export default {
           refBulkActions.showReport();
           refBulkActions.selectedAction = refBulkActions.field.props.options.find(item => item.value === act.bulkActionType) || null;
           refBulkActions.handleChangeBulkActions(refBulkActions.selectedAction);
+          refBulkActions.criteria = this.$helper.convertStringToSnakeCase(criteria);
           refBulkActions.rowIds = selectedDataByCriteria;
           this.loading = false;
           return  
