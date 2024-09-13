@@ -367,7 +367,10 @@
                   <q-select
                     v-model="table.pagination.rowsPerPage"
                     :options="rowsPerPageOption"
-                    @update:modelValue="getDataTable()"
+                    @update:modelValue="() => {
+                      table.pagination.page = 1
+                      getDataTable()
+                    }"
                     options-cover
                     dense
                     class="q-mx-sm text-caption"
@@ -801,13 +804,12 @@ export default {
       });
     },
     countPage(props) {
-      const page = props.pagination.page;
-      const rowsPerPage = props.pagination.rowsPerPage;
-      const showTable = this.table.data.length;
-      const totalPage = props.pagination.rowsNumber;
-      const start = page == 1 ? 1 : page * rowsPerPage - ((rowsPerPage - (page - 1)) <= 0 ? 1 : rowsPerPage - (page - 1));
-      const end = showTable < rowsPerPage ? totalPage : page * showTable;
-      return `${start} - ${end} ${this.$tr('isite.cms.label.of')} ${totalPage}`;
+      const page = props.pagination.page
+      const rowsPerPage = props.pagination.rowsPerPage
+      const rowsNumber = props.pagination.rowsNumber
+      const start = ((page * rowsPerPage) - rowsPerPage) + 1
+      const ends = props.isLastPage ? rowsNumber : (page * rowsPerPage)
+      return `${start} - ${ends} ${this.$tr('isite.cms.label.of')} ${rowsNumber}`      
     },
     //init form
     async init() {
