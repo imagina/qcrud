@@ -46,7 +46,6 @@ const axiosActions = {
       //Request
       axios.post(urlApi, {attributes: dataRequest}).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
-        this.clearCache()
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -153,7 +152,6 @@ const axiosActions = {
       //Request
       axios.put(urlApi, requestParams, { headers: headerOffline(configName) }).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
-        this.clearCache()
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -186,7 +184,6 @@ const axiosActions = {
       //Request
       axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
-        this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -210,7 +207,6 @@ const axiosActions = {
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Request
       axios.delete(urlApi, { ...configOptions, headers: { ...configOptions?.headers, ...headerOffline(configName)  } }).then(response => {
-        this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
