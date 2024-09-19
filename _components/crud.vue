@@ -16,6 +16,12 @@
                  :label="`${paramsProps.create.title || ''}`" v-if="params.create" />
         </div>
       </template>
+      <template v-slot:actions="scope">
+        <btn-menu
+            :actions="getActions()"
+            :action-data="scope.opt"
+        />
+      </template>
     </dynamic-field>
 
     <!--=== Full Crud ===-->
@@ -262,7 +268,7 @@ export default {
         //Instance the field config
         this.selectField = {
           value: null,
-          type: this.defaultConfig.filterByQuery ? 'select' : 'treeSelect',
+          type: this.defaultConfig.type || this.defaultConfig.filterByQuery ? 'select' : 'treeSelect',
           props: {
             key: this.$uid(),
             label: (this.params?.create.title || ''),
@@ -338,7 +344,7 @@ export default {
                 //Dispatch event hook
                 this.$hook.dispatchEvent('wasDeleted', { entityName: this.params.entityName });
                 //Event
-                this.$emit('deleted');
+                this.formEmmit('deleted');
               }).catch(error => {
                 this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' });
                 this.loading = false;
@@ -420,6 +426,33 @@ export default {
     showCreateModal(e) {
       this.create();
       e.stopPropagation();
+    },
+    getActions() {
+      const edit = this.hasPermission.edit || !!this.paramsProps.update;//Default action edit
+      const destroy = this.hasPermission.destroy || !!this.paramsProps.delete;//Default action destroy
+
+      return [
+        {//Edit action
+          icon: 'fa-light fa-pencil',
+          name: 'edit',
+          color: 'green',
+          label: this.$tr('isite.cms.label.edit'),
+          vIf: edit,
+          action: (item) => {
+            this.update(item);
+          }
+        },
+        {//Delete action
+          icon: 'fa-light fa-trash-can',
+          name: 'delete',
+          color: 'red',
+          label: this.$tr('isite.cms.label.delete'),
+          vIf: destroy,
+          action: (item) => {
+            this.delete(item);
+          }
+        },
+      ]
     }
   }
 };
