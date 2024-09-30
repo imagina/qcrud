@@ -3,7 +3,7 @@
     <!--Content-->
     <div id="backend-page">
       <!--Page Actions-->
-      <div class="q-my-md">
+      <div class="q-mb-md">
         <page-actions
           :extra-actions="tableActions"
           :excludeActions="excludeActions"
@@ -103,7 +103,7 @@
             </q-tr>
           </template>
           <template v-slot:body="props">
-            <q-tr 
+            <q-tr
               :props="props"
               :class="{
                 'tw-bg-yellow-100': props.row.offline,
@@ -145,21 +145,21 @@
                      class="text-left">
                   <!--Action-->
                   <q-btn-dropdown
-                    :color="col.value ? 'green' : 'red'"
+                    :color="!col?.options ? (col.value ? 'green' : 'red') : ''"
                     flat
                     padding="sm none"
                     class="text-caption"
-                    :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
+                    :label="statusOptionsLabel(col, props.row)"
                     no-caps
                     v-if="permitAction(props.row).edit"
                   >
                     <!--Message change to-->
-                    <q-item class="q-pa-sm cursor-pointer" clickable @click="updateStatus({...props, col})"
+                    <q-item v-for="option in statusOptions(col, props.row, true)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props.row, col, option.value)"
                             v-close-popup>
                       <div class="row items-center">
-                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col.value ? 'green' : 'red'" />
+                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col?.options ? (!col.value ? 'green' : 'red') : ''" />
                         {{
-                          $tr('isite.cms.message.changeTo', { text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled')) })
+                          $tr('isite.cms.message.changeTo', { text: option.label })
                         }}
                       </div>
                     </q-item>
@@ -277,17 +277,22 @@
                           <!-- status columns -->
                           <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
                                class="text-left">
-                            <q-btn-dropdown :color="col.value ? 'green' : 'red'" flat padding="sm none"
-                                            :label="col.value ? $tr('isite.cms.label.enabled') : $tr('isite.cms.label.disabled')"
-                                            class="text-caption" no-caps>
+                            <q-btn-dropdown
+                              :color="!col?.options ? (col.value ? 'green' : 'red') : ''"
+                              flat
+                              padding="sm none"
+                              class="text-caption"
+                              :label="statusOptionsLabel(col, props.row)"
+                              no-caps
+                              v-if="permitAction(props.row).edit"
+                            >
                               <!--Message change to-->
-                              <q-item class="q-pa-sm cursor-pointer" v-close-popup clickable
-                                      @click="updateStatus({...props, col : col})">
+                              <q-item v-for="option in statusOptions(col, props, true)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props.row, col, option.value)"
+                                      v-close-popup>
                                 <div class="row items-center">
-                                  <q-icon name="fa-light fa-pencil" class="q-mr-sm"
-                                          :color="!col.value ? 'green' : 'red'" />
+                                  <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col?.options ? (!col.value ? 'green' : 'red') : ''" />
                                   {{
-                                    $tr('isite.cms.message.changeTo', { text: (col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled')) })
+                                    $tr('isite.cms.message.changeTo', { text: option.label })
                                   }}
                                 </div>
                               </q-item>
@@ -778,6 +783,7 @@ export default {
       return response;
     },
     dynamicFilter() {
+      if (this.isAppOffline) return false;
       if (this.params.read?.filters) {
         if (Object.keys(this.params.read?.filters).length > 0) {
           return this.params.read?.filters;
@@ -790,6 +796,32 @@ export default {
     },
     getDynamicFilterValues() {
       return this.dynamicFilterValues;
+    },
+    statusOptions(){
+      return (col, row, isFilter = false) => {
+        let options = col?.options || [
+          {
+            label: this.$tr('isite.cms.label.disabled'),
+            value: 0
+          },
+          {
+            label: this.$tr('isite.cms.label.enabled'),
+            value: 1
+          }
+        ];
+        const valueRow = row[col.name] || 0;
+        return options.filter(opt => {
+          if(isFilter) return opt.value != valueRow;
+          return true;
+        })
+
+      }
+    },
+    statusOptionsLabel(){
+      return (col, row) => {
+        const valueRow = row[col.name] || 0;
+        return this.statusOptions(col, row).find(opt => opt.value == valueRow)?.label || ''
+      }
     }
   },
   methods: {
@@ -811,12 +843,20 @@ export default {
       const ends = props.isLastPage ? rowsNumber : (page * rowsPerPage)
       return `${start} - ${ends} ${this.$tr('isite.cms.label.of')} ${rowsNumber}`      
     },
+    addEventListenersSW() {
+      navigator.serviceWorker.addEventListener('message', async eventListener => {
+        if (eventListener.data === 'synchronized-data') {
+          this.getDataTable(true);
+        }
+      })
+    },
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
       this.handlerUrlCrudAction();//Handler url action
       //if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
+      if (this.isAppOffline) this.getDataTable();
       if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
         eventBus.emit('setMobileMainAction', {
           icon: 'fas fa-plus',
@@ -824,12 +864,7 @@ export default {
           callBack: () => this.handlerActionCreate()
         });
       }
-      this.$store.dispatch(
-        'qofflineMaster/OFFLINE_REQUESTS',
-        {
-          callback: this.getDataTable
-        }
-      )
+      this.addEventListenersSW()
       //Success
       this.success = true;
     },
@@ -877,7 +912,7 @@ export default {
         }
       }
     },
-    async requestDataTable(apiRoute, params, pagination) {
+    async requestDataTable(apiRoute, params, pagination, caching) {
       try {
 
         if (this.isAppOffline) {
@@ -886,13 +921,14 @@ export default {
             this.table.filter.search,
             pagination.page,
             pagination.rowsPerPage,
+            this.params?.read?.requestParams?.filter
           );
           if (cachePaginate.data.length > 0) {
             return cachePaginate;
           }
         }
 
-        const response = await this.$crud.index(apiRoute, params)
+        const response = await this.$crud.index(apiRoute, params, caching)
           .catch(error => {
             if (!this.isAppOffline && !error?.config?.signal?.aborted) {
               this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' });
@@ -956,7 +992,7 @@ export default {
       }
 
       //Request
-      const response = await this.requestDataTable(propParams.apiRoute, params, pagination);
+      const response = await this.requestDataTable(propParams.apiRoute, params, pagination, propParams.caching);
       this.expiresIn = response?.expiresIn;
       let dataTable = response?.data;
       //If is field change format
@@ -1023,8 +1059,8 @@ export default {
                   this.loading = false;
                 }
                 this.$crud.delete(
-                  propParams.apiRoute, 
-                  item.id, 
+                  propParams.apiRoute,
+                  item.id,
                   {
                     data: {
                       attributes: {
@@ -1052,6 +1088,7 @@ export default {
                 });
 
                 await cacheOffline.deleteItem(item.id, propParams.apiRoute)
+                if (this.isAppOffline) this.getDataTable(true);
               }
             }
           }
@@ -1096,29 +1133,28 @@ export default {
       }
     },
     //Update item status
-    updateStatus(item) {
+    updateStatus(row, col, value) {
       this.loading = true;
       //Request Data
       let requestData = {
-        id: item.row.id,
-        [item.col.name]: (typeof item.row[item.col.name] == 'boolean') ? !item.row[item.col.name] :
-          parseInt(item.row[item.col.name]) ? 0 : 1
+        id: row.id,
+        [col.name]: value
       };
 
       //Validate if is translatable
-      if (item.col.isTranslatable) {
+      if (col.isTranslatable) {
         requestData[this.$store.state.qsiteApp.defaultLocale] = {
-          [item.col.name]: requestData[item.col.name]
+          [col.name]: value
         };
-        delete requestData[item.col.name];
+        delete requestData[col.name];
       }
 
       //Request
-      this.$crud.update(this.params.apiRoute, item.row.id, requestData).then(response => {
+      this.$crud.update(this.params.apiRoute, row.id, requestData).then(response => {
         //Change value status in data
         this.table.data = this.$clone(this.table.data.map(itemData => {
           //Change status
-          if (itemData.id == item.row.id) itemData[item.col.name] = requestData[item.col.name];
+          if (itemData.id == row.id) itemData[col.name] = requestData[col.name];
           return itemData;//Response
         }));
         this.loading = false;
