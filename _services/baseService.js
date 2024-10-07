@@ -41,7 +41,6 @@ const axiosActions = {
       //Request
       axios.post(urlApi, {attributes: dataRequest}).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
-        this.clearCache()
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -148,7 +147,6 @@ const axiosActions = {
       //Request
       axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
-        this.clearCache()
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -181,7 +179,6 @@ const axiosActions = {
       //Request
       axios.put(urlApi, requestParams).then(async response => {
         await cache.remove({allKey: configName})//Clear api Route cache
-        this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -205,7 +202,6 @@ const axiosActions = {
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
       //Request
       axios.delete(urlApi, { ...configOptions }).then(response => {
-        this.clearCache()//Clear Cache
         resolve(response.data)//Successful response
       }).catch(error => {
         reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
@@ -276,17 +272,7 @@ const axiosActions = {
         reject(error)//Failed response
       })
     })
-  },
-
-  /**
-   * Request to clear backend cache
-   */
-  clearCache: debounce(() => {
-    return new Promise(async (resolve, reject) => {
-      await axiosActions.post('apiRoutes.qsite.cacheClear').catch(error => reject(error))
-      resolve(true)
-    })
-  }, 1000)
+  }
 }
 
 export default axiosActions;
