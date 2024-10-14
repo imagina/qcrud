@@ -424,7 +424,7 @@ export default {
       }
     },
     showCreateModal(e) {
-      this.create();
+      this.create(this.paramsProps.create?.dataCustom || {});
       e.stopPropagation();
     },
     getActions() {
