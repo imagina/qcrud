@@ -357,6 +357,7 @@ export default {
     //watch emit update from form component
     async formEmmit(type = 'created', response = false) {
       if (this.type == 'full') await this.getDataTable(true);
+      if (['deleted', 'updated'].includes(type)) this.selectFieldKey = this.$uid();
       this.$emit(type, response);
     },
     //Validate type to show
