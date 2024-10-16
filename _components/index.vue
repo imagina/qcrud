@@ -841,7 +841,7 @@ export default {
       const rowsNumber = props.pagination.rowsNumber
       const start = ((page * rowsPerPage) - rowsPerPage) + 1
       const ends = props.isLastPage ? rowsNumber : (page * rowsPerPage)
-      return `${start} - ${ends} ${this.$tr('isite.cms.label.of')} ${rowsNumber}`      
+      return `${start} - ${ends} ${this.$tr('isite.cms.label.of')} ${rowsNumber}`
     },
     addEventListenersSW() {
       navigator.serviceWorker.addEventListener('message', async eventListener => {
@@ -1514,7 +1514,7 @@ export default {
     updateDynamicFilterValues(filters) {
       this.dynamicFilterValues = filters;
       this.table.filter = filters;
-      this.getDataTable(false, filters, { page: 1 });
+      this.getDataTable(true, filters, { page: 1 });
     },
     isDisableRow(row, type = '') {
       const disabledRow = this.params?.read?.disabled?.row
