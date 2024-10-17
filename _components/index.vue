@@ -34,6 +34,10 @@
           @update:summary="summary => dynamicFilterSummary = summary"
         />
       </div>
+      <dashboardRenderer
+        class="tw-mb-5"
+        :dynamicFilterValues="getDynamicFilterValues"
+      />
       <!-- Bulk Actions -->
       <div v-if="selectedRows.length" id="selectedRows"
            class="bg-primary text-white row justify-between items-center q-px-md q-mb-md q-py-sm">
@@ -437,6 +441,7 @@ import { eventBus, cacheOffline } from 'src/plugins/utils';
 import { markRaw } from 'vue';
 import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
+import dashboardRenderer from 'modules/qsite/_components/master/dashboardRenderer';
 
 export default {
   props: {
@@ -448,7 +453,8 @@ export default {
     masterExport,
     recursiveItemDraggable,
     qreable,
-    dynamicFilter
+    dynamicFilter,
+    dashboardRenderer
   },
   provide() {
     return {
