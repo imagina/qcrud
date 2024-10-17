@@ -896,6 +896,12 @@ export default {
           },
           refresh);
       }
+      this.hideExpandedRows();
+    },
+    hideExpandedRows() {
+      if (this.tableKey) {
+        this.$refs[`trExpansion${this.tableKey}`].hide();
+      }
     },
     //Row click
     async rowclick(col, row) {
