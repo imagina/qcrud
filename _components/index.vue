@@ -890,6 +890,13 @@ export default {
           },
           refresh);
       }
+      this.hideExpandedRows()
+    },
+    hideExpandedRows() {
+      if (this.tableKey) {
+        this.$refs[`trExpansion${this.tableKey}`].hide();
+        this.tableKey = null;
+      }
     },
     //Row click
     async rowclick(col, row) {
