@@ -3,5 +3,6 @@ export default {
     denyPermissions: 'Permisos insuficientes',
     showAsList: 'Ver como lista',
     showAsCard: 'Ver como tarjetas',
-  }
+  },
+  "seeMore": "Ver mas",
 }
