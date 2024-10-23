@@ -896,7 +896,7 @@ export default {
           },
           refresh);
       }
-      this.hideExpandedRows();
+      this.hideExpandedRows()
     },
     hideExpandedRows() {
       if (this.tableKey) {
