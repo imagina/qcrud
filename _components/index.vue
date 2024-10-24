@@ -33,11 +33,11 @@
           @update:modelValue="filters => updateDynamicFilterValues(filters)"
           @update:summary="summary => dynamicFilterSummary = summary"
         />
+        <dashboardRenderer
+          :baseFilters="params?.read?.requestParams?.filter"
+          :dynamicFilterValues="getDynamicFilterValues"
+        />
       </div>
-      <dashboardRenderer
-        class="tw-mb-5"
-        :dynamicFilterValues="getDynamicFilterValues"
-      />
       <!-- Bulk Actions -->
       <div v-if="selectedRows.length" id="selectedRows"
            class="bg-primary text-white row justify-between items-center q-px-md q-mb-md q-py-sm">
