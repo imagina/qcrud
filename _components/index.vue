@@ -1317,7 +1317,7 @@ export default {
         const module = this.$helper.toCapitalize(route.module)
         const entity = this.$helper.toCapitalize(this.params.entityName)
         //Create the correct entity_type
-        const entity_type = `Modules\\${module}\\Entities\\${entity}`;
+        const entity_type = this.params.entityType || `Modules\\${module}\\Entities\\${entity}`;
 
         //Set the values to create the QR code
         const createQr = {
