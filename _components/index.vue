@@ -424,7 +424,6 @@ import _ from 'lodash';
 import qreable from 'src/modules/qqreable/_components/qreable.vue';
 import { eventBus, cacheOffline } from 'src/plugins/utils';
 import { markRaw } from 'vue';
-import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
 
 export default {
@@ -436,8 +435,7 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable,
-    dynamicFilter
+    qreable
   },
   provide() {
     return {
@@ -513,9 +511,7 @@ export default {
       filters: false,
       gridComponent: false,
       expiresIn: null,
-      showDynamicFilterModal: false,
-      dynamicFilterValues: {},
-      dynamicFilterSummary: {}
+      dynamicFilterValues: {}
     };
   },
   computed: {
