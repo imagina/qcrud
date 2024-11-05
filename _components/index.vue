@@ -16,23 +16,12 @@
           :tour-name="tourName"
           :help="help"
           :expires-in="expiresIn"
-          :dynamicFilter="dynamicFilter"
-          :dynamicFilterValues="getDynamicFilterValues"
-          :dynamicFilterSummary="dynamicFilterSummary"
-          @toggleDynamicFilterModal="toggleDynamicFilterModal"
           @activateTour="$tour.start(tourName)"
+          :systemName="systemName"
+          :dynamicFilter="dynamicFilter"
+          @updateDynamicFilterValues="filters => updateDynamicFilterValues(filters)"
         />
         <!-- dynamicFilter -->
-        <dynamicFilter
-          v-if="dynamicFilter"
-          :systemName="systemName"
-          :modelValue="showDynamicFilterModal"
-          :filters="dynamicFilter"
-          @showModal="showDynamicFilterModal = true"
-          @hideModal="showDynamicFilterModal = false"
-          @update:modelValue="filters => updateDynamicFilterValues(filters)"
-          @update:summary="summary => dynamicFilterSummary = summary"
-        />
       </div>
       <!-- Bulk Actions -->
       <div v-if="selectedRows.length" id="selectedRows"
@@ -435,7 +424,6 @@ import _ from 'lodash';
 import qreable from 'src/modules/qqreable/_components/qreable.vue';
 import { eventBus, cacheOffline } from 'src/plugins/utils';
 import { markRaw } from 'vue';
-import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
 
 export default {
@@ -447,8 +435,7 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable,
-    dynamicFilter
+    qreable
   },
   provide() {
     return {
@@ -524,9 +511,7 @@ export default {
       filters: false,
       gridComponent: false,
       expiresIn: null,
-      showDynamicFilterModal: false,
-      dynamicFilterValues: {},
-      dynamicFilterSummary: {}
+      dynamicFilterValues: {}
     };
   },
   computed: {
@@ -1514,10 +1499,7 @@ export default {
           ]
         });
       }
-    },
-    toggleDynamicFilterModal() {
-      this.showDynamicFilterModal = !this.showDynamicFilterModal;
-    },
+    },    
     updateDynamicFilterValues(filters) {
       this.dynamicFilterValues = filters;
       this.table.filter = filters;
