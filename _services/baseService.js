@@ -46,7 +46,7 @@ const axiosActions = {
         await cache.remove({allKey: configName})//Clear api Route cache
         resolve(response.data)//Successful response
       }).catch(error => {
-        reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
+        reject(error);//Failed response
       })
     })
   },
@@ -151,7 +151,7 @@ const axiosActions = {
         await cache.remove({allKey: configName})//Clear api Route cache
         resolve(response.data)//Successful response
       }).catch(error => {
-        reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
+        reject(error);//Failed response
       })
     })
   },
