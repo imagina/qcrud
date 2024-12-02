@@ -100,7 +100,7 @@ const axiosActions = {
       if (!configName) return reject('Config name is required')//Validate Config name
       if (!criteria) return reject('Criteria is required')//Validate criteria
       let urlApi = (config(configName) || configName) + '/' + criteria//Get url from config
-      let key = `${configName}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
+      let key = `${configName}-${criteria}::requestParams[${JSON.stringify(params.params)}]`//Key to cache
 
       remember.async({
         key: key,
