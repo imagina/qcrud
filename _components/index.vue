@@ -112,7 +112,7 @@
                 <!--Actions column-->
                 <div class="crudIndexActionsColumn" v-if="col.name == 'actions'">
                   <btn-menu
-                      :actions="fieldActions(col)"
+                      :actions="fieldActions(col, props.row)"
                       :action-data="props.row"
                   />
                 </div>
@@ -244,7 +244,7 @@
                           <!--Label-->
                           <div> {{ col.label }} {{ col.name == 'id' ? col.value : '' }}</div>
                           <!--Actions-->
-                          <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props)" :action-data="props.row"/>
+                          <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props, props.row)" :action-data="props.row"/>
                         </div>
                         <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm"/>
                       </q-item-label>
@@ -399,6 +399,7 @@ import foldersStore from '@imagina/qsite/_components/master/folders/store/folder
 import _ from "lodash";
 import qreable from "@imagina/qqreable/_components/qreable.vue"
 import _filterPlugin from '@imagina/qsite/_plugins/filter'
+import axios from 'axios';
 
 export default {
   props: {
@@ -1035,7 +1036,7 @@ export default {
       })
     },
     //Return field actions
-    fieldActions(field) {
+    fieldActions(field, row = null) {
       let actions = this.$clone(this.params.read.actions || [])
       let response = []
 
@@ -1086,6 +1087,24 @@ export default {
         },
         ...actions
       ]
+
+      //adds cleanCache action
+      if(row && row?.url){
+        actions.push({
+          name: 'cleanCache',
+          label: this.$tr('isite.cms.configList.clearCache'),
+          icon: 'fa-light fa-broom',
+          action: (row) => {
+            axios.get(row.url, {
+              headers: { 'icache-bypass': 1 },
+              params: {},
+              paramsSerializer: () => ''
+            }).then(() => {
+               this.$alert.info(this.$tr('isite.cms.label.success'))
+            })
+          }
+        })
+      }
 
       //Order field actions
       if (actions && actions.length) {
