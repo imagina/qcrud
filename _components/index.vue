@@ -125,7 +125,7 @@
                 <!--Actions column-->
                 <div class="crudIndexActionsColumn" v-if="col.name == 'actions'">
                   <btn-menu
-                    :actions="fieldActions(col)"
+                    :actions="fieldActions(col, props.row)"
                     :action-data="props.row"
                   />
                 </div>
@@ -257,7 +257,7 @@
                             <!--Label-->
                             <div> {{ col.label }} {{ col.name == 'id' ? col.value : '' }}</div>
                             <!--Actions-->
-                            <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props)" :action-data="props.row" />
+                            <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props, props.row)" :action-data="props.row" />
                           </div>
                           <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm" />
                         </q-item-label>
@@ -425,6 +425,8 @@ import qreable from 'src/modules/qqreable/_components/qreable.vue';
 import { eventBus, cacheOffline } from 'src/plugins/utils';
 import { markRaw } from 'vue';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
+import axios from 'axios';
+
 
 export default {
   props: {
@@ -1157,7 +1159,7 @@ export default {
       });
     },
     //Return field actions
-    fieldActions(field) {
+    fieldActions(field, row = null) {
       let readActions = this.$clone(this.params.read.actions || []);
 
       //Default action
@@ -1228,6 +1230,24 @@ export default {
         if(mergeAction) mainAction = { ...mainAction, ...mergeAction}
         return mainAction
       });
+
+       //adds cleanCache action
+       if(row && row?.url){
+        response.push({
+          name: 'cleanCache',
+          label: this.$tr('isite.cms.configList.clearCache'),
+          icon: 'fa-light fa-broom',
+          action: (row) => {
+            axios.get(row.url, {
+              headers: { 'icache-bypass': 1 },
+              params: {},
+              paramsSerializer: () => ''
+            }).then(() => {
+               this.$alert.info(this.$tr('isite.cms.label.success'))
+            })
+          }
+        })
+      }
 
       const responseNameActions = response.map(item => item.name)
       readActions = readActions.map(item => ({ ...item,sortOrder: item.sortOrder || 2 }))
