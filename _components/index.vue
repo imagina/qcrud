@@ -20,6 +20,9 @@
           :systemName="systemName"
           :dynamicFilter="dynamicFilter"
           @updateDynamicFilterValues="filters => updateDynamicFilterValues(filters)"
+          :tableColumns="tableColumns"
+          @visibleColumns="(cols) => this.visibleColumns = cols"
+          
         />
         <!-- dynamicFilter -->
       </div>
@@ -72,6 +75,7 @@
           :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
           ref="tableComponent"
           card-container-class="q-col-gutter-md"
+          :visible-columns="visibleColumns"
         >
           <!--Custom Columns-->
           <template v-slot:header="props">
@@ -513,7 +517,8 @@ export default {
       filters: false,
       gridComponent: false,
       expiresIn: null,
-      dynamicFilterValues: {}
+      dynamicFilterValues: {},
+      visibleColumns: []
     };
   },
   computed: {
