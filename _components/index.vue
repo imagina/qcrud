@@ -2,7 +2,6 @@
   <div id="componentCrudIndex">
     <!--Content-->
     <div id="backend-page">
-      <!--Page Actions-->
       <div class="q-mb-md">
         <page-actions
           :extra-actions="tableActions"
@@ -21,8 +20,8 @@
           :dynamicFilter="dynamicFilter"
           @updateDynamicFilterValues="filters => updateDynamicFilterValues(filters)"
           :tableColumns="tableColumns"
-          @visibleColumns="(cols) => this.visibleColumns = cols"
-          
+          :showColumnsButton="['table','grid'].includes(localShowAs)"
+          @visibleColumns="value => this.visibleColumns = value"
         />
         <!-- dynamicFilter -->
       </div>
