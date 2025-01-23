@@ -2,7 +2,6 @@
   <div id="componentCrudIndex">
     <!--Content-->
     <div id="backend-page">
-      <!--Page Actions-->
       <div class="q-mb-md">
         <page-actions
           :extra-actions="tableActions"
@@ -20,6 +19,9 @@
           :systemName="systemName"
           :dynamicFilter="dynamicFilter"
           @updateDynamicFilterValues="filters => updateDynamicFilterValues(filters)"
+          :tableColumns="tableColumns"
+          :showColumnsButton="['table','grid'].includes(localShowAs)"
+          @visibleColumns="value => this.visibleColumns = value"
         />
         <!-- dynamicFilter -->
       </div>
@@ -72,6 +74,7 @@
           :table-class="localShowAs === 'folders' ? 'tw-hidden' : ''"
           ref="tableComponent"
           card-container-class="q-col-gutter-md"
+          :visible-columns="visibleColumns"
         >
           <!--Custom Columns-->
           <template v-slot:header="props">
@@ -513,7 +516,8 @@ export default {
       filters: false,
       gridComponent: false,
       expiresIn: null,
-      dynamicFilterValues: {}
+      dynamicFilterValues: {},
+      visibleColumns: []
     };
   },
   computed: {
