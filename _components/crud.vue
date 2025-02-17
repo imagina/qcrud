@@ -338,11 +338,11 @@ export default {
             color: 'red',
             handler: () => {
               //Request
-              this.$crud.delete(this.params.apiRoute, item.id).then(response => {
+              this.$crud.delete(this.paramsProps.apiRoute, item.id).then(response => {
                 //Alert
                 this.$alert.info({ message: this.$tr('isite.cms.message.recordDeleted') });
                 //Dispatch event hook
-                this.$hook.dispatchEvent('wasDeleted', { entityName: this.params.entityName });
+                this.$hook.dispatchEvent('wasDeleted', { entityName: this.paramsProps.entityName });
                 //Event
                 this.formEmmit('deleted');
               }).catch(error => {
@@ -357,6 +357,7 @@ export default {
     //watch emit update from form component
     async formEmmit(type = 'created', response = false) {
       if (this.type == 'full') await this.getDataTable(true);
+      if (['deleted', 'updated'].includes(type) && this.showType('select')) this.selectFieldKey = this.$uid();
       this.$emit(type, response);
     },
     //Validate type to show

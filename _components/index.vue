@@ -2,7 +2,6 @@
   <div id="componentCrudIndex">
     <!--Content-->
     <div id="backend-page">
-      <!--Page Actions-->
       <div class="q-mb-md">
         <page-actions
           :extra-actions="tableActions"
@@ -16,23 +15,15 @@
           :tour-name="tourName"
           :help="help"
           :expires-in="expiresIn"
-          :dynamicFilter="dynamicFilter"
-          :dynamicFilterValues="getDynamicFilterValues"
-          :dynamicFilterSummary="dynamicFilterSummary"
-          @toggleDynamicFilterModal="toggleDynamicFilterModal"
           @activateTour="$tour.start(tourName)"
+          :systemName="systemName"
+          :dynamicFilter="dynamicFilter"
+          @updateDynamicFilterValues="filters => updateDynamicFilterValues(filters)"
+          :tableColumns="tableColumns"
+          :showColumnsButton="['table','grid'].includes(localShowAs)"
+          @visibleColumns="value => this.visibleColumns = value"
         />
         <!-- dynamicFilter -->
-        <dynamicFilter
-          v-if="dynamicFilter"
-          :systemName="systemName"
-          :modelValue="showDynamicFilterModal"
-          :filters="dynamicFilter"
-          @showModal="showDynamicFilterModal = true"
-          @hideModal="showDynamicFilterModal = false"
-          @update:modelValue="filters => updateDynamicFilterValues(filters)"
-          @update:summary="summary => dynamicFilterSummary = summary"
-        />
         <dashboardRenderer
           :baseFilters="params?.read?.requestParams?.filter"
           :dynamicFilterValues="getDynamicFilterValues"
@@ -140,7 +131,7 @@
                 <!--Actions column-->
                 <div class="crudIndexActionsColumn" v-if="col.name == 'actions'">
                   <btn-menu
-                    :actions="fieldActions(col)"
+                    :actions="fieldActions(col, props.row)"
                     :action-data="props.row"
                   />
                 </div>
@@ -272,7 +263,7 @@
                             <!--Label-->
                             <div> {{ col.label }} {{ col.name == 'id' ? col.value : '' }}</div>
                             <!--Actions-->
-                            <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props)" :action-data="props.row" />
+                            <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props, props.row)" :action-data="props.row" />
                           </div>
                           <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm" />
                         </q-item-label>
@@ -439,8 +430,8 @@ import _ from 'lodash';
 import qreable from 'src/modules/qqreable/_components/qreable.vue';
 import { eventBus, cacheOffline } from 'src/plugins/utils';
 import { markRaw } from 'vue';
-import dynamicFilter from 'modules/qsite/_components/master/dynamicFilter';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
+import axios from 'axios';
 import dashboardRenderer from 'modules/qsite/_components/master/dashboardRenderer';
 
 export default {
@@ -453,7 +444,6 @@ export default {
     masterExport,
     recursiveItemDraggable,
     qreable,
-    dynamicFilter,
     dashboardRenderer
   },
   provide() {
@@ -530,9 +520,8 @@ export default {
       filters: false,
       gridComponent: false,
       expiresIn: null,
-      showDynamicFilterModal: false,
       dynamicFilterValues: {},
-      dynamicFilterSummary: {}
+      visibleColumns: []
     };
   },
   computed: {
@@ -1178,7 +1167,7 @@ export default {
       });
     },
     //Return field actions
-    fieldActions(field) {
+    fieldActions(field, row = null) {
       let readActions = this.$clone(this.params.read.actions || []);
 
       //Default action
@@ -1249,6 +1238,24 @@ export default {
         if(mergeAction) mainAction = { ...mainAction, ...mergeAction}
         return mainAction
       });
+
+       //adds cleanCache action
+       if(row && row?.url){
+        response.push({
+          name: 'cleanCache',
+          label: this.$tr('isite.cms.configList.clearCache'),
+          icon: 'fa-light fa-broom',
+          action: (row) => {
+            axios.get(row.url, {
+              headers: { 'icache-bypass': 1 },
+              params: {},
+              paramsSerializer: () => ''
+            }).then(() => {
+               this.$alert.info(this.$tr('isite.cms.label.success'))
+            })
+          }
+        })
+      }
 
       const responseNameActions = response.map(item => item.name)
       readActions = readActions.map(item => ({ ...item,sortOrder: item.sortOrder || 2 }))
@@ -1520,9 +1527,6 @@ export default {
           ]
         });
       }
-    },
-    toggleDynamicFilterModal() {
-      this.showDynamicFilterModal = !this.showDynamicFilterModal;
     },
     updateDynamicFilterValues(filters) {
       this.dynamicFilterValues = filters;
