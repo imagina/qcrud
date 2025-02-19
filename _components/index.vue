@@ -24,6 +24,10 @@
           @visibleColumns="value => this.visibleColumns = value"
         />
         <!-- dynamicFilter -->
+        <dashboardRenderer
+          :baseFilters="params?.read?.requestParams?.filter"
+          :dynamicFilterValues="getDynamicFilterValues"
+        />
       </div>
       <!-- Bulk Actions -->
       <div v-if="selectedRows.length" id="selectedRows"
@@ -429,6 +433,7 @@ import { eventBus, cacheOffline } from 'src/plugins/utils';
 import { markRaw } from 'vue';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
 import axios from 'axios';
+import dashboardRenderer from 'modules/qsite/_components/master/dashboardRenderer';
 
 
 export default {
@@ -440,7 +445,8 @@ export default {
   components: {
     masterExport,
     recursiveItemDraggable,
-    qreable
+    qreable,
+    dashboardRenderer
   },
   provide() {
     return {
@@ -788,7 +794,7 @@ export default {
     getDynamicFilterValues() {
       return this.dynamicFilterValues;
     },
-    statusOptions(){
+    statusOptions() {
       return (col, row, isFilter = false) => {
         let options = col?.options || [
           {
@@ -802,13 +808,13 @@ export default {
         ];
         const valueRow = row[col.name] || 0;
         return options.filter(opt => {
-          if(isFilter) return opt.value != valueRow;
+          if (isFilter) return opt.value != valueRow;
           return true;
         })
 
       }
     },
-    statusOptionsLabel(){
+    statusOptionsLabel() {
       return (col, row) => {
         const valueRow = row[col.name] || 0;
         return this.statusOptions(col, row).find(opt => opt.value == valueRow)?.label || ''
@@ -1228,15 +1234,15 @@ export default {
             exportParams: { fileName: `${this.exportParams.fileName}-${item.id}` },
             filter: { id: item.id }
           })
-    },
-    ].map(mainAction => {
+        },
+      ].map(mainAction => {
         const mergeAction = readActions.find(a => a?.name === mainAction?.name);
-        if(mergeAction) mainAction = { ...mainAction, ...mergeAction}
+        if (mergeAction) mainAction = { ...mainAction, ...mergeAction }
         return mainAction
       });
 
-       //adds cleanCache action
-       if(row && row?.url){
+      //adds cleanCache action
+      if (row && row?.url) {
         response.push({
           name: 'cleanCache',
           label: this.$tr('isite.cms.configList.clearCache'),
@@ -1247,18 +1253,18 @@ export default {
               params: {},
               paramsSerializer: () => ''
             }).then(() => {
-               this.$alert.info(this.$tr('isite.cms.label.success'))
+              this.$alert.info(this.$tr('isite.cms.label.success'))
             })
           }
         })
       }
 
       const responseNameActions = response.map(item => item.name)
-      readActions = readActions.map(item => ({ ...item,sortOrder: item.sortOrder || 2 }))
+      readActions = readActions.map(item => ({ ...item, sortOrder: item.sortOrder || 2 }))
       response = [
         ...response,
         ...readActions.filter(a => !responseNameActions.includes(a?.name))
-      ].sort((a,b) => a.sortOrder - b.sortOrder)
+      ].sort((a, b) => a.sortOrder - b.sortOrder)
 
       //response
       return response;
@@ -1523,7 +1529,7 @@ export default {
           ]
         });
       }
-    },    
+    },
     updateDynamicFilterValues(filters) {
       this.dynamicFilterValues = filters;
       this.table.filter = filters;
@@ -1531,7 +1537,7 @@ export default {
     },
     isDisableRow(row, type = '') {
       const disabledRow = this.params?.read?.disabled?.row
-      if(disabledRow) return disabledRow(row)
+      if (disabledRow) return disabledRow(row)
       return false
     }
   }
