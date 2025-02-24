@@ -183,6 +183,14 @@
                               <span v-html="data.data" />
                             </q-badge>
                           </div>
+                          <!--route link-->
+                          <router-link
+                            v-else-if="col.to"
+                            :to="typeof col.to === 'function' ? col.to(props.row) : col.to"
+                            v-html="data.data"
+                            :class="'cursor-actionable' + (col.textColor ? ' text-'+col.textColor : '')"
+                          >
+                          </router-link>
                           <!--Label-->
                           <div
                             v-else
@@ -309,6 +317,14 @@
                                   >
                                     <q-badge :class="col.bgTextColor" v-html="data.data"></q-badge>
                                   </div>
+                                  <!--route link-->
+                                  <router-link
+                                    v-else-if="col.to"
+                                    :to="typeof col.to === 'function' ? col.to(props.row) : col.to"
+                                    v-html="data.data"
+                                    :class="'cursor-actionable' + (col.textColor ? ' text-'+col.textColor : '')"
+                                  >
+                                  </router-link>
                                   <!--Label-->
                                   <div
                                     v-else
@@ -1176,6 +1192,7 @@ export default {
       let defaultAction = readActions.find(action => {
         return action.default ?? false;
       });
+
       //Add default actions
       let response = [
         {//Edit action
@@ -1188,7 +1205,8 @@ export default {
           vIf: this.permitAction(field).edit,
           action: (item) => {
             this.$emit('update', item);
-          }
+          },
+          route: this.params.update?.to
         },
         {//Copy disclosure link action
           label: this.$tr('isite.cms.label.copyDisclosureLink'),
@@ -1404,7 +1422,6 @@ export default {
     },
     //Table default column actionable
     isActionableColumn(col) {
-
       //if the columns has an action callback
       if (col.action && typeof col.action !== 'string') return true;
 
