@@ -162,6 +162,14 @@
                               {{ data.data }}
                             </q-badge>
                           </div>
+                          <!--route link-->
+                          <router-link
+                            v-else-if="col.to"
+                            :to="typeof col.to === 'function' ? col.to(props.row) : col.to"
+                            v-html="data.data"
+                            :class="'cursor-actionable' + (col.textColor ? ' text-'+col.textColor : '')"
+                          >
+                          </router-link>
                           <!--Label-->
                           <div
                               v-else
@@ -286,6 +294,14 @@
                                     {{ data.data }}
                                   </q-badge>
                                 </div>
+                                <!--route link-->
+                                <router-link
+                                  v-else-if="col.to"
+                                  :to="typeof col.to === 'function' ? col.to(props.row) : col.to"
+                                  v-html="data.data"
+                                  :class="'cursor-actionable' + (col.textColor ? ' text-'+col.textColor : '')"
+                                >
+                                </router-link>
                                 <!--Label-->
                                 <div
                                     v-else
@@ -1054,7 +1070,8 @@ export default {
           vIf: this.permitAction(field).edit,
           action: (item) => {
             this.$emit('update', item)
-          }
+          },
+          route: this.params.update?.to
         },
         {//Share action
           label: this.$tr('isite.cms.label.share'),
