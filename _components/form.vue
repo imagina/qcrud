@@ -4,6 +4,11 @@
       :id="paramsProps.modalId || 'modalFormCrud'" v-model="show" v-bind="modalProps"
       @hide="componentStore.remove()" custom-position :persistent="true">
     <div class="modal-crud">
+      <conflictModal
+        v-model="conflict.show"
+        :data="conflict.data"
+        @closeModal="conflict.show = false"
+      />
       <div id="cardContent" :class="`row ${existFormRight ? 'col-2' : 'col-1'}`">
         <div class="relative-position col-12">
           <!--Forms-->
@@ -77,6 +82,7 @@
 
 <script>
 import {debounce} from 'quasar'
+import conflictModal from '@imagina/qcrud/_components/conflict'
 export default {
   props: {
     value: {default: false},
@@ -84,7 +90,9 @@ export default {
     field: {default: false},
     params: {default: false}
   },
-  components: {},
+  components: {
+    conflictModal
+  },
   watch: {
     value(newValue) {
       this.show = this.value
@@ -123,7 +131,11 @@ export default {
       locale: {fields: {options: {}}, fieldsTranslatable: {}, form: {}},
       loading: true,
       dataField: [],
-      paramsProps: false
+      paramsProps: false, 
+      conflict: {
+        show: false,
+        data: {}
+      }
     }
   },
   computed: {
@@ -408,7 +420,8 @@ export default {
               requestInfo.response = response
               return resolve(true)
             }).catch(error => {
-              requestInfo.error = error
+              requestInfo.error = error.response?.data?.errors || ''
+              this.showConflictModal(error)
               return resolve(true)
             })
           }
@@ -427,7 +440,6 @@ export default {
           this.$emit('createdData', requestInfo.response.data)
           if (this.params.create?.callback) this.params.create.callback(requestInfo.response.data)
         } else {
-          this.$alert.error({message: `${this.$tr('isite.cms.message.recordNoCreated')}`})
           this.loading = false//login hide
           if (requestInfo.error) {//Message Validate
             let errorMsg = JSON.parse(requestInfo.error)
@@ -480,7 +492,8 @@ export default {
               requestInfo.response = response
               return resolve(true)
             }).catch(error => {
-              requestInfo.error = error
+              requestInfo.error = error.response?.data?.errors || {}
+              this.showConflictModal(error)
               return resolve(true)
             })
           }
@@ -499,8 +512,14 @@ export default {
           if (this.params.update?.callback) this.params.update.callback(requestInfo.response.data)
         } else {
           this.loading = false
-          this.$alert.error({message: this.$tr('isite.cms.message.recordNoUpdated')})
         }
+      }
+    },
+    showConflictModal(error){
+      //register slug exist or softdeleted
+      if(error.response.status == 409) {
+        this.conflict.show = true 
+        this.conflict.data = error.response.data
       }
     },
     injectProps(customFormProps, paramsProps) {

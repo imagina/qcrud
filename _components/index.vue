@@ -16,6 +16,7 @@
             :tour-name="tourName"
             :help="help"
             :expires-in="expiresIn"
+            :permission="params.permission"
         />
       </div>
       <!-- Bulk Actions -->
@@ -608,7 +609,7 @@ export default {
       }
 
       //Verify if includes qrs
-      if (this.params?.read?.requestParams?.include?.includes('qrs')) {
+      if (this.params?.read?.requestParams?.include?.includes('qrs') && this.params.update) {
         //Create column QR, if exist in include
         const columnQr = {
           name: 'qr', label: 'QR',
@@ -931,7 +932,7 @@ export default {
       })
     },
     //Delete category
-    deleteItem(item) {
+    deleteItem(item, forceDelete = false) {
       this.$alert.error({
         mode: 'modal',
         title: `ID: ${item.id}`,
@@ -960,7 +961,14 @@ export default {
                 })
               } else {
                 //Request
-                this.$crud.delete(propParams.apiRoute, item.id).then(response => {
+                let requestParams = {}                
+                if(forceDelete){
+                  requestParams.params = {                    
+                    filter: {forceDelete: true}
+                  }
+                }
+
+                this.$crud.delete(propParams.apiRoute, item.id, requestParams ).then(response => {
                   this.$alert.info({message: this.$tr('isite.cms.message.recordDeleted')})
                   this.getDataTable(true)
 
@@ -976,6 +984,39 @@ export default {
                   this.loading = false
                 })
               }
+            }
+          }
+        ]
+      })
+    },
+    //Restore item
+    restoreItem(item) {
+      this.$alert.warning({
+        mode: 'modal',
+        title: `ID: ${item.id}`,
+        message: '¿Estás seguro que quieres restaurar este registro?',
+        actions: [
+          {label: this.$tr('isite.cms.label.cancel'), color: 'grey'},
+          {
+            label: this.$tr('isite.cms.label.restore'),
+            color: 'green',
+            handler: () => {
+              this.loading = true
+              let propParams = this.$clone(this.params)
+              this.$crud.update(propParams.apiRoute, `${item.id}/restore/`, {} ).then(response => {
+                this.$alert.info({message: 'item restored'})
+                this.getDataTable(true)
+
+                //Dispatch event hook
+                this.$hook.dispatchEvent('wasDeleted', {entityName: this.params.entityName})
+                //Emit event delete
+                this.$emit('deleted')
+                //Close loading
+                this.loading = false
+              }).catch(error => {
+                this.$alert.error({message: this.$tr('isite.cms.message.recordNotRestored'), pos: 'bottom'})
+                this.loading = false
+              })
             }
           }
         ]
@@ -1076,7 +1117,7 @@ export default {
         {//Share action
           label: this.$tr('isite.cms.label.share'),
           format: (item) => {
-            return {vIf: (item.url || item.embed) ? true : false}
+            return {vIf: (item.url || item.embed) && !this.excludeActions.includes('share') ? true : false}
           },
           color: 'info',
           icon: "fa-light fa-share-alt",
@@ -1086,7 +1127,7 @@ export default {
           icon: 'fa-light fa-trash-can',
           color: 'red',
           label: this.$tr('isite.cms.label.delete'),
-          vIf: this.permitAction(field).destroy,
+          vIf: this.permitAction(field).destroy && !this.excludeActions.includes('destroy'),
           action: (item) => {
             this.deleteItem(item)
           }
@@ -1094,7 +1135,7 @@ export default {
         //Export
         {
           label: this.$tr('isite.cms.label.export'),
-          vIf: this.exportParams,
+          vIf: this.exportParams &&!this.excludeActions.includes('export'),
           icon: 'fa-light fa-download',
           action: (item) => this.$refs.exportComponent.showReportItem({
             item: item,
