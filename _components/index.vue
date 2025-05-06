@@ -235,7 +235,7 @@
                                       :action-data="props.row"
                             />
                             <!-- Default Value -->
-                            <label v-else>{{ props.value }}</label>
+                            <label v-else v-html="props.value" />
                           </q-td>
                         </template>
                         <template v-slot:bottom>
