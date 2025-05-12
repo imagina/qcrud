@@ -223,8 +223,9 @@
                       </div>
                       <!-- Table -->
                       <q-table
-                        :rows="relation.data"
+                        :rows="visibleRelationRows"
                         :columns="relationConfig('columns')"
+                        :rows-per-page-options="[0]"
                       >
                         <template v-slot:body-cell="props">
                           <q-td :props="props">
@@ -234,8 +235,24 @@
                                       :action-data="props.row"
                             />
                             <!-- Default Value -->
-                            <label v-else>{{ props.value }}</label>
+                            <label v-else v-html="props.value" />
                           </q-td>
+                        </template>
+                        <template v-slot:bottom>
+                          <div class="tw-left-1/2 lg:left-0 tw-sticky tw-bottom-0 tw-right-0 tw-px-8">
+                            <q-btn
+                              v-if="relation.data.length > 5"
+                              :icon="iconRelationArrow"
+                              @click="showMore"
+                              color="primary"
+                              round
+                              size="sm"
+                            >
+                              <q-tooltip>
+                                {{ translationButtonRelation }}
+                              </q-tooltip>
+                            </q-btn>
+                          </div>
                         </template>
                       </q-table>
                     </div>
@@ -539,7 +556,8 @@ export default {
       gridComponent: false,
       expiresIn: null,
       dynamicFilterValues: {},
-      visibleColumns: []
+      visibleColumns: [],
+      showAllRows: false,
     };
   },
   computed: {
@@ -835,7 +853,16 @@ export default {
         const valueRow = row[col.name] || 0;
         return this.statusOptions(col, row).find(opt => opt.value == valueRow)?.label || ''
       }
-    }
+    },
+    visibleRelationRows() {
+      return this.showAllRows ? this.relation.data : this.relation.data.slice(0, 5);
+    },
+    iconRelationArrow() {
+      return this.showAllRows ? 'fa-thin fa-arrow-up-to-arc' : 'fa-thin fa-arrow-down-to-arc';
+    },
+    translationButtonRelation() {
+      return this.showAllRows ? this.$tr('isite.cms.label.showLess') : this.$tr('isite.cms.label.showMore');
+    },
   },
   methods: {
     async loadComponent() {
@@ -909,6 +936,7 @@ export default {
       if (this.tableKey) {
         this.$refs[`trExpansion${this.tableKey}`].hide();
         this.tableKey = null;
+        this.showAllRows = false;
       }
     },
     //Row click
@@ -1360,6 +1388,7 @@ export default {
         this.getRelationData(props.row);
       } else {
         this.tableKey = null;
+        this.showAllRows = false;
       }
     },
     //Request the relation data
@@ -1377,6 +1406,7 @@ export default {
         };
         //Request
         this.$crud.index(this.relationConfig('apiRoute'), requestParams).then(async (response) => {
+          this.showAllRows = false;
           this.relation.data = this.$clone(response.data);
           await this.getListOfDragableRelations(row.id, response.data);
           this.relation.loading = false;
@@ -1385,6 +1415,7 @@ export default {
           this.$apiResponse.handleError(error, () => {
             this.relation.loading = false;
             this.setRelationLoading(row.id, false);
+            this.showAllRows = false;
           });
         });
       } else {
@@ -1556,7 +1587,10 @@ export default {
       const disabledRow = this.params?.read?.disabled?.row
       if (disabledRow) return disabledRow(row)
       return false
-    }
+    },
+    showMore() {
+      this.showAllRows = !this.showAllRows;
+    },
   }
 };
 </script>
