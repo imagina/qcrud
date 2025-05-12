@@ -39,7 +39,7 @@
                   v-if="locale.success && paramsProps[pos] && Object.keys(paramsProps[pos]).length"
                   :class="`col-12 ${existFormRight ? ((pos=='formLeft') ? 'col-md-7' : 'col-md-5') : ''}`"
                 >
-                  <div class="row q-col-gutter-x-md col-12">
+                  <div class="row q-col-gutter-x-md col-12" data-testid="crud-form">
                     <!--Fields-->
                     <div v-for="(field, key) in customFieldProps[pos]" :key="key" :ref="key" :class="field.colClass || 'col-12'">
                       <!--Dynamic fake field-->
