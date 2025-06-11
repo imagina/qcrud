@@ -18,6 +18,7 @@
           @activateTour="$tour.start(tourName)"
           :systemName="systemName"
           :dynamicFilter="dynamicFilter"
+          :speech="params.read?.speech"
           @updateDynamicFilterValues="filters => updateDynamicFilterValues(filters)"
           :tableColumns="tableColumns"
           :showColumnsButton="['table','grid'].includes(localShowAs)"
