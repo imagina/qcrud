@@ -14,7 +14,8 @@ function replaceParamsApiRoute(apiRoute, params) {
 async function attributesToSnakeCase(data, params) {
   let siteSettings = await cache.get.item('qsite.settings');
   //Search locale settings
-  let locales = siteSettings.data.siteSettings.find(item => item.name == 'core::locales');
+
+  let locales = siteSettings.data.find(item => item.systemName == 'isite::locales');
   locales = locales ? locales.value : [];
   //Merge the locales to notToSnakeCase
   return helper.toSnakeCase(data, { ...params, keysNotToSnakeCase: locales });
