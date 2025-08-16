@@ -429,7 +429,7 @@
       </div>
     </div>
     <!-- Export Component -->
-    <master-export v-model="exportParams" ref="exportComponent" export-item />
+<!--    <master-export v-model="exportParams" ref="exportComponent" export-item />-->
     <!-- Qreable Component -->
     <qreable ref="qreableComponent" @created="getDataTable(true)" />
     <!-- Share-link Component-->
