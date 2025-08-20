@@ -303,7 +303,7 @@ export default {
         let requestParams = {
           refresh: true,
           params: {
-            filter: { configName: this.paramsProps.extraFormFields },
+            configName: this.paramsProps.extraFormFields,
             titleOffline: this.modalProps.title || ''
           }
         };
