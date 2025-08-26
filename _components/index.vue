@@ -25,6 +25,7 @@
         />
         <!-- dynamicFilter -->
         <dashboardRenderer
+          v-if="false"
           :baseFilters="params?.read?.requestParams?.filter"
           :dynamicFilterValues="getDynamicFilterValues"
         />
