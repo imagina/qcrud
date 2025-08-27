@@ -38,12 +38,14 @@
           <b>{{ $tr('isite.cms.selectedRows', { num: selectedRows.length }) }}</b>
         </div>
         <!--Actions-->
+        <!-- disabled for v12
         <div class="col-12 col-md-8">
           <div class="row q-gutter-sm justify-end">
             <q-btn v-for="(act, keyAct) in bulkActions" :key="keyAct" v-bind="act.props"
                    @click="handlerBulkAction(act)" />
           </div>
         </div>
+        -->
       </div>
       <div class="relative-position col-12" v-if="success">
         <folders
@@ -432,7 +434,7 @@
     <!-- Export Component -->
 <!--    <master-export v-model="exportParams" ref="exportComponent" export-item />-->
     <!-- Qreable Component -->
-    <qreable ref="qreableComponent" @created="getDataTable(true)" />
+    <!-- disabled for v12 <qreable ref="qreableComponent" @created="getDataTable(true)" /> -->
     <!-- Share-link Component-->
     <share-link ref="shareLinkComponent" />
   </div>
@@ -683,11 +685,12 @@ export default {
         });
       }
       //Select column
+      /* disabled for v12
       if (this.bulkActions.length) {
         columns.unshift({ name: 'selectColumn', label: '', align: 'center' });
       }
 
-      //Verify if includes qrs
+      // Verify if includes qrs
       if (this.params?.read?.requestParams?.include?.includes('qrs')) {
         //Create column QR, if exist in include
         const columnQr = {
@@ -701,6 +704,7 @@ export default {
         //Set the QR column and place it in position 1 of the array
         columns.splice(1, 0, columnQr);
       }
+      */
       //Response
       return columns;
     },
@@ -754,6 +758,7 @@ export default {
     tableCollapseIcon(key) {
       return key => this.showCollapsedTable(key) ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     },
+    /* disabled for v12
     //Return the bulk actions
     bulkActions() {
       var response = [];
@@ -787,6 +792,7 @@ export default {
       //Response
       return response;
     },
+    */
     apiRouteOrderFolders() {
       return this.params.read?.apiRouteOrderFolders || null;
     },
