@@ -6,7 +6,7 @@ import {debounce} from 'quasar'
 
 //Replace params in apiRoute
 function replaceParamsApiRoute(apiRoute, params) {
-  for (var paramName in params) apiRoute = apiRoute.replace(`{${paramName}}`, params[paramName].toString())
+  for (let paramName in params) apiRoute = apiRoute.replace(`{${paramName}}`, params[paramName].toString())
   return apiRoute
 }
 
@@ -144,6 +144,29 @@ const axiosActions = {
           data,
           { notToSnakeCase: (params.notToSnakeCase || []) }
         )
+      };
+      //Request
+      axios.put(urlApi, requestParams).then(async response => {
+        await cache.remove({allKey: configName})//Clear api Route cache
+        resolve(response.data)//Successful response
+      }).catch(error => {
+        reject((error.response && error.response.data) ? error.response.data.errors : {});//Failed response
+      })
+    })
+  },
+
+
+  updateOrCreate(configName, match, data) {
+    return new Promise(async (resolve, reject) => {
+      //Validations
+      if (!configName) return reject('Config name is required')
+      if (!match) return reject('Match is required')
+      if (!data) return reject('Data is required')
+      let urlApi = (config(configName) || configName) + '/upsert'
+      //Get request params
+      let requestParams = {
+        match,
+        attributes: await attributesToSnakeCase(data)
       };
       //Request
       axios.put(urlApi, requestParams).then(async response => {
