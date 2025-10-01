@@ -1351,8 +1351,8 @@ export default {
       let response = false;
 
       //search mediumThumb
-      if (item.mediaFiles && item.mediaFiles?.mainimage)
-        response = item.mediaFiles.mainimage.mediumThumb;
+      if (item.files && item.files?.mainimage)
+        response = item.files.mainimage.thumbnails.mediumThumb;
 
       //response
       return response;
