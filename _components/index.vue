@@ -50,12 +50,7 @@
           :folderList="folderList"
           :apiRouteOrderFolders="apiRouteOrderFolders"
           v-if="localShowAs === 'folders'"
-        />
-        <!-- Kanban View-->
-        <kanban v-show="localShowAs === 'kanban' && params.read.kanban"
-                :routes="params.read.kanban" ref="kanban"
-                :filter="getDynamicFilterValues"
-        />
+        />        
         <!-- Drag View-->
         <div v-if="localShowAs === 'drag' && dataDraggable.length"
              class="q-pt-sm q-pr-sm q-pl-md">
@@ -443,7 +438,7 @@
           </template>
         </q-table>
         <!--Loading-->
-        <inner-loading :visible="localShowAs !== 'kanban' && loading" />
+        <inner-loading :visible="loading" />
       </div>
     </div>
     <!-- Export Component -->
@@ -551,7 +546,6 @@ export default {
       selectedRowsAll: false,
       folderList: [],
       funnelId: null,
-      searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
       gridComponent: false,
@@ -588,21 +582,21 @@ export default {
     tableActions() {
       //Default response
       let response = [];
-      if (this.readShowAs !== 'kanban') {
-        response.push({
-          label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
-          vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
-          props: {
-            icon: this.localShowAs != 'grid' ? 'fa-light fa-grid-horizontal' : 'fa-light fa-list',
-            id: 'crudIndexViewAction'
-          },
-          vIfAction: this.readShowAs === 'drag',
-          action: () => {
-            const alternativeShow = this.readShowAs != 'table' ? this.readShowAs : 'grid';
-            this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
-          }
-        });
-      }
+      
+      response.push({
+        label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
+        vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
+        props: {
+          icon: this.localShowAs != 'grid' ? 'fa-light fa-grid-horizontal' : 'fa-light fa-list',
+          id: 'crudIndexViewAction'
+        },
+        vIfAction: this.readShowAs === 'drag',
+        action: () => {
+          const alternativeShow = this.readShowAs != 'table' ? this.readShowAs : 'grid';
+          this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
+        }
+      });
+      
       //Add search action
       if (this.params.read.search !== false) response.push('search');
       //Add create action
@@ -621,8 +615,7 @@ export default {
           response.push('new')
         }
       }
-      // se oculta page action
-      if (this.localShowAs === 'kanban' && this.$refs.kanban) response = [...response, ...this.$refs.kanban.extraPageActions];
+      
       // extras for page action
       if (this.params?.extraActions?.length > 0) response.push(...this.params.extraActions);
       //Response
@@ -918,19 +911,13 @@ export default {
       const filters = this.getDynamicFilterValues;
       //this.dynamicFilterValues = filter
       //Call data table
-      if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
-        const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(this.getDynamicFilterValues[filterName] || null);
-        await this.$refs.kanban.setSearch(this.searchKanban);
-        await this.$refs.kanban.init(refresh);
-        return;
-      } else {
-        this.getData({
-            pagination: { ...this.table.pagination, ...(pagination || {}) },
-            filter: { ...this.table.filter, ...(filters || {}) }
-          },
-          refresh);
-      }
+      
+      this.getData({
+          pagination: { ...this.table.pagination, ...(pagination || {}) },
+          filter: { ...this.table.filter, ...(filters || {}) }
+        },
+        refresh);
+      
       this.hideExpandedRows()
     },
     hideExpandedRows() {
@@ -1503,7 +1490,6 @@ export default {
     },
     search(val) {
       this.table.filter.search = val;
-      this.searchKanban = val;
       this.getDataTable();
     },
     setRelationLoading(folderId, value) {
