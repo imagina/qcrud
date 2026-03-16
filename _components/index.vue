@@ -24,10 +24,11 @@
           :showColumnsButton="['table','grid'].includes(localShowAs)"
           @visibleColumns="value => this.visibleColumns = value"
         />
-        <!-- dynamicFilter -->
+       <!-- dashboardRenderer -->
         <dashboardRenderer
           :baseFilters="params?.read?.requestParams?.filter"
           :dynamicFilterValues="getDynamicFilterValues"
+          :configName="configNameDashboard"
         />
       </div>
       <!-- Bulk Actions -->
@@ -556,6 +557,10 @@ export default {
     };
   },
   computed: {
+    configNameDashboard() {
+      if (this.params?.configNameCustom) return this.params.configNameCustom;
+      return null;
+    },
     deleteHtml() {
       return data => {
         if (!data) return '';
