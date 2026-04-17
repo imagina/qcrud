@@ -449,6 +449,7 @@
     <!-- Share-link Component-->
     <share-link ref="shareLinkComponent" />
   </div>
+
 </template>
 
 <script>
@@ -464,8 +465,6 @@ import { markRaw } from 'vue';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
 import axios from 'axios';
 import dashboardRenderer from 'modules/qsite/_components/master/dashboardRenderer';
-import storeModalBuildFilter from 'modules/qsite/_components/master/modalBuildFilter/stores';
-import modalBuildFilter from 'modules/qsite/_components/master/modalBuildFilter/index.vue';
 
 
 export default {
@@ -478,8 +477,7 @@ export default {
     masterExport,
     recursiveItemDraggable,
     qreable,
-    dashboardRenderer,
-    modalBuildFilter
+    dashboardRenderer
   },
   provide() {
     return {
@@ -604,21 +602,6 @@ export default {
           this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
         }
       });
-      if(this.params?.read?.crudBuild) {
-        response.push({
-          label: 'Build Filter',
-          props: {
-            icon: 'fa-light fa-filter',
-            label: 'Build Filter',
-          },
-          action: async () => {
-            storeModalBuildFilter.showModal = true;
-            storeModalBuildFilter.criteria = this.params?.entityName || null;
-            storeModalBuildFilter.fieldKey = 'key';
-          },
-        });
-      }
-
       //Add search action
       if (this.params.read.search !== false) response.push('search');
       //Add create action
