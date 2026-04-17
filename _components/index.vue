@@ -51,7 +51,7 @@
           :folderList="folderList"
           :apiRouteOrderFolders="apiRouteOrderFolders"
           v-if="localShowAs === 'folders'"
-        />        
+        />
         <!-- Drag View-->
         <div v-if="localShowAs === 'drag' && dataDraggable.length"
              class="q-pt-sm q-pr-sm q-pl-md">
@@ -464,6 +464,8 @@ import { markRaw } from 'vue';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
 import axios from 'axios';
 import dashboardRenderer from 'modules/qsite/_components/master/dashboardRenderer';
+import storeModalBuildFilter from 'modules/qsite/_components/master/modalBuildFilter/stores';
+import modalBuildFilter from 'modules/qsite/_components/master/modalBuildFilter/index.vue';
 
 
 export default {
@@ -476,7 +478,8 @@ export default {
     masterExport,
     recursiveItemDraggable,
     qreable,
-    dashboardRenderer
+    dashboardRenderer,
+    modalBuildFilter
   },
   provide() {
     return {
@@ -587,7 +590,7 @@ export default {
     tableActions() {
       //Default response
       let response = [];
-      
+
       response.push({
         label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
         vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
@@ -601,7 +604,21 @@ export default {
           this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
         }
       });
-      
+      if(this.params?.read?.crudBuild) {
+        response.push({
+          label: 'Build Filter',
+          props: {
+            icon: 'fa-light fa-filter',
+            label: 'Build Filter',
+          },
+          action: async () => {
+            storeModalBuildFilter.showModal = true;
+            storeModalBuildFilter.criteria = this.params?.entityName || null;
+            storeModalBuildFilter.fieldKey = 'key';
+          },
+        });
+      }
+
       //Add search action
       if (this.params.read.search !== false) response.push('search');
       //Add create action
@@ -620,7 +637,7 @@ export default {
           response.push('new')
         }
       }
-      
+
       // extras for page action
       if (this.params?.extraActions?.length > 0) response.push(...this.params.extraActions);
       //Response
@@ -916,13 +933,13 @@ export default {
       const filters = this.getDynamicFilterValues;
       //this.dynamicFilterValues = filter
       //Call data table
-      
+
       this.getData({
           pagination: { ...this.table.pagination, ...(pagination || {}) },
           filter: { ...this.table.filter, ...(filters || {}) }
         },
         refresh);
-      
+
       this.hideExpandedRows()
     },
     hideExpandedRows() {
