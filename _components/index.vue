@@ -3,6 +3,7 @@
     <!--Content-->
     <div id="backend-page">
       <div class="q-mb-md">
+        {{ dynamicFilter }}
         <page-actions
           :extra-actions="tableActions"
           :excludeActions="excludeActions"
@@ -712,6 +713,15 @@ export default {
         this.getDataTable(true);
       },
     },
+    async showModalFilter(newVal) {
+      if (newVal === false) {
+        try {
+          await this.getDynamicCrud();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    },
   },
   created() {
     this.$helper.setDynamicSelectList({});
@@ -779,6 +789,9 @@ export default {
     };
   },
   computed: {
+    showModalFilter() {
+      return storeModalBuildFilter.showModal;
+    },
     configNameDashboard() {
       if (this.params?.configNameCustom) return this.params.configNameCustom;
       return null;
