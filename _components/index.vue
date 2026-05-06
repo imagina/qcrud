@@ -3,7 +3,6 @@
     <!--Content-->
     <div id="backend-page">
       <div class="q-mb-md">
-        {{ dynamicFilter }}
         <page-actions
           :extra-actions="tableActions"
           :excludeActions="excludeActions"
