@@ -217,8 +217,14 @@
                 </div>
                 <!--Default columns-->
                 <div v-else>
-                  <!--Badge-->
-                  <div>
+                  <template v-if="col?.component">
+                    <component
+                      v-if="(comp = col.component(props.row))"
+                      :is="comp.is"
+                      v-bind="comp.props"
+                    />
+                  </template>
+                  <div v-if="!col?.component">
                     <promiseTemplate
                       :promise="
                         col.formatAsync ? col.formatAsync(props.row) : col.value
