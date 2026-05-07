@@ -2055,7 +2055,6 @@ export default {
         this.$route.name,
         params
       );
-      console.log(response.data);
       this.dataDynamicCrud = response.data || {};
     },
     deepCamelCase(obj) {
