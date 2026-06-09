@@ -962,6 +962,7 @@ export default {
           column.asStatus
         ) {
           column.format = (val) => {
+            if(column?.asStatusBoolean) return val
             let value = typeof val === 'boolean' ? (val = val ? 1 : 0) : val; //Convert booleand to integer
             return Number.isInteger(parseInt(value)) ? parseInt(value) : 0; //Parse value
           };
@@ -1138,11 +1139,11 @@ export default {
         let options = col?.options || [
           {
             label: this.$tr('isite.cms.label.disabled'),
-            value: 0,
+            value: col?.asStatusBoolean ? false : 0,
           },
           {
             label: this.$tr('isite.cms.label.enabled'),
-            value: 1,
+            value: col?.asStatusBoolean ? true : 1,
           },
         ];
         const valueRow = row[col.name] || 0;
