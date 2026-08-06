@@ -1660,7 +1660,7 @@ export default {
           name: 'share',
           sortOrder: 1,
           format: (item) => {
-            return { vIf: item.url || item.embed ? true : false };
+            return { vIf: item?.url || item?.embed || item?.widgetHtml ? true : false };
           },
           color: 'info',
           icon: 'fa-light fa-share-alt',
