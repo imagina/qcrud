@@ -221,6 +221,7 @@
                       v-if="(comp = col.component(props.row))"
                       :is="comp.is"
                       v-bind="comp.props"
+                      v-on="comp?.emits"
                     />
                   </template>
                   <div v-if="!col?.component">
