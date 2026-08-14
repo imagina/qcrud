@@ -222,6 +222,7 @@
                       :is="comp.is"
                       v-bind="comp.props"
                       v-on="comp?.emits ?? {}"
+                      @refresh="getDataTable(true)"
                     />
                   </template>
                   <div v-if="!col?.component">
