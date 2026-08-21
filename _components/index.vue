@@ -222,6 +222,8 @@
                       :is="comp.is"
                       v-bind="comp.props"
                       v-on="comp?.emits ?? {}"
+                      :ref="comp?.ref ?? ''"
+                      @componentAction="val => componentAction(val)"
                       @refresh="getDataTable(true)"
                     />
                   </template>
@@ -1267,7 +1269,10 @@ export default {
         //if the col has an action callback
         if (typeof col.action === 'function') {
           await col.action(row);
-        } else {
+        } else if (typeof col.componentAction === 'function') {
+          await this.componentAction(col.componentAction(row));
+        }        
+        else {
           //finding the default action
           let defaultAction = this.fieldActions(col).find((action) => {
             if (typeof col.action === 'string') {
@@ -1900,6 +1905,7 @@ export default {
     isActionableColumn(col) {
       //if the columns has an action callback
       if (col.action && typeof col.action !== 'string') return true;
+      if (col.componentAction && typeof col.componentAction !== 'string') return true;
 
       //default columns
       if (['title', 'name', 'id'].includes(col.name) || col.action) {
@@ -2075,6 +2081,13 @@ export default {
       }
       return obj;
     },
+    /* to run cols.component methods */
+    componentAction(val = {ref: '',  method: '', args: null}){
+      const ref = this.$refs[val.ref][0] || null
+      if(ref){
+        ref[val.method](val?.args || null)
+      }
+    }
   },
 };
 </script>
