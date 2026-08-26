@@ -1124,8 +1124,8 @@ export default {
         baseFilters = this.params.read.filters;
       }
       return {
-        ...(this.deepCamelCase(this.dataDynamicCrud?.filters) || {}),
         ...baseFilters,
+        ...(this.deepCamelCase(this.dataDynamicCrud?.filters) || {})
       };
     },
     systemName() {
