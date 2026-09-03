@@ -66,6 +66,7 @@ import { markRaw } from 'vue';
 export default {
   beforeUnmount() {
     eventBus.off(`${this.paramsProps.apiRoute}.crud.event.created`);
+    eventBus.off(`${this.paramsProps.apiRoute}.crud.event.refresh`)
   },
   props: {
     crudData: { default: false },//import of vue with computed
@@ -258,6 +259,11 @@ export default {
               this.emitValue()
             }
           });
+
+          eventBus.on(`${this.paramsProps.apiRoute}.crud.event.refresh`, (data) => {
+            this.getDataTable(true)
+          })
+
         }
       });
     },
