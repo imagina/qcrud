@@ -8,7 +8,7 @@
           :excludeActions="excludeActions"
           :searchAction="params.read.searchAction"
           :title="tableTitle"
-          @search="val => search(val)"
+          @search="(val) => search(val)"
           @new="handlerActionCreate()"
           @refresh="getDataTable(true)"
           ref="pageActionRef"
@@ -18,29 +18,42 @@
           @activateTour="$tour.start(tourName)"
           :systemName="systemName"
           :dynamicFilter="dynamicFilter"
-          @updateDynamicFilterValues="filters => updateDynamicFilterValues(filters)"
+          :speech="params.read?.speech"
+          @updateDynamicFilterValues="
+            (filters) => updateDynamicFilterValues(filters)
+          "
           :tableColumns="tableColumns"
-          :showColumnsButton="['table','grid'].includes(localShowAs)"
-          @visibleColumns="value => this.visibleColumns = value"
+          :showColumnsButton="['table', 'grid'].includes(localShowAs)"
+          @visibleColumns="(value) => (this.visibleColumns = value)"
         />
-        <!-- dynamicFilter -->
+        <!-- dashboardRenderer -->
         <dashboardRenderer
           :baseFilters="params?.read?.requestParams?.filter"
           :dynamicFilterValues="getDynamicFilterValues"
+          :configName="configNameDashboard"
         />
       </div>
       <!-- Bulk Actions -->
-      <div v-if="selectedRows.length" id="selectedRows"
-           class="bg-primary text-white row justify-between items-center q-px-md q-mb-md q-py-sm">
+      <div
+        v-if="selectedRows.length"
+        id="selectedRows"
+        class="bg-primary text-white row justify-between items-center q-px-md q-mb-md q-py-sm"
+      >
         <!-- Label -->
         <div class="col-12 col-md-4">
-          <b>{{ $tr('isite.cms.selectedRows', { num: selectedRows.length }) }}</b>
+          <b>{{
+            $tr('isite.cms.selectedRows', { num: selectedRows.length })
+          }}</b>
         </div>
         <!--Actions-->
         <div class="col-12 col-md-8">
           <div class="row q-gutter-sm justify-end">
-            <q-btn v-for="(act, keyAct) in bulkActions" :key="keyAct" v-bind="act.props"
-                   @click="handlerBulkAction(act)" />
+            <q-btn
+              v-for="(act, keyAct) in bulkActions"
+              :key="keyAct"
+              v-bind="act.props"
+              @click="handlerBulkAction(act)"
+            />
           </div>
         </div>
       </div>
@@ -50,27 +63,34 @@
           :apiRouteOrderFolders="apiRouteOrderFolders"
           v-if="localShowAs === 'folders'"
         />
-        <!-- Kanban View-->
-        <kanban v-show="localShowAs === 'kanban' && params.read.kanban"
-                :routes="params.read.kanban" ref="kanban"
-                :filter="getDynamicFilterValues"
-        />
         <!-- Drag View-->
-        <div v-if="localShowAs === 'drag' && dataDraggable.length"
-             class="q-pt-sm q-pr-sm q-pl-md">
-          <recursiveItemDraggable :items="dataTableDraggable"
-                                  :nested="params.read.drag ? (params.read.drag.nested || false) : false" />
+        <div
+          v-if="localShowAs === 'drag' && dataDraggable.length"
+          class="q-pt-sm q-pr-sm q-pl-md"
+        >
+          <recursiveItemDraggable
+            :items="dataTableDraggable"
+            :nested="
+              params.read.drag ? params.read.drag.nested || false : false
+            "
+          />
           <!--Save Action -->
           <div class="text-right q-mt-md">
-            <q-btn :label="$tr('isite.cms.label.save')" color="green" unelevated rounded
-                   @click="saveOrder" />
+            <q-btn
+              :label="$tr('isite.cms.label.save')"
+              color="green"
+              unelevated
+              rounded
+              @click="saveOrder"
+            />
           </div>
         </div>
         <!--Table/Grid View-->
         <q-table
           v-model:pagination="table.pagination"
-          v-if="['table','grid','folders'].includes(localShowAs)"
-          :grid="localShowAs === 'grid'" :rows="table.data"
+          v-if="['table', 'grid', 'folders'].includes(localShowAs)"
+          :grid="localShowAs === 'grid'"
+          :rows="table.data"
           :columns="tableColumns"
           :pagination.sync="table.pagination"
           @request="getData"
@@ -107,16 +127,21 @@
               }"
             >
               <q-td
-                v-for="(col, keyCol) in parseColumnsByRow(props.cols, props.row)"
+                v-for="(col, keyCol) in parseColumnsByRow(
+                  props.cols,
+                  props.row
+                )"
                 :key="col.name"
                 :props="props"
-                :class="`${isDisableRow(props?.row) && col.name != 'actions' ? 'disabled no-pointer-events' : ''} ${col.bgColor ? 'bg-'+col.bgColor : ''}`"
+                :class="`${
+                  isDisableRow(props?.row) && col.name != 'actions'
+                    ? 'disabled no-pointer-events'
+                    : ''
+                } ${col.bgColor ? 'bg-' + col.bgColor : ''}`"
               >
                 <!-- Select row -->
                 <div v-if="col.name === 'selectColumn'">
-                  <q-checkbox v-model="selectedRows"
-                              :val="props.key"
-                  />
+                  <q-checkbox v-model="selectedRows" :val="props.key" />
                 </div>
                 <!-- Button table collapsable -->
                 <div v-if="col.name === 'expandibleColumn'">
@@ -130,15 +155,22 @@
                   />
                 </div>
                 <!--Actions column-->
-                <div class="crudIndexActionsColumn" v-if="col.name == 'actions'">
+                <div
+                  class="crudIndexActionsColumn"
+                  v-if="col.name == 'actions'"
+                >
                   <btn-menu
                     :actions="fieldActions(col, props.row)"
                     :action-data="props.row"
                   />
                 </div>
                 <!-- status columns -->
-                <div v-else-if="(['status','active'].indexOf(col.name) != -1) || col.asStatus"
-                     class="text-left">
+                <div
+                  v-else-if="
+                    ['status', 'active'].indexOf(col.name) != -1 || col.asStatus
+                  "
+                  class="text-left"
+                >
                   <!--Action-->
                   <q-btn-dropdown
                     :color="!col?.options ? (col.value ? 'green' : 'red') : ''"
@@ -150,34 +182,69 @@
                     v-if="permitAction(props.row).edit"
                   >
                     <!--Message change to-->
-                    <q-item v-for="option in statusOptions(col, props.row, true)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props.row, col, option.value)"
-                            v-close-popup>
+                    <q-item
+                      v-for="option in statusOptions(col, props.row, true)"
+                      class="q-pa-sm cursor-pointer"
+                      clickable
+                      @click="updateStatus(props.row, col, option.value)"
+                      v-close-popup
+                    >
                       <div class="row items-center">
-                        <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col?.options ? (!col.value ? 'green' : 'red') : ''" />
+                        <q-icon
+                          name="fa-light fa-pencil"
+                          class="q-mr-sm"
+                          :color="
+                            !col?.options ? (!col.value ? 'green' : 'red') : ''
+                          "
+                        />
                         {{
-                          $tr('isite.cms.message.changeTo', { text: option.label })
+                          $tr('isite.cms.message.changeTo', {
+                            text: option.label,
+                          })
                         }}
                       </div>
                     </q-item>
                   </q-btn-dropdown>
 
                   <label v-else>
-                    {{ col.value ? $tr('isite.cms.label.disabled') : $tr('isite.cms.label.enabled') }}
+                    {{
+                      col.value
+                        ? $tr('isite.cms.label.disabled')
+                        : $tr('isite.cms.label.enabled')
+                    }}
                   </label>
                 </div>
                 <!--Default columns-->
                 <div v-else>
-                  <!--Badge-->
-                  <div>
+                  <template v-if="col?.component">
+                    <component
+                      v-if="(comp = col.component(props.row))"
+                      :is="comp.is"
+                      v-bind="comp.props"
+                      v-on="comp?.emits ?? {}"
+                      :ref="comp?.ref ?? ''"
+                      @componentAction="val => componentAction(val)"
+                      @refresh="getDataTable(true)"
+                    />
+                  </template>
+                  <div v-if="!col?.component">
                     <promiseTemplate
-                      :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
+                      :promise="
+                        col.formatAsync ? col.formatAsync(props.row) : col.value
+                      "
                       :isLoading="col.formatAsync ? loading : false"
                     >
                       <template v-slot="data">
                         <div>
-                          <div v-if="col.bgTextColor && data.data"
-                               @click="rowclick(col,props.row)"
-                               :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
+                          <div
+                            v-if="col.bgTextColor && data.data"
+                            @click="rowclick(col, props.row)"
+                            :class="
+                              (col.textColor ? ' text-' + col.textColor : '') +
+                              (isActionableColumn(col)
+                                ? ' cursor-actionable '
+                                : '')
+                            "
                           >
                             <q-badge :class="col.bgTextColor">
                               <span v-html="data.data" />
@@ -186,21 +253,36 @@
                           <!--route link-->
                           <router-link
                             v-else-if="col.to"
-                            :to="typeof col.to === 'function' ? col.to(props.row) : col.to"
+                            :to="
+                              typeof col.to === 'function'
+                                ? col.to(props.row)
+                                : col.to
+                            "
                             v-html="data.data"
-                            :class="'cursor-actionable' + (col.textColor ? ' text-'+col.textColor : '')"
+                            :class="
+                              'cursor-actionable' +
+                              (col.textColor ? ' text-' + col.textColor : '')
+                            "
                           >
                           </router-link>
                           <!--Label-->
                           <div
                             v-else
-                            @click="rowclick(col,props.row)"
+                            @click="rowclick(col, props.row)"
                             v-html="data.data"
-                            :class="(isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
+                            :class="
+                              (isActionableColumn(col)
+                                ? 'cursor-actionable'
+                                : '') +
+                              (col.textColor ? ' text-' + col.textColor : '')
+                            "
+                          ></div>
+                          <q-tooltip
+                            v-if="col.tooltip == undefined || col.tooltip"
                           >
-                          </div>
-                          <q-tooltip v-if="col.tooltip == undefined || col.tooltip">
-                            <div v-html="deleteHtml(col.tooltip || data.data)" />
+                            <div
+                              v-html="deleteHtml(col.tooltip || data.data)"
+                            />
                           </q-tooltip>
                         </div>
                       </template>
@@ -211,31 +293,67 @@
             </q-tr>
             <!-- Collapsed table relationship -->
             <q-tr style="border: 0">
-              <q-td colspan="100%" id="collapseTable" style="height: 0; border: 0">
-                <q-expansion-item :ref="`trExpansion${props.key}`" header-style="display : none" group="trExpansion">
-                  <div id="contentRelationData" class="row items-center justify-center">
+              <q-td
+                colspan="100%"
+                id="collapseTable"
+                style="height: 0; border: 0"
+              >
+                <q-expansion-item
+                  :ref="`trExpansion${props.key}`"
+                  header-style="display : none"
+                  group="trExpansion"
+                >
+                  <div
+                    id="contentRelationData"
+                    class="row items-center justify-center"
+                  >
                     <!-- Data -->
-                    <div v-if="relation.data.length" class="col-12 q-mb-md shadow-3">
+                    <div
+                      v-if="relation.data.length"
+                      class="col-12 q-mb-md shadow-3"
+                    >
                       <!--Label-->
-                      <div v-if="relationConfig('label')"
-                           class="q-py-sm q-px-sm text-blue-grey text-h4 text-weight-bold text-subtitle1 ellipsis title-content text-center">
+                      <div
+                        v-if="relationConfig('label')"
+                        class="q-py-sm q-px-sm text-blue-grey text-h4 text-weight-bold text-subtitle1 ellipsis title-content text-center"
+                      >
                         {{ relationConfig('label') }}
                       </div>
                       <!-- Table -->
                       <q-table
-                        :rows="relation.data"
+                        :rows="visibleRelationRows"
                         :columns="relationConfig('columns')"
+                        :rows-per-page-options="[0]"
                       >
                         <template v-slot:body-cell="props">
                           <q-td :props="props">
                             <!--Actions-->
-                            <btn-menu v-if="props.col.name == 'actions'"
-                                      :actions="relationConfig('actions')"
-                                      :action-data="props.row"
+                            <btn-menu
+                              v-if="props.col.name == 'actions'"
+                              :actions="relationConfig('actions')"
+                              :action-data="props.row"
                             />
                             <!-- Default Value -->
-                            <label v-else>{{ props.value }}</label>
+                            <label v-else v-html="props.value" />
                           </q-td>
+                        </template>
+                        <template v-slot:bottom>
+                          <div
+                            class="tw-left-1/2 lg:left-0 tw-sticky tw-bottom-0 tw-right-0 tw-px-8"
+                          >
+                            <q-btn
+                              v-if="relation.data.length > 5"
+                              :icon="iconRelationArrow"
+                              @click="showMore"
+                              color="primary"
+                              round
+                              size="sm"
+                            >
+                              <q-tooltip>
+                                {{ translationButtonRelation }}
+                              </q-tooltip>
+                            </q-btn>
+                          </div>
                         </template>
                       </q-table>
                     </div>
@@ -252,37 +370,82 @@
           <template v-slot:item="props">
             <div :class="`${gridParams.colClass}`">
               <!--Card Component-->
-              <component v-if="gridParams.component" :is="gridParams.component" :row="props.row"
-                         :permit-action="permitAction(props.row)" :field-actions="fieldActions(props)"
-                         @update="params.update.to ? false : $emit('update', props.row)"
-                         @delete="deleteItem(props.row)" />
+              <component
+                v-if="gridParams.component"
+                :is="gridParams.component"
+                :row="props.row"
+                :permit-action="permitAction(props.row)"
+                :field-actions="fieldActions(props)"
+                @update="params.update.to ? false : $emit('update', props.row)"
+                @delete="deleteItem(props.row)"
+              />
               <!--Default Card -->
-              <q-card v-else class="box default-card-grid" style="padding-top: 5px">
+              <q-card
+                v-else
+                class="box default-card-grid"
+                style="padding-top: 5px"
+              >
                 <!--item image-->
-                <div class="default-card-grid_item-image" v-if="itemImage(props.row)"
-                     :style="`background-image: url('${itemImage(props.row)}')`"></div>
+                <div
+                  class="default-card-grid_item-image"
+                  v-if="itemImage(props.row)"
+                  :style="`background-image: url('${itemImage(props.row)}')`"
+                ></div>
                 <!--Fields-->
                 <q-list dense>
-                  <template v-for="col in parseColumnsByRow(props.cols, props.row)" :key="col.name">
-                    <q-item style="padding: 3px 0" v-if="col?.name != 'actions'">
+                  <template
+                    v-for="col in parseColumnsByRow(props.cols, props.row)"
+                    :key="col.name"
+                  >
+                    <q-item
+                      style="padding: 3px 0"
+                      v-if="col?.name != 'actions'"
+                    >
                       <q-item-section>
                         <!--Field name-->
                         <q-item-label class="ellipsis">
-                          <div v-if="col.name != 'actions'" class="row justify-between items-center">
+                          <div
+                            v-if="col.name != 'actions'"
+                            class="row justify-between items-center"
+                          >
                             <!--Label-->
-                            <div> {{ col.label }} {{ col.name == 'id' ? col.value : '' }}</div>
+                            <div>
+                              {{ col.label }}
+                              {{ col.name == 'id' ? col.value : '' }}
+                            </div>
                             <!--Actions-->
-                            <btn-menu v-if="col.name == 'id'" :actions="fieldActions(props, props.row)" :action-data="props.row" />
+                            <btn-menu
+                              v-if="col.name == 'id'"
+                              :actions="fieldActions(props, props.row)"
+                              :action-data="props.row"
+                            />
                           </div>
-                          <q-separator v-if="['id'].indexOf(col.name) != -1" class="q-mt-sm" />
+                          <q-separator
+                            v-if="['id'].indexOf(col.name) != -1"
+                            class="q-mt-sm"
+                          />
                         </q-item-label>
                         <!--Field value-->
-                        <q-item-label v-if="col.name != 'id'" class="text-grey-6">
+                        <q-item-label
+                          v-if="col.name != 'id'"
+                          class="text-grey-6"
+                        >
                           <!-- status columns -->
-                          <div v-if="(['status','active'].includes(col.name)) || col.asStatus"
-                               class="text-left">
+                          <div
+                            v-if="
+                              ['status', 'active'].includes(col.name) ||
+                              col.asStatus
+                            "
+                            class="text-left"
+                          >
                             <q-btn-dropdown
-                              :color="!col?.options ? (col.value ? 'green' : 'red') : ''"
+                              :color="
+                                !col?.options
+                                  ? col.value
+                                    ? 'green'
+                                    : 'red'
+                                  : ''
+                              "
                               flat
                               padding="sm none"
                               class="text-caption"
@@ -291,12 +454,35 @@
                               v-if="permitAction(props.row).edit"
                             >
                               <!--Message change to-->
-                              <q-item v-for="option in statusOptions(col, props, true)" class="q-pa-sm cursor-pointer" clickable @click="updateStatus(props.row, col, option.value)"
-                                      v-close-popup>
+                              <q-item
+                                v-for="option in statusOptions(
+                                  col,
+                                  props,
+                                  true
+                                )"
+                                class="q-pa-sm cursor-pointer"
+                                clickable
+                                @click="
+                                  updateStatus(props.row, col, option.value)
+                                "
+                                v-close-popup
+                              >
                                 <div class="row items-center">
-                                  <q-icon name="fa-light fa-pencil" class="q-mr-sm" :color="!col?.options ? (!col.value ? 'green' : 'red') : ''" />
+                                  <q-icon
+                                    name="fa-light fa-pencil"
+                                    class="q-mr-sm"
+                                    :color="
+                                      !col?.options
+                                        ? !col.value
+                                          ? 'green'
+                                          : 'red'
+                                        : ''
+                                    "
+                                  />
                                   {{
-                                    $tr('isite.cms.message.changeTo', { text: option.label })
+                                    $tr('isite.cms.message.changeTo', {
+                                      text: option.label,
+                                    })
                                   }}
                                 </div>
                               </q-item>
@@ -306,36 +492,74 @@
                           <div v-else>
                             <!--Badge-->
                             <promiseTemplate
-                              :promise="col.formatAsync ? col.formatAsync(props.row) : col.value"
+                              :promise="
+                                col.formatAsync
+                                  ? col.formatAsync(props.row)
+                                  : col.value
+                              "
                               :isLoading="col.formatAsync ? loading : false"
                             >
                               <template v-slot="data">
                                 <div>
-                                  <div v-if="col.bgTextColor && data.data"
-                                       @click="rowclick(col,props.row)"
-                                       :class="(col.textColor ? ' text-'+col.textColor : '') + (isActionableColumn(col) ? ' cursor-actionable ' : '')"
+                                  <div
+                                    v-if="col.bgTextColor && data.data"
+                                    @click="rowclick(col, props.row)"
+                                    :class="
+                                      (col.textColor
+                                        ? ' text-' + col.textColor
+                                        : '') +
+                                      (isActionableColumn(col)
+                                        ? ' cursor-actionable '
+                                        : '')
+                                    "
                                   >
-                                    <q-badge :class="col.bgTextColor" v-html="data.data"></q-badge>
+                                    <q-badge
+                                      :class="col.bgTextColor"
+                                      v-html="data.data"
+                                    ></q-badge>
                                   </div>
                                   <!--route link-->
                                   <router-link
                                     v-else-if="col.to"
-                                    :to="typeof col.to === 'function' ? col.to(props.row) : col.to"
+                                    :to="
+                                      typeof col.to === 'function'
+                                        ? col.to(props.row)
+                                        : col.to
+                                    "
                                     v-html="data.data"
-                                    :class="'cursor-actionable' + (col.textColor ? ' text-'+col.textColor : '')"
+                                    :class="
+                                      'cursor-actionable' +
+                                      (col.textColor
+                                        ? ' text-' + col.textColor
+                                        : '')
+                                    "
                                   >
                                   </router-link>
                                   <!--Label-->
                                   <div
                                     v-else
-                                    @click="rowclick(col,props.row)"
+                                    @click="rowclick(col, props.row)"
                                     v-html="data.data"
-                                    :class="'ellipsis ' + (isActionableColumn(col) ? 'cursor-actionable' : '') + (col.textColor ? ' text-'+col.textColor : '')"
-                                  >
-                                  </div>
+                                    :class="
+                                      'ellipsis ' +
+                                      (isActionableColumn(col)
+                                        ? 'cursor-actionable'
+                                        : '') +
+                                      (col.textColor
+                                        ? ' text-' + col.textColor
+                                        : '')
+                                    "
+                                  ></div>
                                   <q-tooltip>
-                                    <div v-html="deleteHtml(col.tooltip || data.data)" />
-                                    <label v-if="isActionableColumn(col)" class="text-weight-bold">
+                                    <div
+                                      v-html="
+                                        deleteHtml(col.tooltip || data.data)
+                                      "
+                                    />
+                                    <label
+                                      v-if="isActionableColumn(col)"
+                                      class="text-weight-bold"
+                                    >
                                       {{ $tr('isite.cms.label.clickToAction') }}
                                     </label>
                                   </q-tooltip>
@@ -354,9 +578,19 @@
           <!-- pagination -->
           <template #bottom="props">
             <div
-              :class="`bottonCrud full-width flex items-center ${windowSize == 'mobile' ? 'justify-center' : 'justify-between'}`">
-              <div class="sm:tw-text-sm":class="`text-blue-grey ${windowSize == 'mobile' ? 'q-mb-sm' : ''} `">
-                {{ $tr('isite.cms.label.showing') }} <b>{{ countPage(props) }}</b> {{ $trp('isite.cms.label.entry') }}
+              :class="`bottonCrud full-width flex items-center ${
+                windowSize == 'mobile' ? 'justify-center' : 'justify-between'
+              }`"
+            >
+              <div
+                class="sm:tw-text-sm"
+                :class="`text-blue-grey ${
+                  windowSize == 'mobile' ? 'q-mb-sm' : ''
+                } `"
+              >
+                {{ $tr('isite.cms.label.showing') }}
+                <b>{{ countPage(props) }}</b>
+                {{ $trp('isite.cms.label.entry') }}
               </div>
               <div class="col-12 q-ml-sm q-mr-lg flex flex-center">
                 <q-pagination
@@ -380,20 +614,26 @@
               </div>
               <div class="flex items-center">
                 <div class="flex items-center tw-mr-4 text-blue-grey">
-                  <span class="sm:tw-text-sm">{{ $tr('isite.cms.label.show') }}</span>
+                  <span class="sm:tw-text-sm">{{
+                    $tr('isite.cms.label.show')
+                  }}</span>
                   <q-select
                     v-model="table.pagination.rowsPerPage"
                     :options="rowsPerPageOption"
-                    @update:modelValue="() => {
-                      table.pagination.page = 1
-                      getDataTable()
-                    }"
+                    @update:modelValue="
+                      () => {
+                        table.pagination.page = 1;
+                        getDataTable();
+                      }
+                    "
                     options-cover
                     dense
                     class="q-mx-sm text-caption"
                     outlined
                   />
-                  <span class="sm:tw-text-sm">{{ $trp('isite.cms.label.entry') }}</span>
+                  <span class="sm:tw-text-sm">{{
+                    $trp('isite.cms.label.entry')
+                  }}</span>
                 </div>
                 <div class="actionsBtnPag">
                   <q-btn
@@ -425,7 +665,7 @@
           </template>
         </q-table>
         <!--Loading-->
-        <inner-loading :visible="localShowAs !== 'kanban' && loading" />
+        <inner-loading :visible="loading" />
       </div>
     </div>
     <!-- Export Component -->
@@ -433,6 +673,7 @@
     <!-- Qreable Component -->
     <qreable ref="qreableComponent" @created="getDataTable(true)" />
     <!-- Share-link Component-->
+    <modalBuildFilter />
     <share-link ref="shareLinkComponent" />
   </div>
 </template>
@@ -450,19 +691,21 @@ import { markRaw } from 'vue';
 import paginateCacheOffline from 'src/plugins/paginateCacheOffline';
 import axios from 'axios';
 import dashboardRenderer from 'modules/qsite/_components/master/dashboardRenderer';
-
+import storeModalBuildFilter from 'modules/qsite/_components/master/modalBuildFilter/stores';
+import modalBuildFilter from 'modules/qsite/_components/master/modalBuildFilter/index.vue';
 
 export default {
   props: {
     params: { default: false },
-    title: { default: '' }
+    title: { default: '' },
   },
   emits: ['update', 'create', 'deleted'],
   components: {
     masterExport,
     recursiveItemDraggable,
     qreable,
-    dashboardRenderer
+    dashboardRenderer,
+    modalBuildFilter,
   },
   provide() {
     return {
@@ -470,18 +713,28 @@ export default {
       updateRelationData: this.updateRelationData,
       funnelPageAction: computed(() => this.funnelId),
       fieldActions: this.fieldActions,
-      getFieldRelationActions: this.getFieldRelationActions
+      getFieldRelationActions: this.getFieldRelationActions,
     };
   },
   watch: {
     isAppOffline: {
-      handler: function() {
+      handler: function () {
         this.getDataTable(true);
+      },
+    },
+    async showModalFilter(newVal) {
+      if (newVal === false) {
+        try {
+          await this.getDynamicCrud();
+        } catch (e) {
+          console.error(e);
+        }
       }
-    }
+    },
   },
   created() {
     this.$helper.setDynamicSelectList({});
+    this.getDynamicCrud();
   },
   beforeMount() {
     this.loadComponent();
@@ -489,8 +742,8 @@ export default {
   data() {
     return {
       tableKey: null, // TableKey
-      success: false,//Global status of component
-      loading: true,//Loading
+      success: false, //Global status of component
+      loading: true, //Loading
       windowWith: window.innerWidth, //windows size
       modelRequest: {
         data: [],
@@ -498,28 +751,29 @@ export default {
         meta: {
           page: {
             currentPage: 1,
-            total: 0
-          }
-        }
+            total: 0,
+          },
+        },
       },
-      table: {//Object config table
+      table: {
+        //Object config table
         data: [],
         pagination: {
           page: 1,
           rowsNumber: '',
           rowsPerPage: 10,
-          descending: true
+          descending: true,
         },
         filter: {
-          search: null
-        }
+          search: null,
+        },
       },
       appConfig: config('app'),
-      statusModel: {},//Model to status
-      itemIdToDelete: false,//ID of item to delete,
+      statusModel: {}, //Model to status
+      itemIdToDelete: false, //ID of item to delete,
       filter: {
         available: false,
-        show: false
+        show: false,
       },
       dataField: [],
       exportParams: false,
@@ -527,28 +781,34 @@ export default {
       localShowAs: 'table',
       relation: {
         loading: false,
-        data: []
+        data: [],
       },
       selectedRows: [],
       selectedRowsAll: false,
       folderList: [],
       funnelId: null,
-      searchKanban: null,
       tourName: 'admin_crud_index_tour',
       filters: false,
       gridComponent: false,
       expiresIn: null,
       dynamicFilterValues: {},
-      visibleColumns: []
+      visibleColumns: [],
+      showAllRows: false,
+      dataDynamicCrud: null,
     };
   },
   computed: {
+    showModalFilter() {
+      return storeModalBuildFilter.showModal;
+    },
+    configNameDashboard() {
+      if (this.params?.configNameCustom) return this.params.configNameCustom;
+      return null;
+    },
     deleteHtml() {
-      return data => {
+      return (data) => {
         if (!data) return '';
-        return typeof data === 'string' ?
-          data.replace(/<[^>]+>/g, '') :
-          data;
+        return typeof data === 'string' ? data.replace(/<[^>]+>/g, '') : data;
       };
     },
     isAppOffline() {
@@ -556,56 +816,80 @@ export default {
     },
     //Table Title
     permisionRelation() {
-      return this.params.read.relation.permission ? this.$hasAccess(this.params.read.relation.permission) : true;
+      return this.params.read.relation.permission
+        ? this.$hasAccess(this.params.read.relation.permission)
+        : true;
     },
     tableTitle() {
-      if (this.title)
-        return this.$tr(this.title);
-      if (this.params.read.title)
-        return this.$tr(this.params.read.title);
+      if (this.title) return this.$tr(this.title);
+      if (this.params.read.title) return this.$tr(this.params.read.title);
       return '';
     },
     //Table actions
     tableActions() {
       //Default response
       let response = [];
-      if (this.readShowAs !== 'kanban') {
+
+      response.push({
+        label: this.$tr(
+          `isite.cms.message.${
+            this.localShowAs == 'grid' ? 'listView' : 'gribView'
+          }`
+        ),
+        vIf:
+          this.params.read.allowToggleView != undefined
+            ? this.params.read.allowToggleView
+            : true,
+        props: {
+          icon:
+            this.localShowAs != 'grid'
+              ? 'fa-light fa-grid-horizontal'
+              : 'fa-light fa-list',
+          id: 'crudIndexViewAction',
+        },
+        vIfAction: this.readShowAs === 'drag',
+        action: () => {
+          const alternativeShow =
+            this.readShowAs != 'table' ? this.readShowAs : 'grid';
+          this.localShowAs =
+            this.localShowAs === alternativeShow ? 'table' : alternativeShow;
+        },
+      });
+      if (this.params.read?.isDynamicCrud) {
         response.push({
-          label: this.$tr(`isite.cms.message.${this.localShowAs == 'grid' ? 'listView' : 'gribView'}`),
-          vIf: (this.params.read.allowToggleView != undefined) ? this.params.read.allowToggleView : true,
+          label: 'Build crud',
           props: {
-            icon: this.localShowAs != 'grid' ? 'fa-light fa-grid-horizontal' : 'fa-light fa-list',
-            id: 'crudIndexViewAction'
+            icon: 'fa-light fa-list-check',
           },
-          vIfAction: this.readShowAs === 'drag',
           action: () => {
-            const alternativeShow = this.readShowAs != 'table' ? this.readShowAs : 'grid';
-            this.localShowAs = this.localShowAs === alternativeShow ? 'table' : alternativeShow;
-          }
+            storeModalBuildFilter.showModal = true;
+            storeModalBuildFilter.criteria = this.$route.name;
+            storeModalBuildFilter.fieldKey = 'key';
+          },
         });
       }
+
       //Add search action
       if (this.params.read.search !== false) response.push('search');
       //Add create action
       if (this.params.create && this.params.hasPermission.create) {
         if (this.params.create?.actions?.length > 0) {
-          response.push(
-            {
-              props: {
-                label: this.$tr(`isite.cms.label.new`),
-                icon: 'fa-duotone fa-plus',
-              },
-              type: 'btn-dropdown',
-              items: this.params.create?.actions || [],
-            })
+          response.push({
+            props: {
+              label: this.$tr(`isite.cms.label.new`),
+              icon: 'fa-duotone fa-plus',
+            },
+            type: 'btn-dropdown',
+            items: this.params.create?.actions || [],
+          });
         } else {
-          response.push('new')
+          response.push('new');
         }
       }
-      // se oculta page action
-      if (this.localShowAs === 'kanban' && this.$refs.kanban) response = [...response, ...this.$refs.kanban.extraPageActions];
+
       // extras for page action
-      if (this.params?.extraActions?.length > 0) response.push(...this.params.extraActions);
+      if (this.params?.extraActions?.length > 0)
+        response.push(...this.params.extraActions);
       //Response
       return response.filter((item) => !item.vIfAction);
     },
@@ -615,20 +899,27 @@ export default {
     //Define slot table to show
     showSlotTable() {
       let data = this.$clone(this.table.data);
-      let lengData = (data && data.length) ? data.length : false;
+      let lengData = data && data.length ? data.length : false;
       let pagination = this.$clone(this.table.pagination);
 
       //Order response
       let response = {
         header: this.params.read.hideHeader ? false : true,
-        bottom: (pagination.rowsNumber >= pagination.rowsPerPage) ? true : (!lengData ? true : false)
+        bottom:
+          pagination.rowsNumber >= pagination.rowsPerPage
+            ? true
+            : !lengData
+            ? true
+            : false,
       };
 
       return response; //Response
     },
     //Options rows per page
     rowsPerPageOption() {
-      return this.params.read.rowsPerPageOptions || [5, 10, 20, 50, 100, 300, 500];
+      return (
+        this.params.read.rowsPerPageOptions || [5, 10, 20, 50, 100, 300, 500]
+      );
     },
     // collapsible relation return type
     relationConfig() {
@@ -640,13 +931,20 @@ export default {
           requestParams: {},
           columns: [],
           actions: [],
-          ...(this.params.read.relation || {})
+          ...(this.params.read.relation || {}),
         };
         //Default response
         if (!key) return relation;
         //Add action column
-        if (relation.actions.length && !relation.columns.find(item => item.name == 'actions')) {
-          relation.columns.push({ name: 'actions', label: this.$tr('isite.cms.form.actions'), align: 'center' });
+        if (
+          relation.actions.length &&
+          !relation.columns.find((item) => item.name == 'actions')
+        ) {
+          relation.columns.push({
+            name: 'actions',
+            label: this.$tr('isite.cms.form.actions'),
+            align: 'center',
+          });
         }
         //Response
         return relation[key];
@@ -656,16 +954,21 @@ export default {
     tableColumns() {
       let columns = this.$clone(this.params.read.columns);
       //Check columns
-      columns.forEach(column => {
+      columns.forEach((column) => {
         //Default sort by id
-        if (['id', 'created_at', 'updated_at'].indexOf(column.name) != -1) column.sortable = true;
+        if (['id', 'created_at', 'updated_at'].indexOf(column.name) != -1)
+          column.sortable = true;
         //Validate column actions
         if (column.name == 'actions') column.align = 'right';
         //Add format to status column
-        if ((['status', 'active'].indexOf(column.name) != -1) || column.asStatus) {
-          column.format = val => {
-            let value = (typeof val === 'boolean') ? (val = val ? 1 : 0) : val;//Convert booleand to integer
-            return Number.isInteger(parseInt(value)) ? parseInt(value) : 0;//Parse value
+        if (
+          ['status', 'active'].indexOf(column.name) != -1 ||
+          column.asStatus
+        ) {
+          column.format = (val) => {
+            if(column?.asStatusBoolean) return val
+            let value = typeof val === 'boolean' ? (val = val ? 1 : 0) : val; //Convert booleand to integer
+            return Number.isInteger(parseInt(value)) ? parseInt(value) : 0; //Parse value
           };
         }
       });
@@ -674,11 +977,14 @@ export default {
       if (columns.length > 0) columns[0].align = 'left';
       // Collapsible action column
       const relationName = this.relationConfig('name');
-      if ((this.relationConfig('name') || this.relationConfig('apiRoute')) && this.permisionRelation) {
+      if (
+        (this.relationConfig('name') || this.relationConfig('apiRoute')) &&
+        this.permisionRelation
+      ) {
         columns.unshift({
           name: 'expandibleColumn',
           label: '',
-          align: 'center'
+          align: 'center',
         });
       }
       //Select column
@@ -690,11 +996,13 @@ export default {
       if (this.params?.read?.requestParams?.include?.includes('qrs')) {
         //Create column QR, if exist in include
         const columnQr = {
-          name: 'qr', label: 'QR',
+          name: 'qr',
+          label: 'QR',
           align: 'left',
-          format: val => '<i class="fa-light fa-qrcode" style="font-size: 20px">',
+          format: (val) =>
+            '<i class="fa-light fa-qrcode" style="font-size: 20px">',
           tooltip: this.$tr('iqreable.cms.label.view'),
-          action: (item) => this.setActionQr(item)
+          action: (item) => this.setActionQr(item),
         };
 
         //Set the QR column and place it in position 1 of the array
@@ -709,12 +1017,12 @@ export default {
     },
     //Grid params
     gridParams() {
-      let gridParams = this.params.read.grid || {};//Get grid params
+      let gridParams = this.params.read.grid || {}; //Get grid params
       gridParams.component = this.gridComponent;
       //Response
       return {
         colClass: gridParams.colClass || 'col-12 col-sm-6 col-lg-4 col-xl-3',
-        component: gridParams.component || false
+        component: gridParams.component || false,
       };
     },
     //Validate read show as
@@ -730,59 +1038,70 @@ export default {
         return {
           id: item.id,
           title: drag.title?.format ? drag.title?.format(title) : title,
-          subTitle: drag.subTitle?.format ? drag.subTitle?.format(subTitle) : subTitle,
+          subTitle: drag.subTitle?.format
+            ? drag.subTitle?.format(subTitle)
+            : subTitle,
           children: [],
-          actions: this.fieldActions(item)
+          actions: this.fieldActions(item),
         };
       });
     },
     //data to table dragablle
     dataTableDraggable: {
-      get: function() {
+      get: function () {
         return this.dataDraggable;
       },
-      set: function(value) {
+      set: function (value) {
         this.dataDraggable = value;
-      }
+      },
     },
     // validation to hide and show table collapse
     showCollapsedTable() {
-      return key => key === this.tableKey;
+      return (key) => key === this.tableKey;
     },
     // collapse return icon
     tableCollapseIcon(key) {
-      return key => this.showCollapsedTable(key) ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+      return (key) =>
+        this.showCollapsedTable(key)
+          ? 'fas fa-chevron-up'
+          : 'fas fa-chevron-down';
     },
     //Return the bulk actions
     bulkActions() {
       var response = [];
       var bulkActions = this.params.read.bulkActions || [];
       //Validate availability
-      response = bulkActions.filter(action => {
-        //Validate vIf
-        if ((action?.vIf != undefined) && !action?.vIf) return false;
-        //Validate permission
-        if ((action.permission != undefined) && !this.$hasAccess(action.permission)) return false;
-        //Validate apiRoute
-        if (!action.apiRoute) return false;
-        //Default response
-        return true;
-      }).map(action => {
-        return {
-          ...action,
-          props: {
-            rounded: true,
-            dense: true,
-            unelevated: true,
-            color: 'white',
-            class: 'btn-small',
-            noCaps: true,
-            textColor: 'blue-grey',
-            padding: '3px 10px',
-            ...(action.props || {})
-          }
-        };
-      });
+      response = bulkActions
+        .filter((action) => {
+          //Validate vIf
+          if (action?.vIf != undefined && !action?.vIf) return false;
+          //Validate permission
+          if (
+            action.permission != undefined &&
+            !this.$hasAccess(action.permission)
+          )
+            return false;
+          //Validate apiRoute
+          if (!action.apiRoute) return false;
+          //Default response
+          return true;
+        })
+        .map((action) => {
+          return {
+            ...action,
+            props: {
+              rounded: true,
+              dense: true,
+              unelevated: true,
+              color: 'white',
+              class: 'btn-small',
+              noCaps: true,
+              textColor: 'blue-grey',
+              padding: '3px 10px',
+              ...(action.props || {}),
+            },
+          };
+        });
       //Response
       return response;
     },
@@ -797,15 +1116,24 @@ export default {
     },
     dynamicFilter() {
       if (this.isAppOffline) return false;
-      if (this.params.read?.filters) {
-        if (Object.keys(this.params.read?.filters).length > 0) {
-          return this.params.read?.filters;
-        }
+      let baseFilters = {};
+      if (
+        this.params?.read?.filters &&
+        Object.keys(this.params.read.filters).length > 0
+      ) {
+        baseFilters = this.params.read.filters;
       }
-      return {};
+      return {
+        ...baseFilters,
+        ...(this.deepCamelCase(this.dataDynamicCrud?.filters) || {})
+      };
     },
     systemName() {
-      return this.params.read?.systemName || this.params?.permission || this.params?.entityName;
+      return (
+        this.params.read?.systemName ||
+        this.params?.permission ||
+        this.params?.entityName
+      );
     },
     getDynamicFilterValues() {
       return this.dynamicFilterValues;
@@ -815,27 +1143,44 @@ export default {
         let options = col?.options || [
           {
             label: this.$tr('isite.cms.label.disabled'),
-            value: 0
+            value: col?.asStatusBoolean ? false : 0,
           },
           {
             label: this.$tr('isite.cms.label.enabled'),
-            value: 1
-          }
+            value: col?.asStatusBoolean ? true : 1,
+          },
         ];
         const valueRow = row[col.name] || 0;
-        return options.filter(opt => {
+        return options.filter((opt) => {
           if (isFilter) return opt.value != valueRow;
           return true;
-        })
-
-      }
+        });
+      };
     },
     statusOptionsLabel() {
       return (col, row) => {
         const valueRow = row[col.name] || 0;
-        return this.statusOptions(col, row).find(opt => opt.value == valueRow)?.label || ''
-      }
-    }
+        return (
+          this.statusOptions(col, row).find((opt) => opt.value == valueRow)
+            ?.label || ''
+        );
+      };
+    },
+    visibleRelationRows() {
+      return this.showAllRows
+        ? this.relation.data
+        : this.relation.data.slice(0, 5);
+    },
+    iconRelationArrow() {
+      return this.showAllRows
+        ? 'fa-thin fa-arrow-up-to-arc'
+        : 'fa-thin fa-arrow-down-to-arc';
+    },
+    translationButtonRelation() {
+      return this.showAllRows
+        ? this.$tr('isite.cms.label.showLess')
+        : this.$tr('isite.cms.label.showMore');
+    },
   },
   methods: {
     async loadComponent() {
@@ -844,40 +1189,49 @@ export default {
         const gridComponent = qComponent.default;
         this.gridComponent = markRaw(gridComponent);
       }
-      this.$nextTick(function() {
+      this.$nextTick(async function () {
         this.init();
       });
     },
     countPage(props) {
-      const page = props.pagination.page
-      const rowsPerPage = props.pagination.rowsPerPage
-      const rowsNumber = props.pagination.rowsNumber
-      const start = ((page * rowsPerPage) - rowsPerPage) + 1
-      const ends = props.isLastPage ? rowsNumber : (page * rowsPerPage)
-      return `${start} - ${ends} ${this.$tr('isite.cms.label.of')} ${rowsNumber}`
+      const page = props.pagination.page;
+      const rowsPerPage = props.pagination.rowsPerPage;
+      const rowsNumber = props.pagination.rowsNumber;
+      const start = page * rowsPerPage - rowsPerPage + 1;
+      const ends = props.isLastPage ? rowsNumber : page * rowsPerPage;
+      return `${start} - ${ends} ${this.$tr(
+        'isite.cms.label.of'
+      )} ${rowsNumber}`;
     },
     addEventListenersSW() {
-      navigator.serviceWorker.addEventListener('message', async eventListener => {
-        if (eventListener.data === 'synchronized-data') {
-          this.getDataTable(true);
+      navigator.serviceWorker.addEventListener(
+        'message',
+        async (eventListener) => {
+          if (eventListener.data === 'synchronized-data') {
+            this.getDataTable(true);
+          }
         }
-      })
+      );
     },
     //init form
     async init() {
       this.localShowAs = this.readShowAs;
-      this.handlerUrlCrudAction();//Handler url action
+      this.handlerUrlCrudAction(); //Handler url action
       //if (!this.params.read.filterName || this.isAppOffline) this.getDataTable()//Get data
       //Emit mobile main action
       if (this.isAppOffline) this.getDataTable();
-      if (this.params.mobileAction && this.params.create && this.params.hasPermission.create) {
+      if (
+        this.params.mobileAction &&
+        this.params.create &&
+        this.params.hasPermission.create
+      ) {
         eventBus.emit('setMobileMainAction', {
           icon: 'fas fa-plus',
           color: 'green',
-          callBack: () => this.handlerActionCreate()
+          callBack: () => this.handlerActionCreate(),
         });
       }
-      this.addEventListenersSW()
+      this.addEventListenersSW();
       //Success
       this.success = true;
     },
@@ -890,38 +1244,37 @@ export default {
       const filters = this.getDynamicFilterValues;
       //this.dynamicFilterValues = filter
       //Call data table
-      if (this.$refs.kanban && this.params.read.kanban && this.localShowAs === 'kanban') {
-        const filterName = this.params.read.kanban.column.filter.name || '';
-        this.funnelId = String(this.getDynamicFilterValues[filterName] || null);
-        await this.$refs.kanban.setSearch(this.searchKanban);
-        await this.$refs.kanban.init(refresh);
-        return;
-      } else {
-        this.getData({
-            pagination: { ...this.table.pagination, ...(pagination || {}) },
-            filter: { ...this.table.filter, ...(filters || {}) }
-          },
-          refresh);
-      }
-      this.hideExpandedRows()
+
+      this.getData(
+        {
+          pagination: { ...this.table.pagination, ...(pagination || {}) },
+          filter: { ...this.table.filter, ...(filters || {}) },
+        },
+        refresh
+      );
+
+      this.hideExpandedRows();
     },
     hideExpandedRows() {
       if (this.tableKey) {
         this.$refs[`trExpansion${this.tableKey}`].hide();
         this.tableKey = null;
+        this.showAllRows = false;
       }
     },
     //Row click
     async rowclick(col, row) {
       // if is an actionable column
       if (this.isActionableColumn(col)) {
-
         //if the col has an action callback
         if (typeof col.action === 'function') {
           await col.action(row);
-        } else {
+        } else if (typeof col.componentAction === 'function') {
+          await this.componentAction(col.componentAction(row));
+        }        
+        else {
           //finding the default action
-          let defaultAction = this.fieldActions(col).find(action => {
+          let defaultAction = this.fieldActions(col).find((action) => {
             if (typeof col.action === 'string') {
               return action?.name === col.action;
             } else {
@@ -934,7 +1287,6 @@ export default {
     },
     async requestDataTable(apiRoute, params, pagination, caching) {
       try {
-
         if (this.isAppOffline) {
           const cachePaginate = await paginateCacheOffline(
             apiRoute,
@@ -948,10 +1300,14 @@ export default {
           }
         }
 
-        const response = await this.$crud.index(apiRoute, params, caching)
-          .catch(error => {
+        const response = await this.$crud
+          .index(apiRoute, params, caching)
+          .catch((error) => {
             if (!this.isAppOffline && !error?.config?.signal?.aborted) {
-              this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' });
+              this.$alert.error({
+                message: this.$tr('isite.cms.message.errorRequest'),
+                pos: 'bottom',
+              });
             }
             console.error(error);
             this.loading = false;
@@ -965,7 +1321,10 @@ export default {
       } catch (error) {
         console.log(error);
         if (!this.isAppOffline) {
-          this.$alert.error({ message: this.$tr('isite.cms.message.errorRequest'), pos: 'bottom' });
+          this.$alert.error({
+            message: this.$tr('isite.cms.message.errorRequest'),
+            pos: 'bottom',
+          });
         }
       }
     },
@@ -981,14 +1340,19 @@ export default {
       //Params to request
       let params = {
         refresh: refresh,
-        params: propParams.read.requestParams || {}
+        params: propParams.read.requestParams || {},
       };
       //add params
       if (!params.params.filter) params.params.filter = {};
-      params.params.filter = { ...params.params.filter, ...this.table.filter, ...filter };
+      params.params.filter = {
+        ...params.params.filter,
+        ...this.table.filter,
+        ...filter,
+      };
       this.removeEmptyFilters(params.params.filter);
       params.params.page = pagination.page;
-      params.params.take = this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
+      params.params.take =
+        this.readShowAs !== 'drag' ? pagination.rowsPerPage : 9999;
       //Set order by
       if (!params.params.filter || !params.params.filter.order) {
         let sortBy = pagination.sortBy || 'id';
@@ -1000,30 +1364,51 @@ export default {
 
         params.params.filter.order = {
           field: sortBy,
-          way: (pagination.descending != undefined) ? (pagination.descending ? 'desc' : 'asc') : 'desc'
+          way:
+            pagination.descending != undefined
+              ? pagination.descending
+                ? 'desc'
+                : 'asc'
+              : 'desc',
         };
       }
 
       //Merge with params from prop
-      if (propParams.read.params && Object.keys(propParams.read.params).length) {
-        Object.keys(propParams.read.params).forEach(key => {
-          params.params[key] = Object.assign({}, params.params[key], propParams.read.params[key]);
+      if (
+        propParams.read.params &&
+        Object.keys(propParams.read.params).length
+      ) {
+        Object.keys(propParams.read.params).forEach((key) => {
+          params.params[key] = Object.assign(
+            {},
+            params.params[key],
+            propParams.read.params[key]
+          );
         });
       }
 
       //Request
-      const response = await this.requestDataTable(propParams.apiRoute, params, pagination, propParams.caching);
+      const response = await this.requestDataTable(
+        propParams.apiRoute,
+        params,
+        pagination,
+        propParams.caching
+      );
       this.expiresIn = response?.expiresIn;
       let dataTable = response?.data;
       //If is field change format
       if (this.params.field) {
-        dataTable = (response?.data[0] && response?.data[0]?.value) ? response?.data[0]?.value : [];
+        dataTable =
+          response?.data[0] && response?.data[0]?.value
+            ? response?.data[0]?.value
+            : [];
         this.dataField = response?.data[0];
       }
 
       //Set data to table
       this.table.data = this.$clone(dataTable);
-      const folderList = foldersStore().transformDataToDragableForderList(dataTable);
+      const folderList =
+        foldersStore().transformDataToDragableForderList(dataTable);
       this.folderList = _.orderBy(folderList, 'position', 'asc');
       this.table.pagination.page = this.$clone(response?.meta.page.currentPage);
       this.table.pagination.rowsNumber = this.$clone(response?.meta.page.total);
@@ -1038,7 +1423,9 @@ export default {
       }
 
       //Dispatch event hook
-      this.$hook.dispatchEvent('wasListed', { entityName: this.params.entityName });
+      this.$hook.dispatchEvent('wasListed', {
+        entityName: this.params.entityName,
+      });
       //Sync data to drag view
       this.dataTableDraggable = this.getDataTableDraggable;
       //Close loading
@@ -1058,83 +1445,123 @@ export default {
             handler: async () => {
               this.loading = true;
               let propParams = this.$clone(this.params);
-              let customParams = { params: { titleOffline: `Delete ${this.$tr(this.title || '')}` || '' } };
+              let customParams = {
+                params: {
+                  titleOffline: `Delete ${this.$tr(this.title || '')}` || '',
+                },
+              };
               //If is crud field
               if (this.params.field) {
-                let dataField = this.$clone(this.dataField);//get data table
-                dataField.value.splice(item.__index, 1);//Remove field
+                let dataField = this.$clone(this.dataField); //get data table
+                dataField.value.splice(item.__index, 1); //Remove field
                 //Request
-                this.$crud.update(propParams.apiRoute, dataField.id, dataField, customParams).then(response => {
-                  this.$alert.info({ message: this.$tr('isite.cms.message.recordDeleted') });
-                  this.getDataTable(true);
-                  this.loading = false;
-                }).catch(error => {
-                  this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' });
-                  this.loading = false;
-                });
+                this.$crud
+                  .update(
+                    propParams.apiRoute,
+                    dataField.id,
+                    dataField,
+                    customParams
+                  )
+                  .then((response) => {
+                    this.$alert.info({
+                      message: this.$tr('isite.cms.message.recordDeleted'),
+                    });
+                    this.getDataTable(true);
+                    this.loading = false;
+                  })
+                  .catch((error) => {
+                    this.$alert.error({
+                      message: this.$tr('isite.cms.message.recordNoDeleted'),
+                      pos: 'bottom',
+                    });
+                    this.loading = false;
+                  });
               } else {
                 //Request
                 if (this.isAppOffline) {
-                  this.table.data = this.table.data.filter(data => item.id !== data.id);
+                  this.table.data = this.table.data.filter(
+                    (data) => item.id !== data.id
+                  );
                   this.loading = false;
                 }
-                this.$crud.delete(
-                  propParams.apiRoute,
-                  item.id,
-                  {
+                this.$crud
+                  .delete(propParams.apiRoute, item.id, {
                     data: {
                       attributes: {
                         id: item.id,
-                        titleOffline: `Delete ${this.$tr(this.title || '')}`
-                      }
+                        titleOffline: `Delete ${this.$tr(this.title || '')}`,
+                      },
+                    },
+                  })
+                  .then((response) => {
+                    this.$alert.info({
+                      message: this.$tr('isite.cms.message.recordDeleted'),
+                    });
+                    this.getDataTable(true);
+
+                    //Dispatch event hook
+                    this.$hook.dispatchEvent('wasDeleted', {
+                      entityName: this.params.entityName,
+                    });
+                    //Emit event delete
+                    this.$emit('deleted');
+
+                    //Close loading
+                    this.loading = false;
+                  })
+                  .catch((error) => {
+                    if (!this.isAppOffline) {
+                      this.$alert.error({
+                        message: this.$tr('isite.cms.message.recordNoDeleted'),
+                        pos: 'bottom',
+                      });
                     }
-                  }
-                ).then(response => {
-                  this.$alert.info({ message: this.$tr('isite.cms.message.recordDeleted') });
-                  this.getDataTable(true);
+                    this.loading = false;
+                  });
 
-                  //Dispatch event hook
-                  this.$hook.dispatchEvent('wasDeleted', { entityName: this.params.entityName });
-                  //Emit event delete
-                  this.$emit('deleted');
-
-                  //Close loading
-                  this.loading = false;
-                }).catch(error => {
-                  if (!this.isAppOffline) {
-                    this.$alert.error({ message: this.$tr('isite.cms.message.recordNoDeleted'), pos: 'bottom' });
-                  }
-                  this.loading = false;
-                });
-
-                await cacheOffline.deleteItem(item.id, propParams.apiRoute)
+                await cacheOffline.deleteItem(item.id, propParams.apiRoute);
                 if (this.isAppOffline) this.getDataTable(true);
               }
-            }
-          }
-        ]
+            },
+          },
+        ],
       });
     },
     //Check if permit action (delete or update)
     permitAction(field) {
-      let edit = true;//Default action edit
-      let destroy = true;//Default action destroy
+      let edit = true; //Default action edit
+      let destroy = true; //Default action destroy
       //Get options form field
-      let options = (field && field.options) ?
-        ((typeof field.options == 'string') ? JSON.parse(field.options) : field.options) : {};
+      let options =
+        field && field.options
+          ? typeof field.options == 'string'
+            ? JSON.parse(field.options)
+            : field.options
+          : {};
       //Validate if field is master record
-      let isMasterRecord = (options.masterRecord && parseInt(options.masterRecord)) ? true : false;
+      let isMasterRecord =
+        options.masterRecord && parseInt(options.masterRecord) ? true : false;
       //Check to permit action edit
-      if (!this.params.hasPermission.edit) edit = false;//Validate entity permissions
-      if (!this.params.update) edit = false;//Validate if crud require update
+      if (!this.params.hasPermission.edit) edit = false; //Validate entity permissions
+      if (!this.params.update) edit = false; //Validate if crud require update
       //Validate if record id "Master Record"
-      if (isMasterRecord && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.edit')) edit = false;
+      if (
+        isMasterRecord &&
+        !this.$store.getters['quserAuth/hasAccess']('isite.master.records.edit')
+      )
+        edit = false;
 
       //Check to permit action destroy
-      if (!this.params.hasPermission.destroy) destroy = false;//Validate entity permissions
-      if (!this.params.delete) destroy = false;//Validate if crud require update
+      if (!this.params.hasPermission.destroy) destroy = false; //Validate entity permissions
+      if (!this.params.delete) destroy = false; //Validate if crud require update
       //Validate if record id "Master Record"
-      if (isMasterRecord && !this.$store.getters['quserAuth/hasAccess']('isite.master.records.destroy')) destroy = false;
+      if (
+        isMasterRecord &&
+        !this.$store.getters['quserAuth/hasAccess'](
+          'isite.master.records.destroy'
+        )
+      )
+        destroy = false;
 
       //Response
       return { edit: edit, destroy: destroy };
@@ -1158,44 +1585,55 @@ export default {
       //Request Data
       let requestData = {
         id: row.id,
-        [col.name]: value
+        [col.name]: value,
       };
 
       //Validate if is translatable
       if (col.isTranslatable) {
         requestData[this.$store.state.qsiteApp.defaultLocale] = {
-          [col.name]: value
+          [col.name]: value,
         };
         delete requestData[col.name];
       }
 
       //Request
-      this.$crud.update(this.params.apiRoute, row.id, requestData).then(response => {
-        //Change value status in data
-        this.table.data = this.$clone(this.table.data.map(itemData => {
-          //Change status
-          if (itemData.id == row.id) itemData[col.name] = requestData[col.name];
-          return itemData;//Response
-        }));
-        this.loading = false;
-        this.$alert.info({ message: this.$tr('isite.cms.message.recordUpdated') });
-      }).catch(error => {
-        this.loading = false;
-        this.$alert.error({ message: this.$tr('isite.cms.message.recordNoUpdated') });
-      });
+      this.$crud
+        .update(this.params.apiRoute, row.id, requestData)
+        .then((response) => {
+          //Change value status in data
+          this.table.data = this.$clone(
+            this.table.data.map((itemData) => {
+              //Change status
+              if (itemData.id == row.id)
+                itemData[col.name] = requestData[col.name];
+              return itemData; //Response
+            })
+          );
+          this.loading = false;
+          this.$alert.info({
+            message: this.$tr('isite.cms.message.recordUpdated'),
+          });
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.$alert.error({
+            message: this.$tr('isite.cms.message.recordNoUpdated'),
+          });
+        });
     },
     //Return field actions
     fieldActions(field, row = null) {
       let readActions = this.$clone(this.params.read.actions || []);
 
       //Default action
-      let defaultAction = readActions.find(action => {
+      let defaultAction = readActions.find((action) => {
         return action.default ?? false;
       });
 
       //Add default actions
       let response = [
-        {//Edit action
+        {
+          //Edit action
           icon: 'fa-light fa-pencil',
           name: 'edit',
           color: 'green',
@@ -1206,9 +1644,10 @@ export default {
           action: (item) => {
             this.$emit('update', item);
           },
-          route: this.params.update?.to
+          route: this.params.update?.to,
         },
-        {//Copy disclosure link action
+        {
+          //Copy disclosure link action
           label: this.$tr('isite.cms.label.copyDisclosureLink'),
           name: 'copyDisclosureLink',
           sortOrder: 1,
@@ -1216,20 +1655,26 @@ export default {
             return { vIf: item.url ? true : false };
           },
           icon: 'fa-light fa-copy',
-          action: (item) => this.$helper.copyToClipboard(item.url, 'isite.cms.messages.copyDisclosureLink')
+          action: (item) =>
+            this.$helper.copyToClipboard(
+              item.url,
+              'isite.cms.messages.copyDisclosureLink'
+            ),
         },
-        {//Share action
+        {
+          //Share action
           label: this.$tr('isite.cms.label.share'),
           name: 'share',
           sortOrder: 1,
           format: (item) => {
-            return { vIf: (item.url || item.embed) ? true : false };
+            return { vIf: item?.url || item?.embed || item?.widgetHtml ? true : false };
           },
           color: 'info',
           icon: 'fa-light fa-share-alt',
-          action: (item) => this.$refs.shareLinkComponent.openModal(item)
+          action: (item) => this.$refs.shareLinkComponent.openModal(item),
         },
-        {//Delete action
+        {
+          //Delete action
           icon: 'fa-light fa-trash-can',
           name: 'delete',
           sortOrder: 99,
@@ -1238,7 +1683,7 @@ export default {
           vIf: this.permitAction(field).destroy,
           action: (item) => {
             this.deleteItem(item);
-          }
+          },
         },
         //Export
         {
@@ -1247,16 +1692,21 @@ export default {
           vIf: !!this.exportParams,
           icon: 'fa-light fa-download',
           sortOrder: 98,
-          action: (item) => this.$refs.exportComponent.showReportItem({
-            item: item,
-            exportParams: { fileName: `${this.exportParams.fileName}-${item.id}` },
-            filter: { id: item.id }
-          })
+          action: (item) =>
+            this.$refs.exportComponent.showReportItem({
+              item: item,
+              exportParams: {
+                fileName: `${this.exportParams.fileName}-${item.id}`,
+              },
+              filter: { id: item.id },
+            }),
         },
-      ].map(mainAction => {
-        const mergeAction = readActions.find(a => a?.name === mainAction?.name);
-        if (mergeAction) mainAction = { ...mainAction, ...mergeAction }
-        return mainAction
+      ].map((mainAction) => {
+        const mergeAction = readActions.find(
+          (a) => a?.name === mainAction?.name
+        );
+        if (mergeAction) mainAction = { ...mainAction, ...mergeAction };
+        return mainAction;
       });
 
       //adds cleanCache action
@@ -1266,23 +1716,28 @@ export default {
           label: this.$tr('isite.cms.configList.clearCache'),
           icon: 'fa-light fa-broom',
           action: (row) => {
-            axios.get(row.url, {
-              headers: { 'icache-bypass': 1 },
-              params: {},
-              paramsSerializer: () => ''
-            }).then(() => {
-              this.$alert.info(this.$tr('isite.cms.label.success'))
-            })
-          }
-        })
+            axios
+              .get(row.url, {
+                headers: { 'icache-bypass': 1 },
+                params: {},
+                paramsSerializer: () => '',
+              })
+              .then(() => {
+                this.$alert.info(this.$tr('isite.cms.label.success'));
+              });
+          },
+        });
       }
 
-      const responseNameActions = response.map(item => item.name)
-      readActions = readActions.map(item => ({ ...item, sortOrder: item.sortOrder || 2 }))
+      const responseNameActions = response.map((item) => item.name);
+      readActions = readActions.map((item) => ({
+        ...item,
+        sortOrder: item.sortOrder || 2,
+      }));
       response = [
         ...response,
-        ...readActions.filter(a => !responseNameActions.includes(a?.name))
-      ].sort((a, b) => a.sortOrder - b.sortOrder)
+        ...readActions.filter((a) => !responseNameActions.includes(a?.name)),
+      ].sort((a, b) => a.sortOrder - b.sortOrder);
 
       //response
       return response;
@@ -1290,9 +1745,14 @@ export default {
     //Hanlder method create
     handlerActionCreate() {
       //Redirect to vue route
-      if (this.params.create.to) return this.$router.push(this.params.create.to);
+      if (this.params.create.to)
+        return this.$router.push(this.params.create.to);
       //Redirect esternal URL
-      if (this.params.create.toExternalUrl) return this.$helper.openExternalURL(this.params.create.toExternalUrl, false);
+      if (this.params.create.toExternalUrl)
+        return this.$helper.openExternalURL(
+          this.params.create.toExternalUrl,
+          false
+        );
       //Call a method to dispatch this action
       if (this.params.create.method) return this.params.create.method();
       //Emit event create
@@ -1301,27 +1761,31 @@ export default {
     //Handler url action
     handlerUrlCrudAction() {
       setTimeout(() => {
-        let actions = this.$clone(this.params.read.actions || []);//Get read actions
-        let urlQuery = this.$route.query;//Get urlQuery
+        let actions = this.$clone(this.params.read.actions || []); //Get read actions
+        let urlQuery = this.$route.query; //Get urlQuery
 
         //Validate if exist actions and url queries
         if (actions.length && Object.keys(urlQuery).length) {
-          let actionValue = urlQuery[Object.keys(urlQuery)[0]];//Get first query parameter value from url
-          let actionCrudData = actions.find(item => item.name == Object.keys(urlQuery)[0]);//search action with name fro url query
+          let actionValue = urlQuery[Object.keys(urlQuery)[0]]; //Get first query parameter value from url
+          let actionCrudData = actions.find(
+            (item) => item.name == Object.keys(urlQuery)[0]
+          ); //search action with name fro url query
 
           if (actionCrudData) {
             //Request Params
             let requestParams = {
               refresh: true,
-              params: this.$clone(this.params.read.requestParams || {})
+              params: this.$clone(this.params.read.requestParams || {}),
             };
             //Request and call action
-            this.$crud.show(this.params.apiRoute, actionValue, requestParams).then(response => {
-              actionCrudData.action(response.data);
-            }).catch(error => {
-              this.$apiResponse.handleError(error, () => {
+            this.$crud
+              .show(this.params.apiRoute, actionValue, requestParams)
+              .then((response) => {
+                actionCrudData.action(response.data);
+              })
+              .catch((error) => {
+                this.$apiResponse.handleError(error, () => {});
               });
-            });
           }
         }
       }, 500);
@@ -1331,7 +1795,7 @@ export default {
       let response = [];
 
       if (actions && actions.length) {
-        actions.forEach(action => {
+        actions.forEach((action) => {
           response.push(action);
         });
       }
@@ -1360,6 +1824,7 @@ export default {
         this.getRelationData(props.row);
       } else {
         this.tableKey = null;
+        this.showAllRows = false;
       }
     },
     //Request the relation data
@@ -1373,30 +1838,40 @@ export default {
         //Request Params
         const requestParams = {
           refresh: true,
-          params: this.relationConfig().requestParams ? this.relationConfig().requestParams(row) : {}
+          params: this.relationConfig().requestParams
+            ? this.relationConfig().requestParams(row)
+            : {},
         };
         //Request
-        this.$crud.index(this.relationConfig('apiRoute'), requestParams).then(async (response) => {
-          this.relation.data = this.$clone(response.data);
-          await this.getListOfDragableRelations(row.id, response.data);
-          this.relation.loading = false;
-          this.setRelationLoading(row.id, false);
-        }).catch(error => {
-          this.$apiResponse.handleError(error, () => {
+        this.$crud
+          .index(this.relationConfig('apiRoute'), requestParams)
+          .then(async (response) => {
+            this.showAllRows = false;
+            this.relation.data = this.$clone(response.data);
+            await this.getListOfDragableRelations(row.id, response.data);
             this.relation.loading = false;
             this.setRelationLoading(row.id, false);
+          })
+          .catch((error) => {
+            this.$apiResponse.handleError(error, () => {
+              this.relation.loading = false;
+              this.setRelationLoading(row.id, false);
+              this.showAllRows = false;
+            });
           });
-        });
       } else {
         this.relation.data = row[this.relationConfig('name')] || [];
       }
     },
     updateRelationData(item) {
-      this.$crud.update(this.relationConfig('apiRoute'), item.id, item).then(response => {
-        //Change value status in data
-      }).catch(error => {
-        console.log(error);
-      });
+      this.$crud
+        .update(this.relationConfig('apiRoute'), item.id, item)
+        .then((response) => {
+          //Change value status in data
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     //handler bulk action
     handlerBulkAction(act) {
@@ -1404,41 +1879,48 @@ export default {
       //Instance the criteria
       const criteria = act.criteria || 'id';
       //Get selected data by criteria
-      const selectedDataByCriteria = this.table.data.filter((item, keyItem) => {
-        if (this.selectedRows.includes(item.id)) return true;
-        else return false;
-      }).map(item => item[criteria]);
+      const selectedDataByCriteria = this.table.data
+        .filter((item, keyItem) => {
+          if (this.selectedRows.includes(item.id)) return true;
+          else return false;
+        })
+        .map((item) => item[criteria]);
       //Instance request params
       var requestParams = {
         attributes: {
           field: this.$helper.convertStringToSnakeCase(criteria),
-          [this.$helper.convertStringToSnakeCase(criteria)]: selectedDataByCriteria
-        }
+          [this.$helper.convertStringToSnakeCase(criteria)]:
+            selectedDataByCriteria,
+        },
       };
       //Request
-      this.$crud.post(act.apiRoute, requestParams).then(response => {
-        this.getDataTable(true);
-      }).catch(error => this.loading = false);
+      this.$crud
+        .post(act.apiRoute, requestParams)
+        .then((response) => {
+          this.getDataTable(true);
+        })
+        .catch((error) => (this.loading = false));
     },
     //Table default column actionable
     isActionableColumn(col) {
       //if the columns has an action callback
       if (col.action && typeof col.action !== 'string') return true;
+      if (col.componentAction && typeof col.componentAction !== 'string') return true;
 
       //default columns
       if (['title', 'name', 'id'].includes(col.name) || col.action) {
         //finding the default action
-        let defaultAction = this.fieldActions(col).find(action => {
+        let defaultAction = this.fieldActions(col).find((action) => {
           if (typeof col.action === 'string') {
-            return action?.name === col.action
+            return action?.name === col.action;
           } else {
-            return action.default ?? false
+            return action.default ?? false;
           }
-        })
-        return defaultAction.vIf != undefined ? defaultAction.vIf : true
+        });
+        return defaultAction.vIf != undefined ? defaultAction.vIf : true;
       }
 
-      return false
+      return false;
     },
     //Select all fields
     selectAllFields() {
@@ -1451,10 +1933,10 @@ export default {
     },
     //Parse columns by row
     parseColumnsByRow(columns, row) {
-      return columns.map(column => {
+      return columns.map((column) => {
         return {
           ...column,
-          ...((column.formatColumn && row) ? column.formatColumn(row) : {})
+          ...(column.formatColumn && row ? column.formatColumn(row) : {}),
         };
       });
     },
@@ -1471,11 +1953,10 @@ export default {
     },
     search(val) {
       this.table.filter.search = val;
-      this.searchKanban = val;
       this.getDataTable();
     },
     setRelationLoading(folderId, value) {
-      const folder = this.folderList.find(item => item.id === folderId);
+      const folder = this.folderList.find((item) => item.id === folderId);
       if (folder) folder.loading = value;
     },
     async getListOfDragableRelations(folderId, relationList) {
@@ -1494,23 +1975,32 @@ export default {
     //Save order when is draggable
     saveOrder() {
       this.loading = true;
-      this.$crud.bulkOrder('apiRoutes.qgamification.activities', this.dataDraggable).then(response => {
-        this.$alert.info({ message: this.$tr('isite.cms.message.recordUpdated') });
-        this.loading = false;
-      }).catch(error => {
-        this.$alert.error({ message: this.$tr('isite.cms.message.recordNoUpdated') });
-        this.loading = false;
-      });
+      this.$crud
+        .bulkOrder('apiRoutes.qgamification.activities', this.dataDraggable)
+        .then((response) => {
+          this.$alert.info({
+            message: this.$tr('isite.cms.message.recordUpdated'),
+          });
+          this.loading = false;
+        })
+        .catch((error) => {
+          this.$alert.error({
+            message: this.$tr('isite.cms.message.recordNoUpdated'),
+          });
+          this.loading = false;
+        });
     },
     setActionQr(item) {
       //Check if there is a related QR code that is in the 'mainqr' zone
-      const qrData = item.qrs?.find(i => i.zone === 'mainqr');
+      const qrData = item.qrs?.find((i) => i.zone === 'mainqr');
       if (qrData) {
         //Display a modal with the QR code image
         this.$refs.qreableComponent.show(qrData);
       } else {
         //Get the module
-        const route = this.$helper.getInfoFromPermission(this.$route.meta.permission);
+        const route = this.$helper.getInfoFromPermission(
+          this.$route.meta.permission
+        );
 
         //Capitalize module and entity
         const module = this.$helper.toCapitalize(route.module);
@@ -1520,11 +2010,12 @@ export default {
 
         //Set the values to create the QR code
         const createQr = {
-          title: item.title ?? item.name ?? `${this.params.entityName}-${item.id}`,
+          title:
+            item.title ?? item.name ?? `${this.params.entityName}-${item.id}`,
           zone: 'mainqr',
           content: item.url,
           entity_type,
-          entity_id: item.id
+          entity_id: item.id,
         };
 
         //Ask for user confirmation for QR code creation
@@ -1541,9 +2032,9 @@ export default {
                 this.loading = true;
                 //request Params to Generate QR
                 this.$refs.qreableComponent.generate(createQr);
-              }
-            }
-          ]
+              },
+            },
+          ],
         });
       }
     },
@@ -1553,11 +2044,51 @@ export default {
       this.getDataTable(true, filters, { page: 1 });
     },
     isDisableRow(row, type = '') {
-      const disabledRow = this.params?.read?.disabled?.row
-      if (disabledRow) return disabledRow(row)
-      return false
+      const disabledRow = this.params?.read?.disabled?.row;
+      if (disabledRow) return disabledRow(row);
+      return false;
+    },
+    showMore() {
+      this.showAllRows = !this.showAllRows;
+    },
+    async getDynamicCrud() {
+      const params = {
+        refresh: true,
+        params: {
+          filter: { field: 'key' },
+        },
+      };
+
+      const response = await this.$crud.show(
+        'apiRoutes.qsite.cruds',
+        this.$route.name,
+        params
+      );
+      this.dataDynamicCrud = response.data || {};
+    },
+    deepCamelCase(obj) {
+      if (_.isArray(obj)) {
+        return obj.map((v) => this.deepCamelCase(v));
+      } else if (_.isPlainObject(obj)) {
+        return _.reduce(
+          obj,
+          (result, value, key) => {
+            result[_.camelCase(key)] = this.deepCamelCase(value);
+            return result;
+          },
+          {}
+        );
+      }
+      return obj;
+    },
+    /* to run cols.component methods */
+    componentAction(val = {ref: '',  method: '', args: null}){
+      const ref = this.$refs[val.ref][0] || null
+      if(ref){
+        ref[val.method](val?.args || null)
+      }
     }
-  }
+  },
 };
 </script>
 
@@ -1568,7 +2099,9 @@ export default {
   }
 
   #backend-page {
-    .q-table__top, .q-table__middle, .q-table__bottom {
+    .q-table__top,
+    .q-table__middle,
+    .q-table__bottom {
       border-radius: $custom-radius;
       //box-shadow: $custom-box-shadow;
     }
@@ -1618,14 +2151,16 @@ export default {
     }
 
     .stick-table {
-      th:last-child, td:last-child {
+      th:last-child,
+      td:last-child {
         background-color: white;
         position: sticky;
         right: 0;
         z-index: 1;
       }
 
-      th:first-child, td:first-child {
+      th:first-child,
+      td:first-child {
         background-color: white;
         position: sticky;
         left: 0;
@@ -1663,7 +2198,11 @@ export default {
         width: 100%;
       }
 
-      .q-table, th:last-child, th:first-child, td:last-child, td:first-child {
+      .q-table,
+      th:last-child,
+      th:first-child,
+      td:last-child,
+      td:first-child {
         background-color: $grey-1;
       }
 
